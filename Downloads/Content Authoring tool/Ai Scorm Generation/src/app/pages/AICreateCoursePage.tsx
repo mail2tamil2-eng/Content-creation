@@ -514,7 +514,7 @@ export function AICreateCoursePage() {
   // STEP 1 — Course Details (2-column with live preview)
   // ================================================================
   if (step === 1) {
-    const canGenerate = title.trim().length > 0 && audience.trim().length > 0 && objectives.filter(o => o.trim()).length > 0;
+    const canGenerate = title.trim().length > 0;
     const P = '#1565F0';
     const PH = '#1A63E8';
     const PL = '#EBF3FF';
@@ -672,7 +672,7 @@ export function AICreateCoursePage() {
             {/* Card: Target Audience */}
             <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
               <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 14px' }}>
-                Target Audience <span style={{ color: '#DC2626', fontWeight: 400, fontSize: 13 }}>*</span>
+                Target Audience
               </h2>
               <input
                 style={fieldStyle}
@@ -688,7 +688,7 @@ export function AICreateCoursePage() {
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
                 <div>
                   <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: 0 }}>
-                    Learning Objectives <span style={{ color: '#DC2626', fontWeight: 400, fontSize: 13 }}>*</span>
+                    Learning Objectives
                   </h2>
                   <p style={{ fontSize: 13, color: '#6B7280', margin: '3px 0 0' }}>What learners will be able to do after this course</p>
                 </div>
@@ -1286,7 +1286,7 @@ export function AICreateCoursePage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {!canGenerate && (
                 <span style={{ fontSize: 13, color: '#6B7280' }}>
-                  {!title.trim() ? 'Add a course title' : !audience.trim() ? 'Add target audience' : 'Add at least one objective'} to continue
+                  Add a course title to continue
                 </span>
               )}
               <button
