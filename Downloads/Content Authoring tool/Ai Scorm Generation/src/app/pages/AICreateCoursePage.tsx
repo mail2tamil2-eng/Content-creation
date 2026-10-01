@@ -957,7 +957,6 @@ export function AICreateCoursePage() {
             <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
               <div style={{ marginBottom: 14 }}>
                 <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: 0 }}>Assessment Settings</h2>
-                <p style={{ fontSize: 13, color: '#6B7280', margin: '3px 0 0' }}>Configure quizzes and knowledge checks for this course</p>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
 
@@ -966,7 +965,6 @@ export function AICreateCoursePage() {
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
                     <div>
                       <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Add Quiz</p>
-                      <p style={{ fontSize: 13, color: '#6B7280', margin: '3px 0 0' }}>Final assessment quiz</p>
                     </div>
                     <ToggleSwitch enabled={addQuiz} onChange={setAddQuiz} />
                   </div>
@@ -989,7 +987,6 @@ export function AICreateCoursePage() {
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
                     <div>
                       <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Knowledge Check per Topic</p>
-                      <p style={{ fontSize: 13, color: '#6B7280', margin: '3px 0 0' }}>Per-topic mini quiz</p>
                     </div>
                     <ToggleSwitch enabled={knowledgeCheck} onChange={setKnowledgeCheck} />
                   </div>
