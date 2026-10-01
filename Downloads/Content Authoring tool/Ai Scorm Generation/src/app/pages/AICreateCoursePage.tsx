@@ -1012,9 +1012,9 @@ export function AICreateCoursePage() {
 
             {/* Card: Theme & Branding */}
             <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
-              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 14px' }}>Theme &amp; Branding</h2>
+              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>Theme &amp; Branding</h2>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                 {THEME_OPTIONS.map(theme => {
                   const isSel = selectedTheme === theme.id;
                   return (
@@ -1023,47 +1023,43 @@ export function AICreateCoursePage() {
                       type="button"
                       onClick={() => setSelectedTheme(theme.id)}
                       style={{
-                        display: 'flex', alignItems: 'center',
-                        padding: '10px 12px',
+                        position: 'relative',
+                        borderRadius: 10,
+                        border: `2px solid ${isSel ? theme.primary : '#E5E7EB'}`,
                         background: '#fff',
-                        border: isSel ? `1.5px solid ${theme.primary}` : '1px solid #E5E7EB',
-                        borderRadius: 10, cursor: 'pointer',
-                        width: '100%', textAlign: 'left',
-                        transition: 'border-color 0.15s',
-                        outline: 'none',
+                        padding: 8,
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+                        cursor: 'pointer', outline: 'none', transition: 'all 0.13s',
                       }}
                       onMouseEnter={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; }}
                       onMouseLeave={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
                     >
-                      {/* Check / spacer */}
-                      <div style={{ width: 20, marginRight: 8, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-                        {isSel && <Check size={16} color={theme.primary} />}
-                      </div>
+                      {/* Swatch strip */}
+                      <span style={{
+                        width: '100%', height: 36, borderRadius: 6,
+                        background: theme.background,
+                        border: '1px solid rgba(0,0,0,0.07)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                        flexShrink: 0,
+                      }}>
+                        <span style={{ width: 10, height: 10, borderRadius: '50%', background: theme.primary, border: '1.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }} />
+                        <span style={{ width: 10, height: 10, borderRadius: '50%', background: theme.accent, border: '1.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }} />
+                      </span>
 
                       {/* Name */}
-                      <span style={{ fontSize: 13, fontWeight: isSel ? 600 : 400, color: '#111827', flex: 1 }}>
+                      <span style={{ fontSize: 11, fontWeight: isSel ? 700 : 400, color: isSel ? theme.primary : '#374151', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>
                         {theme.name}
                       </span>
 
-                      {/* NEW pill */}
+                      {/* NEW badge */}
                       {theme.isNew && (
-                        <span style={{ fontSize: 11, fontWeight: 600, color: '#6B7280', background: '#F3F4F6', borderRadius: 4, padding: '2px 6px', marginRight: 10, flexShrink: 0 }}>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: '#6B7280', background: '#F3F4F6', borderRadius: 3, padding: '1px 4px' }}>
                           NEW
                         </span>
                       )}
 
-                      {/* Mini slide preview */}
-                      <div style={{ width: 76, height: 44, borderRadius: 6, background: theme.background, border: '1px solid #E5E7EB', padding: '6px 8px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
-                        <div>
-                          <div style={{ height: 3, background: '#CBD5E1', borderRadius: 2, width: '65%', marginBottom: 3 }} />
-                          <div style={{ height: 2, background: '#E2E8F0', borderRadius: 2, width: '100%' }} />
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <span style={{ fontSize: 8, fontWeight: 700, color: '#fff', background: theme.primary, borderRadius: 3, padding: '2px 5px' }}>
-                            Next
-                          </span>
-                        </div>
-                      </div>
+                      {/* Checkmark */}
+                      {isSel && <Check size={10} color={theme.primary} style={{ position: 'absolute', top: 4, right: 4 }} />}
                     </button>
                   );
                 })}
