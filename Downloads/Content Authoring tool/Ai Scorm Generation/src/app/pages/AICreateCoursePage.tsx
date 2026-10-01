@@ -1022,54 +1022,46 @@ export function AICreateCoursePage() {
             </div>
 
             {/* Card: Assessment Settings */}
-            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
-              <div style={{ marginBottom: 14 }}>
-                <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: 0 }}>Assessment Settings</h2>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 24px' }}>
+              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>Assessment Settings</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-                {/* Add Quiz card */}
-                <div style={{ border: `1px solid ${addQuiz ? '#93C5FD' : '#E5E7EB'}`, borderRadius: 10, padding: '16px 18px', background: addQuiz ? PL : '#FAFAFA', transition: 'all 0.15s' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Add Quiz</p>
+                {/* Add Quiz row */}
+                <div style={{ display: 'flex', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #F3F4F6' }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: '#111827', flex: 1 }}>Add Quiz</span>
+                  {addQuiz && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 12 }}>
+                      <span style={{ fontSize: 12, color: '#6B7280' }}>Questions</span>
+                      <input
+                        type="number" min="1" max="50"
+                        value={addQuizQuestions}
+                        onChange={e => setAddQuizQuestions(Math.max(1, Math.min(50, Number(e.target.value))))}
+                        style={{ width: 52, border: '1px solid #D1D5DB', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center' }}
+                        onFocus={e => { e.currentTarget.style.borderColor = P; }}
+                        onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }}
+                      />
                     </div>
-                    <ToggleSwitch enabled={addQuiz} onChange={setAddQuiz} />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: addQuiz ? '#374151' : '#9CA3AF', marginBottom: 5, transition: 'color 0.15s' }}>Questions</label>
-                    <input
-                      type="number" min="1" max="50"
-                      value={addQuizQuestions}
-                      onChange={e => setAddQuizQuestions(Math.max(1, Math.min(50, Number(e.target.value))))}
-                      disabled={!addQuiz}
-                      style={{ width: '100%', border: `1px solid ${addQuiz ? '#D1D5DB' : '#E5E7EB'}`, borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: addQuiz ? '#fff' : '#F3F4F6', color: addQuiz ? '#111827' : '#9CA3AF', cursor: addQuiz ? 'text' : 'not-allowed', boxSizing: 'border-box', transition: 'all 0.15s' }}
-                      onFocus={e => { if (addQuiz) { e.currentTarget.style.borderColor = P; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(79,70,229,0.1)'; } }}
-                      onBlur={e => { e.currentTarget.style.borderColor = addQuiz ? '#D1D5DB' : '#E5E7EB'; e.currentTarget.style.boxShadow = 'none'; }}
-                    />
-                  </div>
+                  )}
+                  <ToggleSwitch enabled={addQuiz} onChange={setAddQuiz} />
                 </div>
 
-                {/* Knowledge Check card */}
-                <div style={{ border: `1px solid ${knowledgeCheck ? '#93C5FD' : '#E5E7EB'}`, borderRadius: 10, padding: '16px 18px', background: knowledgeCheck ? PL : '#FAFAFA', transition: 'all 0.15s' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Knowledge Check per Topic</p>
+                {/* Knowledge Check row */}
+                <div style={{ display: 'flex', alignItems: 'center', padding: '10px 0' }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: '#111827', flex: 1 }}>Knowledge Check per Topic</span>
+                  {knowledgeCheck && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 12 }}>
+                      <span style={{ fontSize: 12, color: '#6B7280' }}>Questions</span>
+                      <input
+                        type="number" min="1" max="20"
+                        value={knowledgeCheckQuestions}
+                        onChange={e => setKnowledgeCheckQuestions(Math.max(1, Math.min(20, Number(e.target.value))))}
+                        style={{ width: 52, border: '1px solid #D1D5DB', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center' }}
+                        onFocus={e => { e.currentTarget.style.borderColor = P; }}
+                        onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }}
+                      />
                     </div>
-                    <ToggleSwitch enabled={knowledgeCheck} onChange={setKnowledgeCheck} />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: knowledgeCheck ? '#374151' : '#9CA3AF', marginBottom: 5, transition: 'color 0.15s' }}>Questions</label>
-                    <input
-                      type="number" min="1" max="20"
-                      value={knowledgeCheckQuestions}
-                      onChange={e => setKnowledgeCheckQuestions(Math.max(1, Math.min(20, Number(e.target.value))))}
-                      disabled={!knowledgeCheck}
-                      style={{ width: '100%', border: `1px solid ${knowledgeCheck ? '#D1D5DB' : '#E5E7EB'}`, borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: knowledgeCheck ? '#fff' : '#F3F4F6', color: knowledgeCheck ? '#111827' : '#9CA3AF', cursor: knowledgeCheck ? 'text' : 'not-allowed', boxSizing: 'border-box', transition: 'all 0.15s' }}
-                      onFocus={e => { if (knowledgeCheck) { e.currentTarget.style.borderColor = P; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(79,70,229,0.1)'; } }}
-                      onBlur={e => { e.currentTarget.style.borderColor = knowledgeCheck ? '#D1D5DB' : '#E5E7EB'; e.currentTarget.style.boxShadow = 'none'; }}
-                    />
-                  </div>
+                  )}
+                  <ToggleSwitch enabled={knowledgeCheck} onChange={setKnowledgeCheck} />
                 </div>
 
               </div>
