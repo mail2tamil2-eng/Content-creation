@@ -20,7 +20,7 @@ const NAV_ITEMS = [
     label: 'Dashboard',
     icon: LayoutDashboard,
     path: '/dashboard',
-    iconBg: '#6366F1',
+    iconBg: '#F97316',
   },
   {
     id: 'courses',
