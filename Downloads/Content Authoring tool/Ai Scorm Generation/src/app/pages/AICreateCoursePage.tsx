@@ -154,6 +154,8 @@ export function AICreateCoursePage() {
   const [logoPreview, setLogoPreview] = useState('');
 
   // Template Selection
+  const [templateOpen, setTemplateOpen]   = useState(true);
+  const [aiTemplate, setAiTemplate]       = useState(false);
   const [templateType, setTemplateType] = useState<'predefined' | 'custom' | 'blank'>('predefined');
   const [selectedPredefined, setSelectedPredefined] = useState<string | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
@@ -632,12 +634,62 @@ export function AICreateCoursePage() {
               </div>
             </div>
 
-            {/* ── Card: Template Selection ── */}
-            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
-              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 16px' }}>Template Selection</h2>
+            {/* ── Card: Template Selection — accordion ── */}
+            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, overflow: 'hidden' }}>
+
+              {/* ── Header ── */}
+              <button
+                type="button"
+                onClick={() => setTemplateOpen(v => !v)}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'none', border: 'none', cursor: 'pointer', transition: 'background 0.12s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <FileText size={14} style={{ color: '#6B7280' }} />
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Template Selection</p>
+                    <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>
+                      {aiTemplate
+                        ? 'AI will choose template'
+                        : templateType === 'blank'
+                          ? 'Blank template'
+                          : templateType === 'custom'
+                            ? 'Custom template'
+                            : selectedPredefined
+                              ? (COURSE_DESIGNS.find(d => d.id === selectedPredefined)?.name ?? 'Predefined') + ' template'
+                              : 'Choose a design'}
+                    </p>
+                  </div>
+                </div>
+                <ChevronDown size={15} style={{ color: '#6B7280', transform: templateOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
+              </button>
+
+              <AnimatePresence initial={false}>
+                {templateOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <div style={{ borderTop: '1px solid #F3F4F6', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                      {/* ── AI toggle ── */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 10, border: `1px solid ${aiTemplate ? '#93C5FD' : '#E5E7EB'}`, background: aiTemplate ? PL : '#F9FAFB', transition: 'all 0.15s' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <Sparkles size={15} style={{ color: aiTemplate ? P : '#6B7280', flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>Let AI choose the best template</span>
+                        </div>
+                        <ToggleSwitch enabled={aiTemplate} onChange={setAiTemplate} />
+                      </div>
+
+                      {/* ── Tab switcher + content (hidden when AI on) ── */}
+                      {!aiTemplate && (<>
 
               {/* Tab switcher */}
-              <div style={{ display: 'flex', gap: 3, background: '#F3F4F6', borderRadius: 9, padding: 3, marginBottom: 20 }}>
+              <div style={{ display: 'flex', gap: 3, background: '#F3F4F6', borderRadius: 9, padding: 3 }}>
                 {(['predefined', 'custom', 'blank'] as const).map(t => {
                   const labels = { predefined: 'Predefined Template', custom: 'Custom Template', blank: 'Blank Template' };
                   const active = templateType === t;
@@ -857,6 +909,12 @@ export function AICreateCoursePage() {
                   </div>
                 </div>
               )}
+
+                      </>)}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Card: Duration & Language */}
