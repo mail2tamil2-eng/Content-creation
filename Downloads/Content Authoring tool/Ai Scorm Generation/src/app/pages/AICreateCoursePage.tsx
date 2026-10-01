@@ -29,7 +29,8 @@ import { SlideLibraryModal } from '../components/SlideLibraryModal';
 type Complexity = 'basic' | 'intermediate' | 'advanced';
 type NavigationMode = 'free' | 'linear';
 type SeekBarControl = 'enable' | 'hide';
-type CompletionCriteriaSource = 'none' | 'quiz' | 'final-assessment' | 'knowledge-check' | 'slide-view';
+type CompletionCriteriaSource = 'quiz' | 'slide-view' | 'knowledge-check';
+type SeekBarOption = 'drag' | 'drag-after-completion' | 'read-only';
 type ThemeBackground = 'light' | 'warm' | 'dark';
 type ButtonStyle = 'rounded' | 'pill' | 'square';
 
@@ -191,6 +192,8 @@ export function AICreateCoursePage() {
   const [slideTransition, setSlideTransition] = useState('none');
   const [backgroundMusic, setBackgroundMusic] = useState(false);
   const [backgroundMusicFile, setBackgroundMusicFile] = useState('');
+  const [bgMusicAi, setBgMusicAi] = useState(true);
+  const [seekBarOption, setSeekBarOption] = useState<SeekBarOption>('drag');
 
   // Step 2
   const [sections, setSections] = useState<Section[]>([]);
@@ -1069,7 +1072,7 @@ export function AICreateCoursePage() {
               </AnimatePresence>
             </div>
 
-            {/* Card: Global Settings */}
+            {/* Card: Player Settings */}
             <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, overflow: 'hidden' }}>
               <button
                 type="button" onClick={() => setSettingsOpen(!settingsOpen)}
@@ -1082,8 +1085,8 @@ export function AICreateCoursePage() {
                     <Settings size={14} style={{ color: '#6B7280' }} />
                   </div>
                   <div style={{ textAlign: 'left' }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Global Settings</p>
-                    <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Navigation, completion criteria, accessibility</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Player Settings</p>
+                    <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Navigation, seek bar, completion &amp; accessibility</p>
                   </div>
                 </div>
                 <ChevronDown size={15} style={{ color: '#6B7280', transform: settingsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
@@ -1095,88 +1098,10 @@ export function AICreateCoursePage() {
                     exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
                     style={{ overflow: 'hidden' }}
                   >
-                    <div style={{ borderTop: '1px solid #F3F4F6', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                      {([
-                        { label: 'Navigation Mode', sub: 'How learners move through slides', ctrl: (
-                          <select value={navMode} onChange={e => setNavMode(e.target.value as NavigationMode)}
-                            style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
-                            <option value="free">Free navigation</option>
-                            <option value="linear">Linear</option>
-                          </select>
-                        )},
-                        { label: 'Completion Criteria', sub: 'When is the course marked complete? Select all that apply', ctrl: null },
-                        { label: 'Slide Duration', sub: 'Auto-advance after this many seconds (0 = manual)', ctrl: (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <input
-                              type="number" min="0" max="300"
-                              value={slideDuration}
-                              onChange={e => setSlideDuration(Math.max(0, Math.min(300, Number(e.target.value))))}
-                              style={{ width: 64, border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', textAlign: 'center', fontFamily: 'inherit' }}
-                              onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
-                              onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }}
-                            />
-                            <span style={{ fontSize: 13, color: '#6B7280' }}>sec</span>
-                          </div>
-                        )},
-                        { label: 'Apply Transition to All Slides', sub: 'Animation between slides', ctrl: (
-                          <select value={slideTransition} onChange={e => setSlideTransition(e.target.value)}
-                            style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
-                            <option value="none">None</option>
-                            <option value="fade">Fade</option>
-                            <option value="slide">Slide</option>
-                            <option value="push">Push</option>
-                            <option value="wipe">Wipe</option>
-                            <option value="zoom">Zoom</option>
-                          </select>
-                        )},
-                        { label: 'Transcript', sub: 'Show text transcript alongside slides', ctrl: <ToggleSwitch enabled={transcript} onChange={setTranscript} /> },
-                        { label: 'Bookmarking', sub: 'Resume from last viewed slide', ctrl: <ToggleSwitch enabled={bookmarking} onChange={setBookmarking} /> },
-                        { label: 'Seek Bar', sub: 'Learner can scrub through slide media', ctrl: (
-                          <select value={seekBar} onChange={e => setSeekBar(e.target.value as SeekBarControl)}
-                            style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
-                            <option value="enable">Enabled</option>
-                            <option value="hide">Hidden</option>
-                          </select>
-                        )},
-                      ] as { label: string; sub: string; ctrl: React.ReactNode }[]).map(row => (
-                        <div key={row.label}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                            <div>
-                              <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>{row.label}</p>
-                              <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>{row.sub}</p>
-                            </div>
-                            {row.ctrl}
-                          </div>
-                          {row.ctrl === null && (
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginTop: 10 }}>
-                              {([
-                                { value: 'quiz',             label: 'Quiz score' },
-                                { value: 'slide-view',       label: 'Slide view %' },
-                                { value: 'knowledge-check',  label: 'Knowledge check' },
-                                { value: 'final-assessment', label: 'Final assessment' },
-                              ] as { value: CompletionCriteriaSource; label: string }[]).map(opt => {
-                                const checked = completionSrcs.includes(opt.value);
-                                return (
-                                  <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', userSelect: 'none' }}>
-                                    <span
-                                      onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== opt.value) : [...prev, opt.value])}
-                                      style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s', cursor: 'pointer' }}
-                                    >
-                                      {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
-                                    </span>
-                                    <span
-                                      onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== opt.value) : [...prev, opt.value])}
-                                      style={{ fontSize: 13, color: '#374151' }}
-                                    >{opt.label}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {/* Background Music */}
-                      <div>
+                    <div style={{ borderTop: '1px solid #F3F4F6', padding: '0 24px', display: 'flex', flexDirection: 'column' }}>
+
+                      {/* ── Background Music ── */}
+                      <div style={{ padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                           <div>
                             <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Background Music</p>
@@ -1184,18 +1109,29 @@ export function AICreateCoursePage() {
                           </div>
                           <ToggleSwitch enabled={backgroundMusic} onChange={v => { setBackgroundMusic(v); if (!v) setBackgroundMusicFile(''); }} />
                         </div>
-                        <AnimatePresence initial={false}>
-                          {backgroundMusic && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.18 }}
-                              style={{ overflow: 'hidden' }}
-                            >
-                              <label
-                                style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, padding: '10px 12px', border: `2px dashed ${backgroundMusicFile ? '#93C5FD' : '#D1D5DB'}`, borderRadius: 10, cursor: 'pointer', background: backgroundMusicFile ? '#EBF3FF' : 'transparent', transition: 'all 0.13s' }}
+                        {backgroundMusic && (
+                          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                              {([
+                                { val: true,  label: 'AI Generate',  sub: 'AI creates suitable background music' },
+                                { val: false, label: 'Upload Audio',  sub: 'Upload your own MP3 / WAV file' },
+                              ] as { val: boolean; label: string; sub: string }[]).map(opt => (
+                                <button key={String(opt.val)} type="button" onClick={() => setBgMusicAi(opt.val)}
+                                  style={{ flex: 1, padding: '10px 12px', borderRadius: 9, border: `1.5px solid ${bgMusicAi === opt.val ? P : '#E5E7EB'}`, background: bgMusicAi === opt.val ? PL : '#F9FAFB', cursor: 'pointer', textAlign: 'left', transition: 'all 0.13s' }}>
+                                  <p style={{ fontSize: 13, fontWeight: 600, color: bgMusicAi === opt.val ? P : '#111827', margin: 0 }}>{opt.label}</p>
+                                  <p style={{ fontSize: 12, color: '#6B7280', margin: '2px 0 0' }}>{opt.sub}</p>
+                                </button>
+                              ))}
+                            </div>
+                            {bgMusicAi ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: PL, borderRadius: 8, border: '1px solid #93C5FD' }}>
+                                <Sparkles size={13} color={P} />
+                                <span style={{ fontSize: 13, color: P }}>AI will generate suitable background music based on course content</span>
+                              </div>
+                            ) : (
+                              <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', border: `2px dashed ${backgroundMusicFile ? '#93C5FD' : '#D1D5DB'}`, borderRadius: 10, cursor: 'pointer', background: backgroundMusicFile ? '#EBF3FF' : 'transparent', transition: 'all 0.13s' }}
                                 onMouseEnter={e => { if (!backgroundMusicFile) { (e.currentTarget as HTMLElement).style.borderColor = '#1565F0'; (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; } }}
-                                onMouseLeave={e => { if (!backgroundMusicFile) { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = 'transparent'; } }}
-                              >
+                                onMouseLeave={e => { if (!backgroundMusicFile) { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = 'transparent'; } }}>
                                 <div style={{ width: 32, height: 32, borderRadius: 7, background: backgroundMusicFile ? '#E0E7FF' : '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                   <Volume2 size={14} style={{ color: backgroundMusicFile ? '#1565F0' : '#9CA3AF' }} />
                                 </div>
@@ -1203,30 +1139,145 @@ export function AICreateCoursePage() {
                                   <p style={{ fontSize: 13, fontWeight: 500, color: '#374151', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {backgroundMusicFile || 'Upload audio file'}
                                   </p>
-                                  <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>MP3 or WAV, max 10 MB</p>
+                                  <p style={{ fontSize: 12, color: '#6B7280', margin: '2px 0 0' }}>MP3 or WAV · max 10 MB</p>
                                 </div>
                                 {backgroundMusicFile && (
-                                  <button
-                                    type="button"
-                                    onClick={e => { e.preventDefault(); setBackgroundMusicFile(''); }}
-                                    style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-                                  >
+                                  <button type="button" onClick={e => { e.preventDefault(); setBackgroundMusicFile(''); }}
+                                    style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     <X size={13} style={{ color: '#6B7280' }} />
                                   </button>
                                 )}
-                                <input
-                                  type="file" accept="audio/mp3,audio/wav,audio/*"
-                                  style={{ display: 'none' }}
-                                  onChange={e => {
-                                    const f = e.target.files?.[0];
-                                    if (f) setBackgroundMusicFile(f.name);
-                                  }}
-                                />
+                                <input type="file" accept="audio/mp3,audio/wav,audio/*" style={{ display: 'none' }}
+                                  onChange={e => { const f = e.target.files?.[0]; if (f && f.size <= 10 * 1024 * 1024) setBackgroundMusicFile(f.name); }} />
                               </label>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                            )}
+                          </div>
+                        )}
                       </div>
+
+                      {/* ── Navigation Mode ── */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
+                        <div>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Navigation Mode</p>
+                          <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>How learners move through slides</p>
+                        </div>
+                        <select value={navMode} onChange={e => setNavMode(e.target.value as NavigationMode)}
+                          style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
+                          <option value="free">Free Navigation</option>
+                          <option value="linear">Linear</option>
+                        </select>
+                      </div>
+
+                      {/* ── Seek Bar Control ── */}
+                      <div style={{ padding: '14px 0', borderBottom: '1px solid #F3F4F6', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Seek Bar Control</p>
+                            <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Control seek bar visibility and behaviour</p>
+                          </div>
+                          <select value={seekBar} onChange={e => setSeekBar(e.target.value as SeekBarControl)}
+                            style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
+                            <option value="enable">Enable Seek Bar</option>
+                            <option value="hide">Hide Seek Bar Completely</option>
+                          </select>
+                        </div>
+                        {seekBar === 'enable' && (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingLeft: 14 }}>
+                            <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>Seek bar behaviour</p>
+                            <select value={seekBarOption} onChange={e => setSeekBarOption(e.target.value as SeekBarOption)}
+                              style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
+                              <option value="drag">Allow user to drag Seek Bar</option>
+                              <option value="drag-after-completion">Allow drag after completion</option>
+                              <option value="read-only">Seek bar is read only</option>
+                            </select>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ── Bookmarking ── */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
+                        <div>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Bookmarking</p>
+                          <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>
+                            {bookmarking ? 'Saves last position; learner prompted to resume on relaunch' : 'Course starts from first slide on each launch'}
+                          </p>
+                        </div>
+                        <ToggleSwitch enabled={bookmarking} onChange={setBookmarking} />
+                      </div>
+
+                      {/* ── Transition ── */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
+                        <div>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Transition</p>
+                          <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Animation applied between slides</p>
+                        </div>
+                        <select value={slideTransition} onChange={e => setSlideTransition(e.target.value)}
+                          style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
+                          <option value="none">None</option>
+                          <option value="fade">Fade</option>
+                          <option value="push-up">Push Up</option>
+                          <option value="push-down">Push Down</option>
+                          <option value="push-left">Push Left</option>
+                          <option value="push-right">Push Right</option>
+                          <option value="wipe-left">Wipe Left</option>
+                          <option value="wipe-right">Wipe Right</option>
+                          <option value="split">Split</option>
+                          <option value="reveal">Reveal</option>
+                          <option value="cover-left">Cover Left</option>
+                          <option value="cover-right">Cover Right</option>
+                        </select>
+                      </div>
+
+                      {/* ── Slide Duration ── */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
+                        <div>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Slide Duration</p>
+                          <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Time before auto-advancing to next slide (0 = manual)</p>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <input type="number" min="0" max="300" value={slideDuration}
+                            onChange={e => setSlideDuration(Math.max(0, Math.min(300, Number(e.target.value))))}
+                            style={{ width: 64, border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', textAlign: 'center', fontFamily: 'inherit' }}
+                            onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
+                            onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }}
+                          />
+                          <span style={{ fontSize: 13, color: '#6B7280' }}>sec</span>
+                        </div>
+                      </div>
+
+                      {/* ── Transcript ── */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
+                        <div>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Transcript</p>
+                          <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>AI generates an editable transcript available to learners</p>
+                        </div>
+                        <ToggleSwitch enabled={transcript} onChange={setTranscript} />
+                      </div>
+
+                      {/* ── Completion Criteria ── */}
+                      <div style={{ padding: '14px 0' }}>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: '0 0 4px' }}>Completion Criteria</p>
+                        <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 10px' }}>When is the course marked complete? Select all that apply</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {([
+                            { value: 'quiz',            label: 'Quiz Percentage Completion' },
+                            { value: 'slide-view',      label: 'Slide View Percentage' },
+                            { value: 'knowledge-check', label: 'Knowledge Check Completion' },
+                          ] as { value: CompletionCriteriaSource; label: string }[]).map(opt => {
+                            const checked = completionSrcs.includes(opt.value);
+                            return (
+                              <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, background: checked ? PL : '#F9FAFB', border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, transition: 'all 0.12s', userSelect: 'none' }}
+                                onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== opt.value) : [...prev, opt.value])}>
+                                <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P : '#D1D5DB'}`, background: checked ? P : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
+                                  {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
+                                </span>
+                                <span style={{ fontSize: 13, color: checked ? P : '#374151', fontWeight: checked ? 500 : 400 }}>{opt.label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+
                     </div>
                   </motion.div>
                 )}
