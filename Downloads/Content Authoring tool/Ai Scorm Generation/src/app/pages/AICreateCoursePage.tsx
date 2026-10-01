@@ -1479,6 +1479,18 @@ export function AICreateCoursePage() {
             onDuplicate={() => { toast.info('Duplicate coming soon'); setShowMoreMenu(false); }}
             onDelete={() => { navigate('/courses'); setShowMoreMenu(false); }}
             onApplyTheme={handleApplyTheme}
+            currentDesignId={designId}
+            onApplyTemplate={id => {
+              const d = COURSE_DESIGNS.find(x => x.id === id);
+              const p = THEME_PRESETS.find(x => x.id === d?.theme);
+              if (!d || !p) return;
+              setDesignId(id);
+              setAiTheme(false);
+              setCustomPrimary(p.primaryColor);
+              setCustomSecondary(p.secondaryColor);
+              setCustomBgStyle(p.background);
+              setThemeOverride(null);
+            }}
           />
 
           {/* Canvas */}

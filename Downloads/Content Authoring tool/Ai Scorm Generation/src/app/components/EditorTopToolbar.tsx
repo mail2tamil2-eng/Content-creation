@@ -1,9 +1,10 @@
 import React, { useRef, useState } from 'react';
 import {
   Globe, Settings, MoreHorizontal, Pencil,
-  Upload, Play, Save, Copy, Trash2, PanelRightOpen,
+  Upload, Play, Save, Copy, Trash2, PanelRightOpen, Layout,
 } from 'lucide-react';
 import { ThemePopover, ThemeSettings } from './ThemePopover';
+import { TemplatePopover } from './TemplatePopover';
 
 interface EditorTopToolbarProps {
   courseTitle: string;
@@ -20,6 +21,8 @@ interface EditorTopToolbarProps {
   onDuplicate: () => void;
   onDelete: () => void;
   onApplyTheme: (settings: ThemeSettings) => void;
+  currentDesignId?: string;
+  onApplyTemplate?: (designId: string) => void;
 }
 
 export function EditorTopToolbar({
@@ -37,9 +40,13 @@ export function EditorTopToolbar({
   onDuplicate,
   onDelete,
   onApplyTheme,
+  currentDesignId = 'corporate',
+  onApplyTemplate,
 }: EditorTopToolbarProps) {
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const themeButtonRef = useRef<HTMLButtonElement>(null);
+  const [isTemplateOpen, setIsTemplateOpen] = useState(false);
+  const templateButtonRef = useRef<HTMLButtonElement>(null);
 
   // right: 336 = sidebar width (320) + gap (16). Transitions with sidebar open/close.
   const actionRight = rightPanelOpen ? 336 : 16;
@@ -142,10 +149,25 @@ export function EditorTopToolbar({
 
         <div className="bg-gray-200 shrink-0 mx-1" style={{ width: '1px', height: '24px' }} />
 
+        {/* ▦ Template */}
+        <button
+          ref={templateButtonRef}
+          onClick={() => { setIsTemplateOpen(v => !v); setIsThemeOpen(false); }}
+          aria-expanded={isTemplateOpen}
+          aria-haspopup="dialog"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            isTemplateOpen ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
+          }`}
+          style={{ fontSize: '14px' }}
+        >
+          <Layout size={15} />
+          <span className="hidden sm:inline">Template</span>
+        </button>
+
         {/* ✏ Theme */}
         <button
           ref={themeButtonRef}
-          onClick={() => setIsThemeOpen(v => !v)}
+          onClick={() => { setIsThemeOpen(v => !v); setIsTemplateOpen(false); }}
           aria-expanded={isThemeOpen}
           aria-haspopup="dialog"
           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
@@ -212,12 +234,21 @@ export function EditorTopToolbar({
         )}
       </div>
 
-      {/* Theme Popover — portal, never clipped by overflow:hidden parents */}
+      {/* Theme Popover */}
       <ThemePopover
         isOpen={isThemeOpen}
         onClose={() => setIsThemeOpen(false)}
         anchorEl={themeButtonRef.current}
         onApply={settings => { onApplyTheme(settings); }}
+      />
+
+      {/* Template Popover */}
+      <TemplatePopover
+        isOpen={isTemplateOpen}
+        onClose={() => setIsTemplateOpen(false)}
+        anchorEl={templateButtonRef.current}
+        currentDesignId={currentDesignId}
+        onApply={id => { onApplyTemplate?.(id); setIsTemplateOpen(false); }}
       />
     </>
   );
