@@ -148,14 +148,14 @@ export function AICreateCoursePage() {
   const [knowledgeCheckQuestions, setKnowledgeCheckQuestions] = useState(5);
 
   // Theme
-  const [aiTheme, setAiTheme] = useState(false);
-  const [themeOpen, setThemeOpen] = useState(true);
+  const [aiTheme, setAiTheme] = useState(true);
+  const [themeOpen, setThemeOpen] = useState(false);
   const [designId, setDesignId] = useState('corporate');
   const [logoPreview, setLogoPreview] = useState('');
 
   // Template Selection
-  const [templateOpen, setTemplateOpen]   = useState(true);
-  const [aiTemplate, setAiTemplate]       = useState(false);
+  const [templateOpen, setTemplateOpen]   = useState(false);
+  const [aiTemplate, setAiTemplate]       = useState(true);
   const [templateType, setTemplateType] = useState<'predefined' | 'custom' | 'blank'>('predefined');
   const [selectedPredefined, setSelectedPredefined] = useState<string | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
