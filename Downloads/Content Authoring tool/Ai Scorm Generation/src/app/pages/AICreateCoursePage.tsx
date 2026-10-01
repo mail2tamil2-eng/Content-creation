@@ -20,7 +20,7 @@ import PublishModal from '../components/PublishModal';
 import { generateSlideContent, type CourseTopic } from '../courseContent';
 import CoursePresentation, { type PresentationSettings } from '../components/CoursePresentation';
 import { EditorTopToolbar } from '../components/EditorTopToolbar';
-import { type ThemeSettings } from '../components/ThemePopover';
+import { type ThemeSettings, THEME_OPTIONS } from '../components/ThemePopover';
 import { CourseSidebar, type CSSection } from '../components/CourseSidebar';
 import { SlideSettingsPanel } from '../components/SlideSettingsPanel';
 import { SlideLibraryModal } from '../components/SlideLibraryModal';
@@ -150,6 +150,25 @@ export function AICreateCoursePage() {
   const [aiTheme, setAiTheme] = useState(true);
   const [designId, setDesignId] = useState('corporate');
   const [logoPreview, setLogoPreview] = useState('');
+
+  // Template Selection
+  const [templateType, setTemplateType] = useState<'predefined' | 'custom' | 'blank'>('predefined');
+  const [selectedPredefined, setSelectedPredefined] = useState<string | null>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
+  const [selectedTheme, setSelectedTheme] = useState('gold');
+  // Custom template
+  const [customLogoPreview, setCustomLogoPreview] = useState('');
+  const [headerEnabled, setHeaderEnabled] = useState(false);
+  const [headerIncludeLogo, setHeaderIncludeLogo] = useState(true);
+  const [headerIncludeCourseName, setHeaderIncludeCourseName] = useState(true);
+  const [footerEnabled, setFooterEnabled] = useState(false);
+  const [footerIncludeOrgName, setFooterIncludeOrgName] = useState(false);
+  const [footerIncludeCourseName, setFooterIncludeCourseName] = useState(false);
+  const [footerIncludeCopyright, setFooterIncludeCopyright] = useState(false);
+  const [copyrightText, setCopyrightText] = useState('');
+  const [footerIncludePageNum, setFooterIncludePageNum] = useState(false);
+  const [footerIncludeWatermark, setFooterIncludeWatermark] = useState(false);
+  const [watermarkText, setWatermarkText] = useState('');
 
   // Global Settings
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -603,6 +622,233 @@ export function AICreateCoursePage() {
               </div>
             </div>
 
+            {/* ── Card: Template Selection ── */}
+            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
+              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 16px' }}>Template Selection</h2>
+
+              {/* Tab switcher */}
+              <div style={{ display: 'flex', gap: 3, background: '#F3F4F6', borderRadius: 9, padding: 3, marginBottom: 20 }}>
+                {(['predefined', 'custom', 'blank'] as const).map(t => {
+                  const labels = { predefined: 'Predefined Template', custom: 'Custom Template', blank: 'Blank Template' };
+                  const active = templateType === t;
+                  return (
+                    <button key={t} onClick={() => setTemplateType(t)} style={{ flex: 1, padding: '8px 0', borderRadius: 7, border: 'none', background: active ? '#fff' : 'transparent', color: active ? '#111827' : '#6B7280', fontSize: 13, fontWeight: active ? 600 : 400, cursor: 'pointer', boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s' }}>
+                      {labels[t]}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* ── Predefined Templates ── */}
+              {templateType === 'predefined' && (
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 12px' }}>Choose a Design</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                    {COURSE_DESIGNS.map(d => {
+                      const preset = THEME_PRESETS.find(tp => tp.id === d.theme)!;
+                      const dk = preset.background === 'dark';
+                      const bg = dk ? '#111827' : preset.background === 'warm' ? '#FEF9EE' : '#FFFFFF';
+                      const isSelected = selectedPredefined === d.id;
+                      return (
+                        <button key={d.id} type="button" onClick={() => setSelectedPredefined(d.id)}
+                          style={{ position: 'relative', borderRadius: 10, border: `2px solid ${isSelected ? P : '#E5E7EB'}`, background: isSelected ? PL : '#fff', padding: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}>
+                          <span style={{ width: '100%', height: 44, borderRadius: 6, border: '1px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '0 8px', background: bg, flexShrink: 0 }}>
+                            <span style={{ height: 6, width: 22, borderRadius: 3, background: preset.primaryColor }} />
+                            <span style={{ height: 3, width: 12, borderRadius: 3, opacity: 0.4, background: dk ? '#fff' : '#64748B' }} />
+                            <span style={{ height: 8, width: 8, borderRadius: 2, background: preset.secondaryColor }} />
+                          </span>
+                          <span style={{ fontSize: 13, fontWeight: 500, color: isSelected ? P : '#374151', textAlign: 'center', lineHeight: 1.2 }}>{d.name}</span>
+                          {isSelected && <Check size={11} color={P} style={{ position: 'absolute', top: 5, right: 6 }} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {selectedPredefined && (
+                    <div style={{ marginTop: 14, padding: '10px 14px', background: PL, borderRadius: 8, border: `1px solid #93C5FD`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Check size={14} color={P} />
+                      <span style={{ fontSize: 13, color: P, fontWeight: 500 }}>
+                        {COURSE_DESIGNS.find(d => d.id === selectedPredefined)?.name} template selected
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Custom Template ── */}
+              {templateType === 'custom' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 20 }}>
+                  {/* Left: config */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                    {/* Logo upload */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Organization Logo</label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', border: `2px dashed ${customLogoPreview ? P : '#D1D5DB'}`, borderRadius: 8, cursor: 'pointer', background: customLogoPreview ? PL : '#FAFAFA', transition: 'all 0.13s' }}
+                        onMouseEnter={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.background = PL; } }}
+                        onMouseLeave={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; } }}>
+                        <input type="file" accept=".png,.jpg,.jpeg,.svg" style={{ display: 'none' }}
+                          onChange={e => {
+                            const f = e.target.files?.[0];
+                            if (f && f.size <= 5 * 1024 * 1024) {
+                              const url = URL.createObjectURL(f);
+                              setCustomLogoPreview(url);
+                            }
+                          }} />
+                        {customLogoPreview
+                          ? <><img src={customLogoPreview} alt="logo" style={{ height: 28, objectFit: 'contain', maxWidth: 80 }} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Logo uploaded</span><button type="button" onClick={e => { e.preventDefault(); setCustomLogoPreview(''); }} style={{ marginLeft: 'auto', fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button></>
+                          : <><Upload size={15} color="#6B7280" /><span style={{ fontSize: 13, color: '#6B7280' }}>Upload logo — PNG, JPG, JPEG, SVG · max 5 MB</span></>
+                        }
+                      </label>
+                    </div>
+
+                    {/* Header */}
+                    <div style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F9FAFB' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>Header</span>
+                        <button type="button" onClick={() => setHeaderEnabled(v => !v)}
+                          style={{ width: 36, height: 20, borderRadius: 10, background: headerEnabled ? P : '#D1D5DB', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
+                          <span style={{ position: 'absolute', top: 2, left: headerEnabled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                        </button>
+                      </div>
+                      {headerEnabled && (
+                        <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <p style={{ margin: '0 0 6px', fontSize: 12, color: '#6B7280' }}>Include in header:</p>
+                          {[
+                            { label: 'Organization Logo', value: headerIncludeLogo, set: setHeaderIncludeLogo },
+                            { label: 'Course Name', value: headerIncludeCourseName, set: setHeaderIncludeCourseName },
+                          ].map(({ label, value, set }) => (
+                            <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                              <input type="checkbox" checked={value} onChange={e => set(e.target.checked)}
+                                style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
+                              <span style={{ fontSize: 13, color: '#374151' }}>{label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F9FAFB' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>Footer</span>
+                        <button type="button" onClick={() => setFooterEnabled(v => !v)}
+                          style={{ width: 36, height: 20, borderRadius: 10, background: footerEnabled ? P : '#D1D5DB', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
+                          <span style={{ position: 'absolute', top: 2, left: footerEnabled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                        </button>
+                      </div>
+                      {footerEnabled && (
+                        <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <p style={{ margin: '0 0 6px', fontSize: 12, color: '#6B7280' }}>Include in footer:</p>
+                          {[
+                            { label: 'Organization Name', value: footerIncludeOrgName, set: setFooterIncludeOrgName },
+                            { label: 'Course Name', value: footerIncludeCourseName, set: setFooterIncludeCourseName },
+                            { label: 'Page / Slide Number', value: footerIncludePageNum, set: setFooterIncludePageNum },
+                          ].map(({ label, value, set }) => (
+                            <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                              <input type="checkbox" checked={value} onChange={e => set(e.target.checked)}
+                                style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
+                              <span style={{ fontSize: 13, color: '#374151' }}>{label}</span>
+                            </label>
+                          ))}
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                            <input type="checkbox" checked={footerIncludeCopyright} onChange={e => setFooterIncludeCopyright(e.target.checked)}
+                              style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
+                            <span style={{ fontSize: 13, color: '#374151' }}>Copyright Information</span>
+                          </label>
+                          {footerIncludeCopyright && (
+                            <input value={copyrightText} onChange={e => setCopyrightText(e.target.value)}
+                              placeholder="e.g. © 2025 Acme Corp. All rights reserved."
+                              style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', marginLeft: 22 }}
+                              onFocus={e => { e.currentTarget.style.borderColor = P; }}
+                              onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />
+                          )}
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                            <input type="checkbox" checked={footerIncludeWatermark} onChange={e => setFooterIncludeWatermark(e.target.checked)}
+                              style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
+                            <span style={{ fontSize: 13, color: '#374151' }}>Watermark</span>
+                          </label>
+                          {footerIncludeWatermark && (
+                            <input value={watermarkText} onChange={e => setWatermarkText(e.target.value)}
+                              placeholder="e.g. CONFIDENTIAL"
+                              style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', marginLeft: 22 }}
+                              onFocus={e => { e.currentTarget.style.borderColor = P; }}
+                              onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right: live preview */}
+                  <div style={{ position: 'sticky', top: 0 }}>
+                    <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Live Preview</p>
+                    <div style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden', background: '#fff' }}>
+                      {/* Header preview */}
+                      {headerEnabled ? (
+                        <div style={{ background: '#1F2937', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, minHeight: 36 }}>
+                          {headerIncludeLogo && (
+                            customLogoPreview
+                              ? <img src={customLogoPreview} alt="logo" style={{ height: 18, objectFit: 'contain', maxWidth: 50 }} />
+                              : <div style={{ width: 28, height: 14, borderRadius: 2, background: 'rgba(255,255,255,0.3)' }} />
+                          )}
+                          {headerIncludeCourseName && (
+                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.9)', fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {title || 'Course Name'}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{ background: '#F3F4F6', padding: '8px 12px', display: 'flex', alignItems: 'center' }}>
+                          <span style={{ fontSize: 11, color: '#9CA3AF' }}>Header disabled</span>
+                        </div>
+                      )}
+                      {/* Slide area */}
+                      <div style={{ padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 5, minHeight: 80 }}>
+                        <div style={{ height: 8, borderRadius: 3, background: '#E5E7EB', width: '55%' }} />
+                        <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '80%' }} />
+                        <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '65%' }} />
+                        <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '72%' }} />
+                      </div>
+                      {/* Footer preview */}
+                      {footerEnabled ? (
+                        <div style={{ background: '#F9FAFB', borderTop: '1px solid #E5E7EB', padding: '6px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 28, flexWrap: 'wrap', gap: 4 }}>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                            {footerIncludeOrgName && <span style={{ fontSize: 10, color: '#374151', fontWeight: 600 }}>Org Name</span>}
+                            {footerIncludeCourseName && <span style={{ fontSize: 10, color: '#6B7280' }}>{title || 'Course Name'}</span>}
+                            {footerIncludeCopyright && copyrightText && <span style={{ fontSize: 10, color: '#6B7280' }}>{copyrightText}</span>}
+                            {footerIncludeWatermark && watermarkText && <span style={{ fontSize: 10, color: '#DC2626', opacity: 0.4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{watermarkText}</span>}
+                          </div>
+                          {footerIncludePageNum && <span style={{ fontSize: 10, color: '#6B7280' }}>1 / 12</span>}
+                        </div>
+                      ) : (
+                        <div style={{ background: '#F9FAFB', borderTop: '1px solid #E5E7EB', padding: '6px 12px' }}>
+                          <span style={{ fontSize: 11, color: '#9CA3AF' }}>Footer disabled</span>
+                        </div>
+                      )}
+                    </div>
+                    <p style={{ margin: '6px 0 0', fontSize: 12, color: '#6B7280' }}>Updates in real time as you configure</p>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Blank Template ── */}
+              {templateType === 'blank' && (
+                <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                    <FileText size={22} color="#6B7280" />
+                  </div>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#111827', margin: '0 0 6px' }}>Start from Scratch</p>
+                  <p style={{ fontSize: 13, color: '#6B7280', margin: '0 auto', maxWidth: 380, lineHeight: 1.6 }}>
+                    No predefined structure. You'll begin with an empty course and build the sections and topics using AI-assisted generation or manually.
+                  </p>
+                  <div style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, background: PL, border: `1px solid #93C5FD` }}>
+                    <Check size={14} color={P} />
+                    <span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Blank template selected</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Card: Duration & Language */}
             <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
               <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 14px' }}>Duration &amp; Language</h2>
@@ -768,75 +1014,60 @@ export function AICreateCoursePage() {
             <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
               <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 14px' }}>Theme &amp; Branding</h2>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 10, border: `1px solid ${aiTheme ? '#93C5FD' : '#E5E7EB'}`, background: aiTheme ? PL : '#F9FAFB', marginBottom: aiTheme ? 14 : 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: aiTheme ? '#E0E7FF' : '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Sparkles size={15} style={{ color: aiTheme ? P : '#9CA3AF' }} />
-                  </div>
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Let AI choose the best theme</p>
-                    <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>AI will pick a design that fits your content</p>
-                  </div>
-                </div>
-                <ToggleSwitch enabled={aiTheme} onChange={setAiTheme} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {THEME_OPTIONS.map(theme => {
+                  const isSel = selectedTheme === theme.id;
+                  return (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      onClick={() => setSelectedTheme(theme.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center',
+                        padding: '10px 12px',
+                        background: '#fff',
+                        border: isSel ? `1.5px solid ${theme.primary}` : '1px solid #E5E7EB',
+                        borderRadius: 10, cursor: 'pointer',
+                        width: '100%', textAlign: 'left',
+                        transition: 'border-color 0.15s',
+                        outline: 'none',
+                      }}
+                      onMouseEnter={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; }}
+                      onMouseLeave={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
+                    >
+                      {/* Check / spacer */}
+                      <div style={{ width: 20, marginRight: 8, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                        {isSel && <Check size={16} color={theme.primary} />}
+                      </div>
+
+                      {/* Name */}
+                      <span style={{ fontSize: 13, fontWeight: isSel ? 600 : 400, color: '#111827', flex: 1 }}>
+                        {theme.name}
+                      </span>
+
+                      {/* NEW pill */}
+                      {theme.isNew && (
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#6B7280', background: '#F3F4F6', borderRadius: 4, padding: '2px 6px', marginRight: 10, flexShrink: 0 }}>
+                          NEW
+                        </span>
+                      )}
+
+                      {/* Mini slide preview */}
+                      <div style={{ width: 76, height: 44, borderRadius: 6, background: theme.background, border: '1px solid #E5E7EB', padding: '6px 8px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
+                        <div>
+                          <div style={{ height: 3, background: '#CBD5E1', borderRadius: 2, width: '65%', marginBottom: 3 }} />
+                          <div style={{ height: 2, background: '#E2E8F0', borderRadius: 2, width: '100%' }} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <span style={{ fontSize: 8, fontWeight: 700, color: '#fff', background: theme.primary, borderRadius: 3, padding: '2px 5px' }}>
+                            Next
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-
-              <AnimatePresence initial={false}>
-                {!aiTheme && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
-                    style={{ overflow: 'hidden', marginBottom: 14 }}
-                  >
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 8px' }}>Choose a design</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-                      {COURSE_DESIGNS.map(d => {
-                        const p = THEME_PRESETS.find(tp => tp.id === d.theme)!;
-                        const dk = p.background === 'dark';
-                        const bg = dk ? '#111827' : p.background === 'warm' ? '#FEF9EE' : '#FFFFFF';
-                        const selected = designId === d.id;
-                        return (
-                          <button
-                            key={d.id} type="button" onClick={() => setDesignId(d.id)} title={d.name}
-                            style={{ position: 'relative', borderRadius: 10, border: `2px solid ${selected ? P : '#E5E7EB'}`, background: selected ? PL : '#fff', padding: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}
-                          >
-                            <span style={{ width: '100%', height: 32, borderRadius: 6, border: '1px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '0 6px', background: bg }}>
-                              <span style={{ height: 5, width: 18, borderRadius: 3, background: p.primaryColor }} />
-                              <span style={{ height: 3, width: 10, borderRadius: 3, opacity: 0.4, background: dk ? '#fff' : '#64748b' }} />
-                              <span style={{ height: 6, width: 6, borderRadius: 2, background: p.secondaryColor }} />
-                            </span>
-                            <span style={{ fontSize: 13, fontWeight: 500, color: '#374151', textAlign: 'center', lineHeight: 1.2 }}>{d.name}</span>
-                            {selected && <Check size={10} style={{ color: P, position: 'absolute', top: 4, right: 4 }} />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <label
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', border: '2px dashed #D1D5DB', borderRadius: 10, cursor: 'pointer', transition: 'all 0.13s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.background = PL; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-              >
-                <div style={{ width: 32, height: 32, borderRadius: 7, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                  {logoPreview
-                    ? <img src={logoPreview} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                    : <Upload size={14} style={{ color: '#6B7280' }} />
-                  }
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: '#374151', margin: 0 }}>{logoPreview ? 'Change logo' : 'Upload logo (optional)'}</p>
-                  <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>PNG, SVG or JPG, max 2 MB</p>
-                </div>
-                {logoPreview && (
-                  <button type="button" onClick={e => { e.preventDefault(); setLogoPreview(''); }} style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <X size={13} style={{ color: '#6B7280' }} />
-                  </button>
-                )}
-                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoUpload} />
-              </label>
             </div>
 
             {/* Card: Global Settings */}
