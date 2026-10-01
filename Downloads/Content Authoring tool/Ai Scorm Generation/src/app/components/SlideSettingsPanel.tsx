@@ -176,7 +176,7 @@ function AddBtn({ label, onClick }: { label: string; onClick: () => void }) {
 function AiBtn({ label, onClick, small }: { label: string; onClick: () => void; small?: boolean }) {
   return (
     <button onClick={onClick}
-      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: small ? '4px 8px' : '6px 10px', borderRadius: 6, border: 'none', background: 'linear-gradient(135deg,#2D74FA,#1A63E8)', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' as const }}>
+      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: small ? '4px 8px' : '6px 10px', borderRadius: 6, border: 'none', background: P, color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' as const }}>
       <Wand2 size={11} />{label}
     </button>
   );
@@ -432,29 +432,29 @@ function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
           </div>
 
           {generated ? (
-            <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: 8, padding: '10px 12px' }}>
+            <div style={{ background: '#EBF3FF', border: '1px solid #93C5FD', borderRadius: 8, padding: '10px 12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                <Mic size={13} color="#0369A1" />
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#0369A1' }}>Narration generated</span>
+                <Mic size={13} color="#1565F0" />
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#1565F0' }}>Narration generated</span>
               </div>
               {/* Waveform placeholder */}
-              <div style={{ height: 28, background: '#E0F2FE', borderRadius: 4, marginBottom: 8, display: 'flex', alignItems: 'center', padding: '0 8px', gap: 2 }}>
+              <div style={{ height: 28, background: '#DBEAFE', borderRadius: 4, marginBottom: 8, display: 'flex', alignItems: 'center', padding: '0 8px', gap: 2 }}>
                 {Array.from({ length: 24 }).map((_, i) => (
-                  <div key={i} style={{ flex: 1, background: '#0284C7', borderRadius: 1, height: `${20 + Math.sin(i * 0.9) * 14}%`, opacity: 0.7 }} />
+                  <div key={i} style={{ flex: 1, background: '#1565F0', borderRadius: 1, height: `${20 + Math.sin(i * 0.9) * 14}%`, opacity: 0.7 }} />
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <button onClick={() => setIsPlaying(v => !v)}
-                  style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: '#0369A1', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: '#1565F0', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {isPlaying ? <Pause size={13} /> : <Play size={13} />}
                 </button>
                 <button onClick={() => setIsPlaying(false)}
-                  style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: '#E0F2FE', color: '#0369A1', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: '#E0F2FE', color: '#1565F0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Square size={11} />
                 </button>
                 <div style={{ flex: 1 }} />
                 <button onClick={() => {}} title="Regenerate narration"
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: '#0369A1', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: '#1565F0', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
                   <RotateCcw size={11} /> Regenerate
                 </button>
                 <button onClick={() => { setGenerated(false); u({ narrationGenerated: false }); }} title="Delete narration"
@@ -469,7 +469,7 @@ function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
             </div>
           ) : (
             <button onClick={() => { setGenerated(true); u({ narrationGenerated: true }); }}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 0', borderRadius: 7, border: 'none', background: 'linear-gradient(135deg,#0369A1,#7C3AED)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: font }}>
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 0', borderRadius: 7, border: 'none', background: P, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: font }}>
               <Mic size={13} /> Generate Narration with AI
             </button>
           )}
@@ -492,7 +492,7 @@ function AudioFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
       {audioUrl ? (
         <div style={{ background: '#F9FAFB', borderRadius: 8, padding: '10px 12px', border: `1px solid ${BORDER}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <Mic size={14} color="#7C3AED" />
+            <Mic size={14} color="#1565F0" />
             <span style={{ fontSize: 13, fontWeight: 600, color: '#374151', flex: 1 }}>Audio uploaded</span>
             <button onClick={() => { setAudioUrl(''); u({ audioUrl: '' }); }} style={{ fontSize: 13, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Delete</button>
           </div>
@@ -1294,7 +1294,7 @@ export function SlideSettingsPanel({
       {/* Footer actions */}
       <div style={{ padding: '12px 16px', borderTop: `1px solid ${BORDER}`, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
         <button onClick={onEnhanceWithAI} disabled={enhancing}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px 0', borderRadius: 9, border: 'none', background: 'linear-gradient(135deg,#134780 0%,#7C3AED 100%)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: enhancing ? 'default' : 'pointer', opacity: enhancing ? 0.7 : 1 }}>
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px 0', borderRadius: 9, border: 'none', background: P, color: '#fff', fontSize: 13, fontWeight: 600, cursor: enhancing ? 'default' : 'pointer', opacity: enhancing ? 0.7 : 1 }}>
           <Sparkles size={14} />{enhancing ? 'Enhancing…' : 'Enhance with AI'}
         </button>
         <button onClick={onDelete}
