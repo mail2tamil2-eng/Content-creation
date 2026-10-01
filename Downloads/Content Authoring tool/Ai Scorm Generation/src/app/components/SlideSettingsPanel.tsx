@@ -1294,7 +1294,9 @@ export function SlideSettingsPanel({
       {/* Footer actions */}
       <div style={{ padding: '12px 16px', borderTop: `1px solid ${BORDER}`, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
         <button onClick={onEnhanceWithAI} disabled={enhancing}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px 0', borderRadius: 9, border: 'none', background: P, color: '#fff', fontSize: 13, fontWeight: 600, cursor: enhancing ? 'default' : 'pointer', opacity: enhancing ? 0.7 : 1 }}>
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px 0', borderRadius: 9, border: `1.5px solid ${P}`, background: '#fff', color: P, fontSize: 13, fontWeight: 600, cursor: enhancing ? 'default' : 'pointer', opacity: enhancing ? 0.7 : 1 }}
+          onMouseEnter={e => { if (!enhancing) { (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; } }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}>
           <Sparkles size={14} />{enhancing ? 'Enhancing…' : 'Enhance with AI'}
         </button>
         <button onClick={onDelete}
