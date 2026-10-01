@@ -634,10 +634,145 @@ export function AICreateCoursePage() {
               </div>
             </div>
 
+            {/* Card: Duration & Language */}
+            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
+              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 14px' }}>Duration &amp; Language</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Duration</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      type="number" min="1" placeholder="30"
+                      value={duration} onChange={e => setDuration(e.target.value)}
+                      style={{ flex: 1, border: '1px solid #D1D5DB', borderRadius: 8, padding: '9px 12px', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
+                      onFocus={e => { e.currentTarget.style.borderColor = P; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }}
+                    />
+                    <select
+                      value={durationUnit} onChange={e => setDurationUnit(e.target.value as 'hours' | 'minutes')}
+                      style={{ border: '1px solid #D1D5DB', borderRadius: 8, padding: '9px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}
+                    >
+                      <option value="minutes">min</option>
+                      <option value="hours">hrs</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Language</label>
+                  <select
+                    value={language} onChange={e => setLanguage(e.target.value)}
+                    style={{ width: '100%', border: '1px solid #D1D5DB', borderRadius: 8, padding: '9px 12px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}
+                  >
+                    {LANGUAGES.map(l => <option key={l}>{l}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Card: Target Audience */}
+            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
+              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 14px' }}>
+                Target Audience <span style={{ color: '#DC2626', fontWeight: 400, fontSize: 13 }}>*</span>
+              </h2>
+              <input
+                style={fieldStyle}
+                placeholder="e.g. Marketing professionals, entry-level managers"
+                value={audience}
+                onChange={e => setAudience(e.target.value)}
+                onFocus={focusField} onBlur={blurField}
+              />
+            </div>
+
+            {/* Card: Learning Objectives */}
+            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
+                <div>
+                  <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: 0 }}>
+                    Learning Objectives <span style={{ color: '#DC2626', fontWeight: 400, fontSize: 13 }}>*</span>
+                  </h2>
+                  <p style={{ fontSize: 13, color: '#6B7280', margin: '3px 0 0' }}>What learners will be able to do after this course</p>
+                </div>
+                <button
+                  type="button" onClick={generateObjective} disabled={generatingObj}
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 500, color: P, background: PL, border: 'none', borderRadius: 7, padding: '6px 12px', cursor: 'pointer', opacity: generatingObj ? 0.6 : 1, whiteSpace: 'nowrap' as const, flexShrink: 0, transition: 'background 0.12s' }}
+                  onMouseEnter={e => { if (!generatingObj) (e.currentTarget as HTMLElement).style.background = '#E0E7FF'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = PL; }}
+                >
+                  <Sparkles size={12} /> {generatingObj ? 'Generating...' : 'AI Generate'}
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {objectives.map((obj, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 22, height: 22, borderRadius: '50%', background: PL, color: P, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</span>
+                    <input
+                      value={obj}
+                      onChange={e => { const n = [...objectives]; n[i] = e.target.value; setObjectives(n); }}
+                      placeholder={`Learning objective ${i + 1}`}
+                      style={{ flex: 1, border: '1px solid #D1D5DB', borderRadius: 8, padding: '9px 12px', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
+                      onFocus={e => { e.currentTarget.style.borderColor = P; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(79,70,229,0.1)'; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; e.currentTarget.style.boxShadow = 'none'; }}
+                    />
+                    {objectives.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setObjectives(prev => prev.filter((_, idx) => idx !== i))}
+                        style={{ width: 30, height: 30, border: 'none', background: 'none', cursor: 'pointer', color: '#D1D5DB', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, flexShrink: 0, transition: 'all 0.12s' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#DC2626'; (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = 'none'; }}
+                      ><X size={14} /></button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setObjectives(prev => [...prev, ''])}
+                style={{ marginTop: 10, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 500, color: P, background: 'none', border: '1px dashed #93C5FD', borderRadius: 8, padding: '9px 0', cursor: 'pointer', transition: 'background 0.12s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = PL; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+              >
+                <Plus size={13} /> Add objective
+              </button>
+            </div>
+
+            {/* Card: Assessment Settings */}
+            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 24px' }}>
+              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>Assessment Settings</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #F3F4F6' }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: '#111827', flex: 1 }}>Add Quiz</span>
+                  {addQuiz && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 12 }}>
+                      <span style={{ fontSize: 12, color: '#6B7280' }}>Questions</span>
+                      <input type="number" min="1" max="50" value={addQuizQuestions}
+                        onChange={e => setAddQuizQuestions(Math.max(1, Math.min(50, Number(e.target.value))))}
+                        style={{ width: 52, border: '1px solid #D1D5DB', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center' }}
+                        onFocus={e => { e.currentTarget.style.borderColor = P; }}
+                        onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />
+                    </div>
+                  )}
+                  <ToggleSwitch enabled={addQuiz} onChange={setAddQuiz} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '10px 0' }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: '#111827', flex: 1 }}>Knowledge Check per Topic</span>
+                  {knowledgeCheck && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 12 }}>
+                      <span style={{ fontSize: 12, color: '#6B7280' }}>Questions</span>
+                      <input type="number" min="1" max="20" value={knowledgeCheckQuestions}
+                        onChange={e => setKnowledgeCheckQuestions(Math.max(1, Math.min(20, Number(e.target.value))))}
+                        style={{ width: 52, border: '1px solid #D1D5DB', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center' }}
+                        onFocus={e => { e.currentTarget.style.borderColor = P; }}
+                        onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />
+                    </div>
+                  )}
+                  <ToggleSwitch enabled={knowledgeCheck} onChange={setKnowledgeCheck} />
+                </div>
+              </div>
+            </div>
+
             {/* ── Card: Template Selection — accordion ── */}
             <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, overflow: 'hidden' }}>
-
-              {/* ── Header ── */}
               <button
                 type="button"
                 onClick={() => setTemplateOpen(v => !v)}
@@ -652,23 +787,169 @@ export function AICreateCoursePage() {
                   <div style={{ textAlign: 'left' }}>
                     <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Template Selection</p>
                     <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>
-                      {aiTemplate
-                        ? 'AI will choose template'
-                        : templateType === 'blank'
-                          ? 'Blank template'
-                          : templateType === 'custom'
-                            ? 'Custom template'
-                            : selectedPredefined
-                              ? (COURSE_DESIGNS.find(d => d.id === selectedPredefined)?.name ?? 'Predefined') + ' template'
-                              : 'Choose a design'}
+                      {aiTemplate ? 'AI will choose template' : templateType === 'blank' ? 'Blank template' : templateType === 'custom' ? 'Custom template' : selectedPredefined ? (COURSE_DESIGNS.find(d => d.id === selectedPredefined)?.name ?? 'Predefined') + ' template' : 'Choose a design'}
                     </p>
                   </div>
                 </div>
                 <ChevronDown size={15} style={{ color: '#6B7280', transform: templateOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
               </button>
-
               <AnimatePresence initial={false}>
                 {templateOpen && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden' }}>
+                    <div style={{ borderTop: '1px solid #F3F4F6', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 10, border: `1px solid ${aiTemplate ? '#93C5FD' : '#E5E7EB'}`, background: aiTemplate ? PL : '#F9FAFB', transition: 'all 0.15s' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <Sparkles size={15} style={{ color: aiTemplate ? P : '#6B7280', flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>Let AI choose the best template</span>
+                        </div>
+                        <ToggleSwitch enabled={aiTemplate} onChange={setAiTemplate} />
+                      </div>
+                      {!aiTemplate && (<>
+                        <div style={{ display: 'flex', gap: 3, background: '#F3F4F6', borderRadius: 9, padding: 3 }}>
+                          {(['predefined', 'custom', 'blank'] as const).map(t => {
+                            const labels = { predefined: 'Predefined Template', custom: 'Custom Template', blank: 'Blank Template' };
+                            const active = templateType === t;
+                            return <button key={t} onClick={() => setTemplateType(t)} style={{ flex: 1, padding: '8px 0', borderRadius: 7, border: 'none', background: active ? '#fff' : 'transparent', color: active ? '#111827' : '#6B7280', fontSize: 13, fontWeight: active ? 600 : 400, cursor: 'pointer', boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s' }}>{labels[t]}</button>;
+                          })}
+                        </div>
+                        {templateType === 'predefined' && (
+                          <div>
+                            <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 12px' }}>Choose a Design</p>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+                              {COURSE_DESIGNS.map(d => {
+                                const preset = THEME_PRESETS.find(tp => tp.id === d.theme)!;
+                                const dk = preset.background === 'dark';
+                                const bg = dk ? '#111827' : preset.background === 'warm' ? '#FEF9EE' : '#FFFFFF';
+                                const isSelected = selectedPredefined === d.id;
+                                return (
+                                  <button key={d.id} type="button" onClick={() => { setSelectedPredefined(d.id); setDesignId(d.id); }}
+                                    style={{ position: 'relative', borderRadius: 10, border: `2px solid ${isSelected ? P : '#E5E7EB'}`, background: isSelected ? PL : '#fff', padding: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}>
+                                    <span style={{ width: '100%', height: 44, borderRadius: 6, border: '1px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '0 8px', background: bg, flexShrink: 0 }}>
+                                      <span style={{ height: 6, width: 22, borderRadius: 3, background: preset.primaryColor }} />
+                                      <span style={{ height: 3, width: 12, borderRadius: 3, opacity: 0.4, background: dk ? '#fff' : '#64748B' }} />
+                                      <span style={{ height: 8, width: 8, borderRadius: 2, background: preset.secondaryColor }} />
+                                    </span>
+                                    <span style={{ fontSize: 13, fontWeight: 500, color: isSelected ? P : '#374151', textAlign: 'center', lineHeight: 1.2 }}>{d.name}</span>
+                                    {isSelected && <Check size={11} color={P} style={{ position: 'absolute', top: 5, right: 6 }} />}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {selectedPredefined && (
+                              <div style={{ marginTop: 14, padding: '10px 14px', background: PL, borderRadius: 8, border: `1px solid #93C5FD`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <Check size={14} color={P} />
+                                <span style={{ fontSize: 13, color: P, fontWeight: 500 }}>{COURSE_DESIGNS.find(d => d.id === selectedPredefined)?.name} template selected</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {templateType === 'custom' && (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 20 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                              <div>
+                                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Organization Logo</label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', border: `2px dashed ${customLogoPreview ? P : '#D1D5DB'}`, borderRadius: 8, cursor: 'pointer', background: customLogoPreview ? PL : '#FAFAFA', transition: 'all 0.13s' }}
+                                  onMouseEnter={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.background = PL; } }}
+                                  onMouseLeave={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; } }}>
+                                  <input type="file" accept=".png,.jpg,.jpeg,.svg" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f && f.size <= 5 * 1024 * 1024) setCustomLogoPreview(URL.createObjectURL(f)); }} />
+                                  {customLogoPreview ? <><img src={customLogoPreview} alt="logo" style={{ height: 28, objectFit: 'contain', maxWidth: 80 }} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Logo uploaded</span><button type="button" onClick={e => { e.preventDefault(); setCustomLogoPreview(''); }} style={{ marginLeft: 'auto', fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button></> : <><Upload size={15} color="#6B7280" /><span style={{ fontSize: 13, color: '#6B7280' }}>Upload logo — PNG, JPG, JPEG, SVG · max 5 MB</span></>}
+                                </label>
+                              </div>
+                              {[{ label: 'Header', enabled: headerEnabled, toggle: () => setHeaderEnabled(v => !v), items: [{ label: 'Organization Logo', value: headerIncludeLogo, set: setHeaderIncludeLogo }, { label: 'Course Name', value: headerIncludeCourseName, set: setHeaderIncludeCourseName }] }, { label: 'Footer', enabled: footerEnabled, toggle: () => setFooterEnabled(v => !v), items: [{ label: 'Organization Name', value: footerIncludeOrgName, set: setFooterIncludeOrgName }, { label: 'Course Name', value: footerIncludeCourseName, set: setFooterIncludeCourseName }, { label: 'Page / Slide Number', value: footerIncludePageNum, set: setFooterIncludePageNum }] }].map(section => (
+                                <div key={section.label} style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F9FAFB' }}>
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{section.label}</span>
+                                    <button type="button" onClick={section.toggle} style={{ width: 36, height: 20, borderRadius: 10, background: section.enabled ? P : '#D1D5DB', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
+                                      <span style={{ position: 'absolute', top: 2, left: section.enabled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                                    </button>
+                                  </div>
+                                  {section.enabled && (
+                                    <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                      {section.items.map(({ label, value, set }) => (
+                                        <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                                          <input type="checkbox" checked={value} onChange={e => set(e.target.checked)} style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
+                                          <span style={{ fontSize: 13, color: '#374151' }}>{label}</span>
+                                        </label>
+                                      ))}
+                                      {section.label === 'Footer' && <>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                                          <input type="checkbox" checked={footerIncludeCopyright} onChange={e => setFooterIncludeCopyright(e.target.checked)} style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
+                                          <span style={{ fontSize: 13, color: '#374151' }}>Copyright Information</span>
+                                        </label>
+                                        {footerIncludeCopyright && <input value={copyrightText} onChange={e => setCopyrightText(e.target.value)} placeholder="e.g. © 2025 Acme Corp." style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', marginLeft: 22 }} onFocus={e => { e.currentTarget.style.borderColor = P; }} onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />}
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                                          <input type="checkbox" checked={footerIncludeWatermark} onChange={e => setFooterIncludeWatermark(e.target.checked)} style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
+                                          <span style={{ fontSize: 13, color: '#374151' }}>Watermark</span>
+                                        </label>
+                                        {footerIncludeWatermark && <input value={watermarkText} onChange={e => setWatermarkText(e.target.value)} placeholder="e.g. CONFIDENTIAL" style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', marginLeft: 22 }} onFocus={e => { e.currentTarget.style.borderColor = P; }} onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />}
+                                      </>}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ position: 'sticky', top: 0 }}>
+                              <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Live Preview</p>
+                              <div style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden', background: '#fff' }}>
+                                {headerEnabled ? <div style={{ background: '#1F2937', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, minHeight: 36 }}>{headerIncludeLogo && (customLogoPreview ? <img src={customLogoPreview} alt="logo" style={{ height: 18, objectFit: 'contain', maxWidth: 50 }} /> : <div style={{ width: 28, height: 14, borderRadius: 2, background: 'rgba(255,255,255,0.3)' }} />)}{headerIncludeCourseName && <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.9)', fontWeight: 600, flex: 1 }}>{title || 'Course Name'}</span>}</div> : <div style={{ background: '#F3F4F6', padding: '8px 12px' }}><span style={{ fontSize: 11, color: '#9CA3AF' }}>Header disabled</span></div>}
+                                <div style={{ padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 5, minHeight: 80 }}>
+                                  <div style={{ height: 8, borderRadius: 3, background: '#E5E7EB', width: '55%' }} />
+                                  <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '80%' }} />
+                                  <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '65%' }} />
+                                  <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '72%' }} />
+                                </div>
+                                {footerEnabled ? <div style={{ background: '#F9FAFB', borderTop: '1px solid #E5E7EB', padding: '6px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 28, flexWrap: 'wrap', gap: 4 }}><div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>{footerIncludeOrgName && <span style={{ fontSize: 10, color: '#374151', fontWeight: 600 }}>Org Name</span>}{footerIncludeCourseName && <span style={{ fontSize: 10, color: '#6B7280' }}>{title || 'Course Name'}</span>}{footerIncludeCopyright && copyrightText && <span style={{ fontSize: 10, color: '#6B7280' }}>{copyrightText}</span>}{footerIncludeWatermark && watermarkText && <span style={{ fontSize: 10, color: '#DC2626', opacity: 0.4, fontWeight: 700 }}>{watermarkText}</span>}</div>{footerIncludePageNum && <span style={{ fontSize: 10, color: '#6B7280' }}>1 / 12</span>}</div> : <div style={{ background: '#F9FAFB', borderTop: '1px solid #E5E7EB', padding: '6px 12px' }}><span style={{ fontSize: 11, color: '#9CA3AF' }}>Footer disabled</span></div>}
+                              </div>
+                              <p style={{ margin: '6px 0 0', fontSize: 12, color: '#6B7280' }}>Updates in real time as you configure</p>
+                            </div>
+                          </div>
+                        )}
+                        {templateType === 'blank' && (
+                          <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                            <div style={{ width: 48, height: 48, borderRadius: 12, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                              <FileText size={22} color="#6B7280" />
+                            </div>
+                            <p style={{ fontSize: 14, fontWeight: 600, color: '#111827', margin: '0 0 6px' }}>Start from Scratch</p>
+                            <p style={{ fontSize: 13, color: '#6B7280', margin: '0 auto', maxWidth: 380, lineHeight: 1.6 }}>No predefined structure. You'll begin with an empty course and build the sections and topics using AI-assisted generation or manually.</p>
+                            <div style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, background: PL, border: `1px solid #93C5FD` }}>
+                              <Check size={14} color={P} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Blank template selected</span>
+                            </div>
+                          </div>
+                        )}
+                      </>)}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Card: Theme & Branding — accordion */}
+            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, overflow: 'hidden' }}>
+
+              {/* ── Header ── */}
+              <button
+                type="button"
+                onClick={() => setThemeOpen(v => !v)}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'none', border: 'none', cursor: 'pointer', transition: 'background 0.12s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Palette size={14} style={{ color: '#6B7280' }} />
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Theme &amp; Branding</p>
+                    <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>
+                      {aiTheme ? 'AI will choose theme' : (THEME_OPTIONS.find(t => t.id === selectedTheme)?.name ?? 'Gold')}
+                    </p>
+                  </div>
+                </div>
+                <ChevronDown size={15} style={{ color: '#6B7280', transform: themeOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
+              </button>
+
+              <AnimatePresence initial={false}>
+                {themeOpen && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
@@ -677,240 +958,111 @@ export function AICreateCoursePage() {
                     <div style={{ borderTop: '1px solid #F3F4F6', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
                       {/* ── AI toggle ── */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 10, border: `1px solid ${aiTemplate ? '#93C5FD' : '#E5E7EB'}`, background: aiTemplate ? PL : '#F9FAFB', transition: 'all 0.15s' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 10, border: `1px solid ${aiTheme ? '#93C5FD' : '#E5E7EB'}`, background: aiTheme ? PL : '#F9FAFB', transition: 'all 0.15s' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Sparkles size={15} style={{ color: aiTemplate ? P : '#6B7280', flexShrink: 0 }} />
-                          <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>Let AI choose the best template</span>
+                          <Sparkles size={15} style={{ color: aiTheme ? P : '#6B7280', flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>Let AI choose the best theme</span>
                         </div>
-                        <ToggleSwitch enabled={aiTemplate} onChange={setAiTemplate} />
+                        <ToggleSwitch enabled={aiTheme} onChange={setAiTheme} />
                       </div>
 
-                      {/* ── Tab switcher + content (hidden when AI on) ── */}
-                      {!aiTemplate && (<>
-
-              {/* Tab switcher */}
-              <div style={{ display: 'flex', gap: 3, background: '#F3F4F6', borderRadius: 9, padding: 3 }}>
-                {(['predefined', 'custom', 'blank'] as const).map(t => {
-                  const labels = { predefined: 'Predefined Template', custom: 'Custom Template', blank: 'Blank Template' };
-                  const active = templateType === t;
-                  return (
-                    <button key={t} onClick={() => setTemplateType(t)} style={{ flex: 1, padding: '8px 0', borderRadius: 7, border: 'none', background: active ? '#fff' : 'transparent', color: active ? '#111827' : '#6B7280', fontSize: 13, fontWeight: active ? 600 : 400, cursor: 'pointer', boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s' }}>
-                      {labels[t]}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* ── Predefined Templates ── */}
-              {templateType === 'predefined' && (
-                <div>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 12px' }}>Choose a Design</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-                    {COURSE_DESIGNS.map(d => {
-                      const preset = THEME_PRESETS.find(tp => tp.id === d.theme)!;
-                      const dk = preset.background === 'dark';
-                      const bg = dk ? '#111827' : preset.background === 'warm' ? '#FEF9EE' : '#FFFFFF';
-                      const isSelected = selectedPredefined === d.id;
-                      return (
-                        <button key={d.id} type="button" onClick={() => { setSelectedPredefined(d.id); setDesignId(d.id); }}
-                          style={{ position: 'relative', borderRadius: 10, border: `2px solid ${isSelected ? P : '#E5E7EB'}`, background: isSelected ? PL : '#fff', padding: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}>
-                          <span style={{ width: '100%', height: 44, borderRadius: 6, border: '1px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '0 8px', background: bg, flexShrink: 0 }}>
-                            <span style={{ height: 6, width: 22, borderRadius: 3, background: preset.primaryColor }} />
-                            <span style={{ height: 3, width: 12, borderRadius: 3, opacity: 0.4, background: dk ? '#fff' : '#64748B' }} />
-                            <span style={{ height: 8, width: 8, borderRadius: 2, background: preset.secondaryColor }} />
-                          </span>
-                          <span style={{ fontSize: 13, fontWeight: 500, color: isSelected ? P : '#374151', textAlign: 'center', lineHeight: 1.2 }}>{d.name}</span>
-                          {isSelected && <Check size={11} color={P} style={{ position: 'absolute', top: 5, right: 6 }} />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {selectedPredefined && (
-                    <div style={{ marginTop: 14, padding: '10px 14px', background: PL, borderRadius: 8, border: `1px solid #93C5FD`, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Check size={14} color={P} />
-                      <span style={{ fontSize: 13, color: P, fontWeight: 500 }}>
-                        {COURSE_DESIGNS.find(d => d.id === selectedPredefined)?.name} template selected
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* ── Custom Template ── */}
-              {templateType === 'custom' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 20 }}>
-                  {/* Left: config */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-                    {/* Logo upload */}
-                    <div>
-                      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Organization Logo</label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', border: `2px dashed ${customLogoPreview ? P : '#D1D5DB'}`, borderRadius: 8, cursor: 'pointer', background: customLogoPreview ? PL : '#FAFAFA', transition: 'all 0.13s' }}
-                        onMouseEnter={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.background = PL; } }}
-                        onMouseLeave={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; } }}>
-                        <input type="file" accept=".png,.jpg,.jpeg,.svg" style={{ display: 'none' }}
-                          onChange={e => {
-                            const f = e.target.files?.[0];
-                            if (f && f.size <= 5 * 1024 * 1024) {
-                              const url = URL.createObjectURL(f);
-                              setCustomLogoPreview(url);
-                            }
-                          }} />
-                        {customLogoPreview
-                          ? <><img src={customLogoPreview} alt="logo" style={{ height: 28, objectFit: 'contain', maxWidth: 80 }} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Logo uploaded</span><button type="button" onClick={e => { e.preventDefault(); setCustomLogoPreview(''); }} style={{ marginLeft: 'auto', fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button></>
-                          : <><Upload size={15} color="#6B7280" /><span style={{ fontSize: 13, color: '#6B7280' }}>Upload logo — PNG, JPG, JPEG, SVG · max 5 MB</span></>
-                        }
-                      </label>
-                    </div>
-
-                    {/* Header */}
-                    <div style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F9FAFB' }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>Header</span>
-                        <button type="button" onClick={() => setHeaderEnabled(v => !v)}
-                          style={{ width: 36, height: 20, borderRadius: 10, background: headerEnabled ? P : '#D1D5DB', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
-                          <span style={{ position: 'absolute', top: 2, left: headerEnabled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
-                        </button>
-                      </div>
-                      {headerEnabled && (
-                        <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          <p style={{ margin: '0 0 6px', fontSize: 12, color: '#6B7280' }}>Include in header:</p>
-                          {[
-                            { label: 'Organization Logo', value: headerIncludeLogo, set: setHeaderIncludeLogo },
-                            { label: 'Course Name', value: headerIncludeCourseName, set: setHeaderIncludeCourseName },
-                          ].map(({ label, value, set }) => (
-                            <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                              <input type="checkbox" checked={value} onChange={e => set(e.target.checked)}
-                                style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
-                              <span style={{ fontSize: 13, color: '#374151' }}>{label}</span>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Footer */}
-                    <div style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F9FAFB' }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>Footer</span>
-                        <button type="button" onClick={() => setFooterEnabled(v => !v)}
-                          style={{ width: 36, height: 20, borderRadius: 10, background: footerEnabled ? P : '#D1D5DB', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
-                          <span style={{ position: 'absolute', top: 2, left: footerEnabled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
-                        </button>
-                      </div>
-                      {footerEnabled && (
-                        <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          <p style={{ margin: '0 0 6px', fontSize: 12, color: '#6B7280' }}>Include in footer:</p>
-                          {[
-                            { label: 'Organization Name', value: footerIncludeOrgName, set: setFooterIncludeOrgName },
-                            { label: 'Course Name', value: footerIncludeCourseName, set: setFooterIncludeCourseName },
-                            { label: 'Page / Slide Number', value: footerIncludePageNum, set: setFooterIncludePageNum },
-                          ].map(({ label, value, set }) => (
-                            <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                              <input type="checkbox" checked={value} onChange={e => set(e.target.checked)}
-                                style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
-                              <span style={{ fontSize: 13, color: '#374151' }}>{label}</span>
-                            </label>
-                          ))}
-                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                            <input type="checkbox" checked={footerIncludeCopyright} onChange={e => setFooterIncludeCopyright(e.target.checked)}
-                              style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
-                            <span style={{ fontSize: 13, color: '#374151' }}>Copyright Information</span>
-                          </label>
-                          {footerIncludeCopyright && (
-                            <input value={copyrightText} onChange={e => setCopyrightText(e.target.value)}
-                              placeholder="e.g. © 2025 Acme Corp. All rights reserved."
-                              style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', marginLeft: 22 }}
-                              onFocus={e => { e.currentTarget.style.borderColor = P; }}
-                              onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />
-                          )}
-                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                            <input type="checkbox" checked={footerIncludeWatermark} onChange={e => setFooterIncludeWatermark(e.target.checked)}
-                              style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
-                            <span style={{ fontSize: 13, color: '#374151' }}>Watermark</span>
-                          </label>
-                          {footerIncludeWatermark && (
-                            <input value={watermarkText} onChange={e => setWatermarkText(e.target.value)}
-                              placeholder="e.g. CONFIDENTIAL"
-                              style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', marginLeft: 22 }}
-                              onFocus={e => { e.currentTarget.style.borderColor = P; }}
-                              onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right: live preview */}
-                  <div style={{ position: 'sticky', top: 0 }}>
-                    <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Live Preview</p>
-                    <div style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden', background: '#fff' }}>
-                      {/* Header preview */}
-                      {headerEnabled ? (
-                        <div style={{ background: '#1F2937', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, minHeight: 36 }}>
-                          {headerIncludeLogo && (
-                            customLogoPreview
-                              ? <img src={customLogoPreview} alt="logo" style={{ height: 18, objectFit: 'contain', maxWidth: 50 }} />
-                              : <div style={{ width: 28, height: 14, borderRadius: 2, background: 'rgba(255,255,255,0.3)' }} />
-                          )}
-                          {headerIncludeCourseName && (
-                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.9)', fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {title || 'Course Name'}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <div style={{ background: '#F3F4F6', padding: '8px 12px', display: 'flex', alignItems: 'center' }}>
-                          <span style={{ fontSize: 11, color: '#9CA3AF' }}>Header disabled</span>
-                        </div>
-                      )}
-                      {/* Slide area */}
-                      <div style={{ padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 5, minHeight: 80 }}>
-                        <div style={{ height: 8, borderRadius: 3, background: '#E5E7EB', width: '55%' }} />
-                        <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '80%' }} />
-                        <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '65%' }} />
-                        <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '72%' }} />
-                      </div>
-                      {/* Footer preview */}
-                      {footerEnabled ? (
-                        <div style={{ background: '#F9FAFB', borderTop: '1px solid #E5E7EB', padding: '6px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 28, flexWrap: 'wrap', gap: 4 }}>
-                          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                            {footerIncludeOrgName && <span style={{ fontSize: 10, color: '#374151', fontWeight: 600 }}>Org Name</span>}
-                            {footerIncludeCourseName && <span style={{ fontSize: 10, color: '#6B7280' }}>{title || 'Course Name'}</span>}
-                            {footerIncludeCopyright && copyrightText && <span style={{ fontSize: 10, color: '#6B7280' }}>{copyrightText}</span>}
-                            {footerIncludeWatermark && watermarkText && <span style={{ fontSize: 10, color: '#DC2626', opacity: 0.4, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{watermarkText}</span>}
+                      {/* ── Preset grid (hidden when AI on) ── */}
+                      {!aiTheme && (
+                        <div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 8px' }}>Preset Themes</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
+                            {THEME_OPTIONS.map(theme => {
+                              const isSel = selectedTheme === theme.id;
+                              return (
+                                <button
+                                  key={theme.id} type="button"
+                                  onClick={() => {
+                                    setSelectedTheme(theme.id);
+                                    setCustomPrimary(theme.primary);
+                                    setCustomSecondary(theme.accent);
+                                    const warmBgs = ['#FFF9E8', '#FFFBF2'];
+                                    setCustomBgStyle(warmBgs.includes(theme.background) ? 'warm' : 'light');
+                                  }}
+                                  style={{ position: 'relative', borderRadius: 9, border: `2px solid ${isSel ? theme.primary : '#E5E7EB'}`, background: '#fff', padding: 7, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}
+                                  onMouseEnter={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; }}
+                                  onMouseLeave={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
+                                >
+                                  <span style={{ width: '100%', height: 32, borderRadius: 6, background: theme.background, border: '1px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, flexShrink: 0 }}>
+                                    <span style={{ width: 9, height: 9, borderRadius: '50%', background: theme.primary, border: '1.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }} />
+                                    <span style={{ width: 9, height: 9, borderRadius: '50%', background: theme.accent,  border: '1.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }} />
+                                  </span>
+                                  <span style={{ fontSize: 10, fontWeight: isSel ? 700 : 400, color: isSel ? theme.primary : '#374151', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>{theme.name}</span>
+                                  {theme.isNew && <span style={{ fontSize: 8, fontWeight: 700, color: '#6B7280', background: '#F3F4F6', borderRadius: 3, padding: '1px 4px' }}>NEW</span>}
+                                  {isSel && <Check size={9} color={theme.primary} style={{ position: 'absolute', top: 3, right: 3 }} />}
+                                </button>
+                              );
+                            })}
                           </div>
-                          {footerIncludePageNum && <span style={{ fontSize: 10, color: '#6B7280' }}>1 / 12</span>}
-                        </div>
-                      ) : (
-                        <div style={{ background: '#F9FAFB', borderTop: '1px solid #E5E7EB', padding: '6px 12px' }}>
-                          <span style={{ fontSize: 11, color: '#9CA3AF' }}>Footer disabled</span>
                         </div>
                       )}
-                    </div>
-                    <p style={{ margin: '6px 0 0', fontSize: 12, color: '#6B7280' }}>Updates in real time as you configure</p>
-                  </div>
-                </div>
-              )}
 
-              {/* ── Blank Template ── */}
-              {templateType === 'blank' && (
-                <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                  <div style={{ width: 48, height: 48, borderRadius: 12, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                    <FileText size={22} color="#6B7280" />
-                  </div>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: '#111827', margin: '0 0 6px' }}>Start from Scratch</p>
-                  <p style={{ fontSize: 13, color: '#6B7280', margin: '0 auto', maxWidth: 380, lineHeight: 1.6 }}>
-                    No predefined structure. You'll begin with an empty course and build the sections and topics using AI-assisted generation or manually.
-                  </p>
-                  <div style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, background: PL, border: `1px solid #93C5FD` }}>
-                    <Check size={14} color={P} />
-                    <span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Blank template selected</span>
-                  </div>
-                </div>
-              )}
+                      {/* ── Customise ── */}
+                      {!aiTheme && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>Customise</p>
 
-                      </>)}
+                          {([
+                            { label: 'Primary color',   value: customPrimary,   set: setCustomPrimary },
+                            { label: 'Secondary color', value: customSecondary, set: setCustomSecondary },
+                          ] as const).map(row => (
+                            <div key={row.label} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8 }}>
+                              <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>{row.label}</span>
+                              <span style={{ fontSize: 12, color: '#6B7280', marginRight: 8, fontFamily: 'monospace' }}>{row.value.toUpperCase()}</span>
+                              <label style={{ width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', position: 'relative', display: 'block', flexShrink: 0 }}>
+                                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: row.value, border: '2px solid rgba(0,0,0,0.12)' }} />
+                                <input type="color" value={row.value} onChange={e => row.set(e.target.value)} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none', padding: 0 }} />
+                              </label>
+                            </div>
+                          ))}
+
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
+                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font</span>
+                            <div style={{ position: 'relative' }}>
+                              <select value={customFont} onChange={e => setCustomFont(e.target.value)}
+                                style={{ border: '1px solid #E5E7EB', borderRadius: 7, padding: '5px 28px 5px 10px', fontSize: 13, color: '#111827', background: '#fff', appearance: 'none', cursor: 'pointer', outline: 'none' }}>
+                                {THEME_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
+                              </select>
+                              <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
+                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Background</span>
+                            <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
+                              {(['light', 'warm', 'dark'] as const).map(opt => (
+                                <button key={opt} type="button" onClick={() => setCustomBgStyle(opt)}
+                                  style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customBgStyle === opt ? 600 : 400, background: customBgStyle === opt ? '#1E293B' : 'transparent', color: customBgStyle === opt ? '#fff' : '#6B7280', transition: 'all 0.13s', textTransform: 'capitalize' }}>
+                                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
+                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Button Style</span>
+                            <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
+                              {(['rounded', 'pill', 'square'] as const).map(opt => (
+                                <button key={opt} type="button" onClick={() => setCustomButtonStyle(opt)}
+                                  style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customButtonStyle === opt ? 600 : 400, background: customButtonStyle === opt ? '#1E293B' : 'transparent', color: customButtonStyle === opt ? '#fff' : '#6B7280', transition: 'all 0.13s', textTransform: 'capitalize' }}>
+                                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8 }}>
+                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font Color</span>
+                            <span style={{ fontSize: 11, color: '#6B7280', background: '#F3F4F6', borderRadius: 4, padding: '2px 7px', marginRight: 8 }}>Auto</span>
+                            <div style={{ width: 24, height: 24, borderRadius: '50%', background: themeFontColor, border: '2px solid rgba(0,0,0,0.12)', flexShrink: 0 }} />
+                          </div>
+                        </div>
+                      )}
+
                     </div>
                   </motion.div>
                 )}
@@ -1065,157 +1217,6 @@ export function AICreateCoursePage() {
                 </div>
 
               </div>
-            </div>
-
-            {/* Card: Theme & Branding — accordion */}
-            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, overflow: 'hidden' }}>
-
-              {/* ── Header ── */}
-              <button
-                type="button"
-                onClick={() => setThemeOpen(v => !v)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'none', border: 'none', cursor: 'pointer', transition: 'background 0.12s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Palette size={14} style={{ color: '#6B7280' }} />
-                  </div>
-                  <div style={{ textAlign: 'left' }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Theme &amp; Branding</p>
-                    <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>
-                      {aiTheme ? 'AI will choose theme' : (THEME_OPTIONS.find(t => t.id === selectedTheme)?.name ?? 'Gold')}
-                    </p>
-                  </div>
-                </div>
-                <ChevronDown size={15} style={{ color: '#6B7280', transform: themeOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
-              </button>
-
-              <AnimatePresence initial={false}>
-                {themeOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
-                    style={{ overflow: 'hidden' }}
-                  >
-                    <div style={{ borderTop: '1px solid #F3F4F6', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-                      {/* ── AI toggle ── */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 10, border: `1px solid ${aiTheme ? '#93C5FD' : '#E5E7EB'}`, background: aiTheme ? PL : '#F9FAFB', transition: 'all 0.15s' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Sparkles size={15} style={{ color: aiTheme ? P : '#6B7280', flexShrink: 0 }} />
-                          <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>Let AI choose the best theme</span>
-                        </div>
-                        <ToggleSwitch enabled={aiTheme} onChange={setAiTheme} />
-                      </div>
-
-                      {/* ── Preset grid (hidden when AI on) ── */}
-                      {!aiTheme && (
-                        <div>
-                          <p style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 8px' }}>Preset Themes</p>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
-                            {THEME_OPTIONS.map(theme => {
-                              const isSel = selectedTheme === theme.id;
-                              return (
-                                <button
-                                  key={theme.id} type="button"
-                                  onClick={() => {
-                                    setSelectedTheme(theme.id);
-                                    setCustomPrimary(theme.primary);
-                                    setCustomSecondary(theme.accent);
-                                    const warmBgs = ['#FFF9E8', '#FFFBF2'];
-                                    setCustomBgStyle(warmBgs.includes(theme.background) ? 'warm' : 'light');
-                                  }}
-                                  style={{ position: 'relative', borderRadius: 9, border: `2px solid ${isSel ? theme.primary : '#E5E7EB'}`, background: '#fff', padding: 7, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}
-                                  onMouseEnter={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; }}
-                                  onMouseLeave={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
-                                >
-                                  <span style={{ width: '100%', height: 32, borderRadius: 6, background: theme.background, border: '1px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, flexShrink: 0 }}>
-                                    <span style={{ width: 9, height: 9, borderRadius: '50%', background: theme.primary, border: '1.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }} />
-                                    <span style={{ width: 9, height: 9, borderRadius: '50%', background: theme.accent,  border: '1.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }} />
-                                  </span>
-                                  <span style={{ fontSize: 10, fontWeight: isSel ? 700 : 400, color: isSel ? theme.primary : '#374151', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>{theme.name}</span>
-                                  {theme.isNew && <span style={{ fontSize: 8, fontWeight: 700, color: '#6B7280', background: '#F3F4F6', borderRadius: 3, padding: '1px 4px' }}>NEW</span>}
-                                  {isSel && <Check size={9} color={theme.primary} style={{ position: 'absolute', top: 3, right: 3 }} />}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* ── Customise ── */}
-                      {!aiTheme && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                          <p style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>Customise</p>
-
-                          {/* Color pickers */}
-                          {([
-                            { label: 'Primary color',   value: customPrimary,   set: setCustomPrimary },
-                            { label: 'Secondary color', value: customSecondary, set: setCustomSecondary },
-                          ] as const).map(row => (
-                            <div key={row.label} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8 }}>
-                              <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>{row.label}</span>
-                              <span style={{ fontSize: 12, color: '#6B7280', marginRight: 8, fontFamily: 'monospace' }}>{row.value.toUpperCase()}</span>
-                              <label style={{ width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', position: 'relative', display: 'block', flexShrink: 0 }}>
-                                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: row.value, border: '2px solid rgba(0,0,0,0.12)' }} />
-                                <input type="color" value={row.value} onChange={e => row.set(e.target.value)} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none', padding: 0 }} />
-                              </label>
-                            </div>
-                          ))}
-
-                          {/* Font */}
-                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
-                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font</span>
-                            <div style={{ position: 'relative' }}>
-                              <select value={customFont} onChange={e => setCustomFont(e.target.value)}
-                                style={{ border: '1px solid #E5E7EB', borderRadius: 7, padding: '5px 28px 5px 10px', fontSize: 13, color: '#111827', background: '#fff', appearance: 'none', cursor: 'pointer', outline: 'none' }}>
-                                {THEME_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
-                              </select>
-                              <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
-                            </div>
-                          </div>
-
-                          {/* Background */}
-                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
-                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Background</span>
-                            <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
-                              {(['light', 'warm', 'dark'] as const).map(opt => (
-                                <button key={opt} type="button" onClick={() => setCustomBgStyle(opt)}
-                                  style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customBgStyle === opt ? 600 : 400, background: customBgStyle === opt ? '#1E293B' : 'transparent', color: customBgStyle === opt ? '#fff' : '#6B7280', transition: 'all 0.13s', textTransform: 'capitalize' }}>
-                                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Button Style */}
-                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
-                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Button Style</span>
-                            <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
-                              {(['rounded', 'pill', 'square'] as const).map(opt => (
-                                <button key={opt} type="button" onClick={() => setCustomButtonStyle(opt)}
-                                  style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customButtonStyle === opt ? 600 : 400, background: customButtonStyle === opt ? '#1E293B' : 'transparent', color: customButtonStyle === opt ? '#fff' : '#6B7280', transition: 'all 0.13s', textTransform: 'capitalize' }}>
-                                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Font Color — auto */}
-                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8 }}>
-                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font Color</span>
-                            <span style={{ fontSize: 11, color: '#6B7280', background: '#F3F4F6', borderRadius: 4, padding: '2px 7px', marginRight: 8 }}>Auto</span>
-                            <div style={{ width: 24, height: 24, borderRadius: '50%', background: themeFontColor, border: '2px solid rgba(0,0,0,0.12)', flexShrink: 0 }} />
-                          </div>
-                        </div>
-                      )}
-
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
 
             {/* Card: Global Settings */}
