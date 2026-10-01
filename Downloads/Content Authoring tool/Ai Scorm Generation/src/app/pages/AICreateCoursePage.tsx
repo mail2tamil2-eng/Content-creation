@@ -147,7 +147,7 @@ export function AICreateCoursePage() {
   const [knowledgeCheckQuestions, setKnowledgeCheckQuestions] = useState(5);
 
   // Theme
-  const [aiTheme, setAiTheme] = useState(true);
+  const [aiTheme, setAiTheme] = useState(false);
   const [designId, setDesignId] = useState('corporate');
   const [logoPreview, setLogoPreview] = useState('');
 
