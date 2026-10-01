@@ -650,7 +650,7 @@ export function AICreateCoursePage() {
                       const bg = dk ? '#111827' : preset.background === 'warm' ? '#FEF9EE' : '#FFFFFF';
                       const isSelected = selectedPredefined === d.id;
                       return (
-                        <button key={d.id} type="button" onClick={() => setSelectedPredefined(d.id)}
+                        <button key={d.id} type="button" onClick={() => { setSelectedPredefined(d.id); setDesignId(d.id); }}
                           style={{ position: 'relative', borderRadius: 10, border: `2px solid ${isSelected ? P : '#E5E7EB'}`, background: isSelected ? PL : '#fff', padding: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}>
                           <span style={{ width: '100%', height: 44, borderRadius: 6, border: '1px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '0 8px', background: bg, flexShrink: 0 }}>
                             <span style={{ height: 6, width: 22, borderRadius: 3, background: preset.primaryColor }} />
