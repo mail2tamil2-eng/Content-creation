@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.vercel/
+.env*
+artifacts/
+
+.vercel
+
+test-results/
+playwright-report/
+design-review/.server.json
+design-review/server.log

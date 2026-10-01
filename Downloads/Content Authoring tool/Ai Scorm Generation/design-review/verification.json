@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "defaultScope": [
+    "/dashboard"
+  ],
+  "identitySpoofRejected": true,
+  "occupiedPortRejected": true,
+  "occurrences": 16,
+  "annotated": 16,
+  "groupedCards": 4,
+  "distinctOccurrenceImages": true,
+  "cropDimensionsVerified": true,
+  "modal": [
+    "open",
+    "Escape",
+    "close button",
+    "backdrop",
+    "thumbnail"
+  ],
+  "thumbnailAspectRatiosVerified": true,
+  "browserErrors": []
+}

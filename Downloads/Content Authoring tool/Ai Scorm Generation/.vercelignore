@@ -1,0 +1,8 @@
+node_modules
+artifacts
+src/**/*.backup
+src/**/*.docx
+
+tests
+test-results
+playwright-report

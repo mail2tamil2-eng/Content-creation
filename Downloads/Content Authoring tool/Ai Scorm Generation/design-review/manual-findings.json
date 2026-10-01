@@ -1,0 +1,74 @@
+[
+  {
+    "page": "/dashboard",
+    "selector": "main .grid > div:nth-child(1) > div",
+    "category": "component-sizing",
+    "severity": "medium",
+    "description": "Repeated metric cards have inconsistent heights",
+    "expected": "Align the three metric card bottoms using a shared height of at least 134px",
+    "actual": "118px versus 134px for the license metric; 16px shorter",
+    "file": "src/app/components/StatsCard.tsx",
+    "line": 17,
+    "key": "metric-card-height"
+  },
+  {
+    "page": "/dashboard",
+    "selector": "main .grid > div:nth-child(2) > div",
+    "category": "component-sizing",
+    "severity": "medium",
+    "description": "Repeated metric cards have inconsistent heights",
+    "expected": "Align the three metric card bottoms using a shared height of at least 134px",
+    "actual": "118px versus 134px for the license metric; 16px shorter",
+    "file": "src/app/components/StatsCard.tsx",
+    "line": 17,
+    "key": "metric-card-height"
+  },
+  {
+    "page": "/dashboard",
+    "selector": "tbody tr:nth-child(1) td:nth-child(4) > div > div",
+    "category": "component-sizing",
+    "severity": "medium",
+    "description": "Hand-rolled author avatars shrink into ovals",
+    "expected": "A circular 32 x 32px avatar with the shared Avatar shrink-0 behavior",
+    "actual": "26.34375 x 32px; flex shrinking removes 5.65625px of width",
+    "file": "src/app/components/DashboardCourseTable.tsx",
+    "line": 107,
+    "key": "author-avatar-shrinking"
+  },
+  {
+    "page": "/dashboard",
+    "selector": "tbody tr:nth-child(2) td:nth-child(4) > div > div",
+    "category": "component-sizing",
+    "severity": "medium",
+    "description": "Hand-rolled author avatars shrink into ovals",
+    "expected": "A circular 32 x 32px avatar with the shared Avatar shrink-0 behavior",
+    "actual": "26.34375 x 32px; flex shrinking removes 5.65625px of width",
+    "file": "src/app/components/DashboardCourseTable.tsx",
+    "line": 107,
+    "key": "author-avatar-shrinking"
+  },
+  {
+    "page": "/dashboard",
+    "selector": "tbody tr:nth-child(3) td:nth-child(4) > div > div",
+    "category": "component-sizing",
+    "severity": "medium",
+    "description": "Hand-rolled author avatars shrink into ovals",
+    "expected": "A circular 32 x 32px avatar with the shared Avatar shrink-0 behavior",
+    "actual": "26.34375 x 32px; flex shrinking removes 5.65625px of width",
+    "file": "src/app/components/DashboardCourseTable.tsx",
+    "line": 107,
+    "key": "author-avatar-shrinking"
+  },
+  {
+    "page": "/dashboard",
+    "selector": "tbody tr:nth-child(4) td:nth-child(4) > div > div",
+    "category": "component-sizing",
+    "severity": "medium",
+    "description": "Hand-rolled author avatars shrink into ovals",
+    "expected": "A circular 32 x 32px avatar with the shared Avatar shrink-0 behavior",
+    "actual": "26.34375 x 32px; flex shrinking removes 5.65625px of width",
+    "file": "src/app/components/DashboardCourseTable.tsx",
+    "line": 107,
+    "key": "author-avatar-shrinking"
+  }
+]

@@ -1,0 +1,13 @@
+﻿import { chromium } from './node_modules/playwright/index.mjs';
+const b = await chromium.launch({ headless: true, executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' });
+const page = await b.newPage();
+await page.setViewportSize({ width: 1440, height: 900 });
+await page.goto('http://127.0.0.1:5191/ai-create-course', { waitUntil: 'networkidle' });
+await page.waitForTimeout(1500);
+await page.locator('input[placeholder*="Machine"]').fill('Leadership for New Managers');
+await page.waitForTimeout(400);
+await page.locator('button').filter({ hasText: 'Generate Course' }).click();
+await page.waitForTimeout(4000);
+await page.screenshot({ path: 'C:/Users/M1582/AppData/Local/Temp/s2_final.png' });
+await b.close();
+console.log('Done');

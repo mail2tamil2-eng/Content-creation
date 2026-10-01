@@ -1,0 +1,522 @@
+[
+  {
+    "id": "DR-001",
+    "page": "/dashboard",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "category": "contrast",
+    "severity": "medium",
+    "description": "Text contrast below the review threshold",
+    "expected": "4.5:1 or better",
+    "actual": "2.60:1",
+    "file": "src/app/components/Sidebar.tsx",
+    "line": 157,
+    "screenshot": "screenshots/dashboard-DR-001-1.png",
+    "status": "open",
+    "key": "/dashboard:contrast:oklch(0.707 0.022 261.325):255,255,255,255:4.5",
+    "occurrences": [
+      {
+        "id": "DR-001-1",
+        "selector": "[data-review-id=\"22\"]",
+        "file": "src/app/components/Sidebar.tsx",
+        "line": 157,
+        "screenshot": "screenshots/dashboard-DR-001-1.png",
+        "label": "Powered By NOVACTECH",
+        "actual": "2.60:1",
+        "annotation": {
+          "x": 16,
+          "y": 968,
+          "width": 223,
+          "height": 16
+        },
+        "crop": {
+          "x": 0,
+          "y": 950,
+          "width": 257,
+          "height": 52
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "194e7c0abab4532feb7ca38070c215a962f80d2ad550e08de8c705d1cd77ae9a"
+      },
+      {
+        "id": "DR-001-2",
+        "selector": "[data-review-id=\"37\"]",
+        "file": "src/app/components/Header.tsx",
+        "line": 41,
+        "screenshot": "screenshots/dashboard-DR-001-2.png",
+        "label": "Course Creator",
+        "actual": "2.60:1",
+        "annotation": {
+          "x": 1328.65625,
+          "y": 43.5,
+          "width": 79.34375,
+          "height": 16
+        },
+        "crop": {
+          "x": 1310,
+          "y": 25,
+          "width": 116,
+          "height": 53
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "da02be1fa242d6dd31cd0c9f2d08bfa316d2b8a69232f275d2d39fff78f54aa5"
+      },
+      {
+        "id": "DR-001-3",
+        "selector": "[data-review-id=\"74\"]",
+        "file": "src/app/components/StatsCard.tsx",
+        "line": 29,
+        "screenshot": "screenshots/dashboard-DR-001-3.png",
+        "label": "47 Available license",
+        "actual": "2.60:1",
+        "annotation": {
+          "x": 885,
+          "y": 377,
+          "width": 164,
+          "height": 16
+        },
+        "crop": {
+          "x": 867,
+          "y": 359,
+          "width": 200,
+          "height": 52
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "f4189d43eb2dd4a7ddfbec2332ce3234a0be3bb80274105a8e5e99ece0157bcd"
+      },
+      {
+        "id": "DR-001-4",
+        "selector": "[data-review-id=\"85\"]",
+        "file": "src/app/components/RecentCourse.tsx",
+        "line": 22,
+        "screenshot": "screenshots/dashboard-DR-001-4.png",
+        "label": "Edited 5 minutes ago",
+        "actual": "2.60:1",
+        "annotation": {
+          "x": 1251,
+          "y": 381,
+          "width": 132,
+          "height": 16
+        },
+        "crop": {
+          "x": 1233,
+          "y": 363,
+          "width": 168,
+          "height": 52
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "e8be20e4b8e2d8a55e2a9736ecbfd658f53393331ba5893e40da6185e12bff51"
+      }
+    ]
+  },
+  {
+    "id": "DR-002",
+    "page": "/dashboard",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "category": "text-clipping",
+    "severity": "medium",
+    "description": "Text is clipped or ellipsized",
+    "expected": "Readable full label or accessible full-text disclosure",
+    "actual": "331px content in 132px",
+    "file": "src/app/components/RecentCourse.tsx",
+    "line": 20,
+    "screenshot": "screenshots/dashboard-DR-002-1.png",
+    "status": "open",
+    "key": "/dashboard:clip:font-semibold text-gray-800 mb-1 truncate",
+    "occurrences": [
+      {
+        "id": "DR-002-1",
+        "selector": "[data-review-id=\"84\"]",
+        "file": "src/app/components/RecentCourse.tsx",
+        "line": 20,
+        "screenshot": "screenshots/dashboard-DR-002-1.png",
+        "label": "Information Security Management System 2...",
+        "actual": "331px content in 132px",
+        "annotation": {
+          "x": 1251,
+          "y": 353,
+          "width": 132,
+          "height": 24
+        },
+        "crop": {
+          "x": 1233,
+          "y": 335,
+          "width": 168,
+          "height": 60
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "589ae745228c795650283b82fcc1eb758ac48f7d4dd92f112e8797ab6a87ae8d"
+      }
+    ]
+  },
+  {
+    "id": "DR-003",
+    "page": "/dashboard",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "category": "contrast",
+    "severity": "medium",
+    "description": "Text contrast below the review threshold",
+    "expected": "4.5:1 or better",
+    "actual": "2.89:1",
+    "file": "src/app/components/RecentCourse.tsx",
+    "line": 30,
+    "screenshot": "screenshots/dashboard-DR-003-1.png",
+    "status": "open",
+    "key": "/dashboard:contrast:rgb(255, 255, 255):255,105,0,255:4.5",
+    "occurrences": [
+      {
+        "id": "DR-003-1",
+        "selector": "[data-review-id=\"88\"]",
+        "file": "src/app/components/RecentCourse.tsx",
+        "line": 30,
+        "screenshot": "screenshots/dashboard-DR-003-1.png",
+        "label": "Resume Editing",
+        "actual": "2.89:1",
+        "annotation": {
+          "x": 1287.875,
+          "y": 417,
+          "width": 79.125,
+          "height": 40
+        },
+        "crop": {
+          "x": 1269,
+          "y": 399,
+          "width": 116,
+          "height": 76
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "c91a5012185be4668eeb6e3341646ebc4acc09026743bfdc36da07bf0acc294b"
+      }
+    ]
+  },
+  {
+    "id": "DR-004",
+    "page": "/dashboard",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "category": "component-override",
+    "severity": "low",
+    "description": "Shared component palette is overridden with raw palette utilities",
+    "expected": "Documented semantic component variant",
+    "actual": "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-transparent [a&]:hover:bg-primary/90 bg-green-100 text-green-800 hover:bg-green-100",
+    "file": "src/app/components/DashboardCourseTable.tsx",
+    "line": 96,
+    "screenshot": "screenshots/dashboard-DR-004-1.png",
+    "status": "open",
+    "key": "/dashboard:override:badge",
+    "occurrences": [
+      {
+        "id": "DR-004-1",
+        "selector": "[data-review-id=\"116\"]",
+        "file": "src/app/components/DashboardCourseTable.tsx",
+        "line": 96,
+        "screenshot": "screenshots/dashboard-DR-004-1.png",
+        "label": "Published",
+        "actual": "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-transparent [a&]:hover:bg-primary/90 bg-green-100 text-green-800 hover:bg-green-100",
+        "annotation": {
+          "x": 600.71875,
+          "y": 719,
+          "width": 71.28125,
+          "height": 22
+        },
+        "crop": {
+          "x": 582,
+          "y": 701,
+          "width": 108,
+          "height": 58
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "fb6dbd0fcd97358fd59a1e3866614367af7f1dbc81f61071de605629305282a1"
+      },
+      {
+        "id": "DR-004-2",
+        "selector": "[data-review-id=\"139\"]",
+        "file": "src/app/components/DashboardCourseTable.tsx",
+        "line": 96,
+        "screenshot": "screenshots/dashboard-DR-004-2.png",
+        "label": "Published",
+        "actual": "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-transparent [a&]:hover:bg-primary/90 bg-green-100 text-green-800 hover:bg-green-100",
+        "annotation": {
+          "x": 600.71875,
+          "y": 792,
+          "width": 71.28125,
+          "height": 22
+        },
+        "crop": {
+          "x": 582,
+          "y": 774,
+          "width": 108,
+          "height": 58
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "68fa3bb8a31ad3fb341e57209759bf4f3db195487c046a46069ce6ab9014902b"
+      },
+      {
+        "id": "DR-004-3",
+        "selector": "[data-review-id=\"162\"]",
+        "file": "src/app/components/DashboardCourseTable.tsx",
+        "line": 100,
+        "screenshot": "screenshots/dashboard-DR-004-3.png",
+        "label": "Draft",
+        "actual": "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-transparent [a&]:hover:bg-primary/90 bg-amber-100 text-amber-800 hover:bg-amber-100",
+        "annotation": {
+          "x": 600.71875,
+          "y": 869,
+          "width": 46.015625,
+          "height": 22
+        },
+        "crop": {
+          "x": 582,
+          "y": 851,
+          "width": 83,
+          "height": 58
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "ba505a0d8896218282f48fb3e624892dd7ac2eca3f807c0ed684e2b4ac30cde9"
+      },
+      {
+        "id": "DR-004-4",
+        "selector": "[data-review-id=\"187\"]",
+        "file": "src/app/components/DashboardCourseTable.tsx",
+        "line": 96,
+        "screenshot": "screenshots/dashboard-DR-004-4.png",
+        "label": "Published",
+        "actual": "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden border-transparent [a&]:hover:bg-primary/90 bg-green-100 text-green-800 hover:bg-green-100",
+        "annotation": {
+          "x": 600.71875,
+          "y": 950,
+          "width": 71.28125,
+          "height": 22
+        },
+        "crop": {
+          "x": 582,
+          "y": 932,
+          "width": 108,
+          "height": 58
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "a46b2687dfec3ccaa5154bf04faabc1991f4b0d67acaa6714e0189a4dcd522b9"
+      }
+    ]
+  },
+  {
+    "id": "DR-005",
+    "page": "/dashboard",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "category": "component-sizing",
+    "severity": "medium",
+    "description": "Repeated metric cards have inconsistent heights",
+    "expected": "Align the three metric card bottoms using a shared height of at least 134px",
+    "actual": "118px versus 134px for the license metric; 16px shorter",
+    "file": "src/app/components/StatsCard.tsx",
+    "line": 17,
+    "screenshot": "screenshots/dashboard-DR-005-1.png",
+    "status": "open",
+    "key": "/dashboard:metric-card-height",
+    "occurrences": [
+      {
+        "id": "DR-005-1",
+        "selector": "main .grid > div:nth-child(1) > div",
+        "file": "src/app/components/StatsCard.tsx",
+        "line": 17,
+        "screenshot": "screenshots/dashboard-DR-005-1.png",
+        "label": "Repeated metric cards have inconsistent heights",
+        "actual": "118px versus 134px for the license metric; 16px shorter",
+        "annotation": {
+          "x": 288,
+          "y": 284,
+          "width": 262,
+          "height": 118
+        },
+        "crop": {
+          "x": 270,
+          "y": 266,
+          "width": 298,
+          "height": 154
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "9fa3ba44cc20a2ace73086d8bb8fd53b18437296c31e106e51a5a48c97d5ee3a"
+      },
+      {
+        "id": "DR-005-2",
+        "selector": "main .grid > div:nth-child(2) > div",
+        "file": "src/app/components/StatsCard.tsx",
+        "line": 17,
+        "screenshot": "screenshots/dashboard-DR-005-2.png",
+        "label": "Repeated metric cards have inconsistent heights",
+        "actual": "118px versus 134px for the license metric; 16px shorter",
+        "annotation": {
+          "x": 574,
+          "y": 284,
+          "width": 262,
+          "height": 118
+        },
+        "crop": {
+          "x": 556,
+          "y": 266,
+          "width": 298,
+          "height": 154
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "0bd99429c22c0f7411473625881639d7c75ac6f8f3e1da6d21f5ee112079d421"
+      }
+    ]
+  },
+  {
+    "id": "DR-006",
+    "page": "/dashboard",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "category": "component-sizing",
+    "severity": "medium",
+    "description": "Hand-rolled author avatars shrink into ovals",
+    "expected": "A circular 32 x 32px avatar with the shared Avatar shrink-0 behavior",
+    "actual": "26.34375 x 32px; flex shrinking removes 5.65625px of width",
+    "file": "src/app/components/DashboardCourseTable.tsx",
+    "line": 107,
+    "screenshot": "screenshots/dashboard-DR-006-1.png",
+    "status": "open",
+    "key": "/dashboard:author-avatar-shrinking",
+    "occurrences": [
+      {
+        "id": "DR-006-1",
+        "selector": "tbody tr:nth-child(1) td:nth-child(4) > div > div",
+        "file": "src/app/components/DashboardCourseTable.tsx",
+        "line": 107,
+        "screenshot": "screenshots/dashboard-DR-006-1.png",
+        "label": "Hand-rolled author avatars shrink into ovals",
+        "actual": "26.34375 x 32px; flex shrinking removes 5.65625px of width",
+        "annotation": {
+          "x": 720,
+          "y": 713,
+          "width": 26.34375,
+          "height": 32
+        },
+        "crop": {
+          "x": 702,
+          "y": 695,
+          "width": 63,
+          "height": 68
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "415a763725f8cda1057711238836f4b1b55b3cf9afd0a018a0b1e7154ec2b9d8"
+      },
+      {
+        "id": "DR-006-2",
+        "selector": "tbody tr:nth-child(2) td:nth-child(4) > div > div",
+        "file": "src/app/components/DashboardCourseTable.tsx",
+        "line": 107,
+        "screenshot": "screenshots/dashboard-DR-006-2.png",
+        "label": "Hand-rolled author avatars shrink into ovals",
+        "actual": "26.34375 x 32px; flex shrinking removes 5.65625px of width",
+        "annotation": {
+          "x": 720,
+          "y": 786,
+          "width": 26.34375,
+          "height": 32
+        },
+        "crop": {
+          "x": 702,
+          "y": 768,
+          "width": 63,
+          "height": 68
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "0fe8b39fdda22b9277dd03a87613c521e658ff28c6c84fa93694d70a822a27d3"
+      },
+      {
+        "id": "DR-006-3",
+        "selector": "tbody tr:nth-child(3) td:nth-child(4) > div > div",
+        "file": "src/app/components/DashboardCourseTable.tsx",
+        "line": 107,
+        "screenshot": "screenshots/dashboard-DR-006-3.png",
+        "label": "Hand-rolled author avatars shrink into ovals",
+        "actual": "26.34375 x 32px; flex shrinking removes 5.65625px of width",
+        "annotation": {
+          "x": 720,
+          "y": 863,
+          "width": 26.34375,
+          "height": 32
+        },
+        "crop": {
+          "x": 702,
+          "y": 845,
+          "width": 63,
+          "height": 68
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "178d8c13ec050f073935d441b6eeb89ec898466e93b6aa1e4e87da343907a380"
+      },
+      {
+        "id": "DR-006-4",
+        "selector": "tbody tr:nth-child(4) td:nth-child(4) > div > div",
+        "file": "src/app/components/DashboardCourseTable.tsx",
+        "line": 107,
+        "screenshot": "screenshots/dashboard-DR-006-4.png",
+        "label": "Hand-rolled author avatars shrink into ovals",
+        "actual": "26.34375 x 32px; flex shrinking removes 5.65625px of width",
+        "annotation": {
+          "x": 720,
+          "y": 944,
+          "width": 26.34375,
+          "height": 32
+        },
+        "crop": {
+          "x": 702,
+          "y": 926,
+          "width": 63,
+          "height": 68
+        },
+        "evidence": "annotated-crop",
+        "annotationCount": 1,
+        "fallbackReason": null,
+        "sha256": "48631acf8c85bd96fa311a48bf5039460cfa39f399d896e4165ec8da18170243"
+      }
+    ]
+  }
+]
