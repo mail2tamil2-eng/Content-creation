@@ -66,7 +66,8 @@ const COURSE_DESIGNS = [
   { id: 'elegant',   name: 'Elegant',    template: 'health-harmony',   theme: 'elegant-dark',    description: 'Rich and refined' },
 ];
 
-const LANGUAGES = ['English', 'Spanish', 'French', 'German', 'Hindi', 'Arabic', 'Portuguese'];
+const LANGUAGES   = ['English', 'Spanish', 'French', 'German', 'Hindi', 'Arabic', 'Portuguese'];
+const THEME_FONTS = ['Inter', 'Roboto', 'Open Sans', 'Montserrat', 'Lato', 'Playfair Display', 'Merriweather'];
 
 interface SlideTypeConfig {
   id: string; label: string; description: string;
@@ -148,6 +149,7 @@ export function AICreateCoursePage() {
 
   // Theme
   const [aiTheme, setAiTheme] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(true);
   const [designId, setDesignId] = useState('corporate');
   const [logoPreview, setLogoPreview] = useState('');
 
@@ -156,6 +158,12 @@ export function AICreateCoursePage() {
   const [selectedPredefined, setSelectedPredefined] = useState<string | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
   const [selectedTheme, setSelectedTheme] = useState('gold');
+  // Theme customisation
+  const [customPrimary, setCustomPrimary]           = useState('#A8842E');
+  const [customSecondary, setCustomSecondary]       = useState('#D4A843');
+  const [customFont, setCustomFont]                 = useState('Inter');
+  const [customBgStyle, setCustomBgStyle]           = useState<'light' | 'warm' | 'dark'>('light');
+  const [customButtonStyle, setCustomButtonStyle]   = useState<'rounded' | 'pill' | 'square'>('rounded');
   // Custom template
   const [customLogoPreview, setCustomLogoPreview] = useState('');
   const [headerEnabled, setHeaderEnabled] = useState(false);
@@ -238,9 +246,11 @@ export function AICreateCoursePage() {
   const design = COURSE_DESIGNS.find(d => d.id === designId) || COURSE_DESIGNS[0];
   const preset = THEME_PRESETS.find(p => p.id === design.theme) || THEME_PRESETS[0];
   const isDark = preset.background === 'dark';
+  const themeBgColor   = customBgStyle === 'dark' ? '#111827' : customBgStyle === 'warm' ? '#FEF9EE' : '#FFFFFF';
+  const themeFontColor = customBgStyle === 'dark' ? '#FFFFFF' : '#172033';
   const baseSettings: PresentationSettings = aiTheme
-    ? { template: 'vivid-blue', primary: '#134780', accent: '#F48120', background: '#111C2D', font: 'Inter', buttonStyle: 'rounded', layout: 'single', logo: logoPreview || undefined }
-    : { template: design.template, primary: preset.primaryColor, accent: preset.secondaryColor, background: isDark ? '#111827' : preset.background === 'warm' ? '#FEF9EE' : '#FFFFFF', font: preset.fontFamily, buttonStyle: preset.buttonStyle, layout: 'single', logo: logoPreview || undefined };
+    ? { template: 'vivid-blue', primary: '#134780', accent: '#F48120', background: '#111C2D', foreground: '#FFFFFF', font: 'Inter', buttonStyle: 'rounded', layout: 'single', logo: logoPreview || undefined }
+    : { template: design.template, primary: customPrimary, accent: customSecondary, background: themeBgColor, foreground: themeFontColor, font: customFont, buttonStyle: customButtonStyle, layout: 'single', logo: logoPreview || undefined };
 
   const presentationSettings: PresentationSettings = themeOverride
     ? { ...baseSettings, ...themeOverride }
@@ -1007,60 +1017,155 @@ export function AICreateCoursePage() {
               </div>
             </div>
 
-            {/* Card: Theme & Branding */}
-            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
-              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>Theme &amp; Branding</h2>
+            {/* Card: Theme & Branding — accordion */}
+            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, overflow: 'hidden' }}>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-                {THEME_OPTIONS.map(theme => {
-                  const isSel = selectedTheme === theme.id;
-                  return (
-                    <button
-                      key={theme.id}
-                      type="button"
-                      onClick={() => setSelectedTheme(theme.id)}
-                      style={{
-                        position: 'relative',
-                        borderRadius: 10,
-                        border: `2px solid ${isSel ? theme.primary : '#E5E7EB'}`,
-                        background: '#fff',
-                        padding: 8,
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-                        cursor: 'pointer', outline: 'none', transition: 'all 0.13s',
-                      }}
-                      onMouseEnter={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; }}
-                      onMouseLeave={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
-                    >
-                      {/* Swatch strip */}
-                      <span style={{
-                        width: '100%', height: 36, borderRadius: 6,
-                        background: theme.background,
-                        border: '1px solid rgba(0,0,0,0.07)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                        flexShrink: 0,
-                      }}>
-                        <span style={{ width: 10, height: 10, borderRadius: '50%', background: theme.primary, border: '1.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }} />
-                        <span style={{ width: 10, height: 10, borderRadius: '50%', background: theme.accent, border: '1.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }} />
-                      </span>
+              {/* ── Header ── */}
+              <button
+                type="button"
+                onClick={() => setThemeOpen(v => !v)}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'none', border: 'none', cursor: 'pointer', transition: 'background 0.12s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Palette size={14} style={{ color: '#6B7280' }} />
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Theme &amp; Branding</p>
+                    <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>
+                      {aiTheme ? 'AI will choose theme' : (THEME_OPTIONS.find(t => t.id === selectedTheme)?.name ?? 'Gold')}
+                    </p>
+                  </div>
+                </div>
+                <ChevronDown size={15} style={{ color: '#6B7280', transform: themeOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
+              </button>
 
-                      {/* Name */}
-                      <span style={{ fontSize: 11, fontWeight: isSel ? 700 : 400, color: isSel ? theme.primary : '#374151', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>
-                        {theme.name}
-                      </span>
+              <AnimatePresence initial={false}>
+                {themeOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <div style={{ borderTop: '1px solid #F3F4F6', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-                      {/* NEW badge */}
-                      {theme.isNew && (
-                        <span style={{ fontSize: 9, fontWeight: 700, color: '#6B7280', background: '#F3F4F6', borderRadius: 3, padding: '1px 4px' }}>
-                          NEW
-                        </span>
+                      {/* ── AI toggle ── */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 10, border: `1px solid ${aiTheme ? '#93C5FD' : '#E5E7EB'}`, background: aiTheme ? PL : '#F9FAFB', transition: 'all 0.15s' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <Sparkles size={15} style={{ color: aiTheme ? P : '#6B7280', flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>Let AI choose the best theme</span>
+                        </div>
+                        <ToggleSwitch enabled={aiTheme} onChange={setAiTheme} />
+                      </div>
+
+                      {/* ── Preset grid (hidden when AI on) ── */}
+                      {!aiTheme && (
+                        <div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 8px' }}>Preset Themes</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
+                            {THEME_OPTIONS.map(theme => {
+                              const isSel = selectedTheme === theme.id;
+                              return (
+                                <button
+                                  key={theme.id} type="button"
+                                  onClick={() => {
+                                    setSelectedTheme(theme.id);
+                                    setCustomPrimary(theme.primary);
+                                    setCustomSecondary(theme.accent);
+                                    const warmBgs = ['#FFF9E8', '#FFFBF2'];
+                                    setCustomBgStyle(warmBgs.includes(theme.background) ? 'warm' : 'light');
+                                  }}
+                                  style={{ position: 'relative', borderRadius: 9, border: `2px solid ${isSel ? theme.primary : '#E5E7EB'}`, background: '#fff', padding: 7, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}
+                                  onMouseEnter={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; }}
+                                  onMouseLeave={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
+                                >
+                                  <span style={{ width: '100%', height: 32, borderRadius: 6, background: theme.background, border: '1px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, flexShrink: 0 }}>
+                                    <span style={{ width: 9, height: 9, borderRadius: '50%', background: theme.primary, border: '1.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }} />
+                                    <span style={{ width: 9, height: 9, borderRadius: '50%', background: theme.accent,  border: '1.5px solid rgba(0,0,0,0.1)', flexShrink: 0 }} />
+                                  </span>
+                                  <span style={{ fontSize: 10, fontWeight: isSel ? 700 : 400, color: isSel ? theme.primary : '#374151', textAlign: 'center', lineHeight: 1.2, wordBreak: 'break-word' }}>{theme.name}</span>
+                                  {theme.isNew && <span style={{ fontSize: 8, fontWeight: 700, color: '#6B7280', background: '#F3F4F6', borderRadius: 3, padding: '1px 4px' }}>NEW</span>}
+                                  {isSel && <Check size={9} color={theme.primary} style={{ position: 'absolute', top: 3, right: 3 }} />}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
                       )}
 
-                      {/* Checkmark */}
-                      {isSel && <Check size={10} color={theme.primary} style={{ position: 'absolute', top: 4, right: 4 }} />}
-                    </button>
-                  );
-                })}
-              </div>
+                      {/* ── Customise ── */}
+                      {!aiTheme && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>Customise</p>
+
+                          {/* Color pickers */}
+                          {([
+                            { label: 'Primary color',   value: customPrimary,   set: setCustomPrimary },
+                            { label: 'Secondary color', value: customSecondary, set: setCustomSecondary },
+                          ] as const).map(row => (
+                            <div key={row.label} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8 }}>
+                              <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>{row.label}</span>
+                              <span style={{ fontSize: 12, color: '#6B7280', marginRight: 8, fontFamily: 'monospace' }}>{row.value.toUpperCase()}</span>
+                              <label style={{ width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', position: 'relative', display: 'block', flexShrink: 0 }}>
+                                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: row.value, border: '2px solid rgba(0,0,0,0.12)' }} />
+                                <input type="color" value={row.value} onChange={e => row.set(e.target.value)} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none', padding: 0 }} />
+                              </label>
+                            </div>
+                          ))}
+
+                          {/* Font */}
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
+                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font</span>
+                            <div style={{ position: 'relative' }}>
+                              <select value={customFont} onChange={e => setCustomFont(e.target.value)}
+                                style={{ border: '1px solid #E5E7EB', borderRadius: 7, padding: '5px 28px 5px 10px', fontSize: 13, color: '#111827', background: '#fff', appearance: 'none', cursor: 'pointer', outline: 'none' }}>
+                                {THEME_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
+                              </select>
+                              <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
+                            </div>
+                          </div>
+
+                          {/* Background */}
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
+                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Background</span>
+                            <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
+                              {(['light', 'warm', 'dark'] as const).map(opt => (
+                                <button key={opt} type="button" onClick={() => setCustomBgStyle(opt)}
+                                  style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customBgStyle === opt ? 600 : 400, background: customBgStyle === opt ? '#1E293B' : 'transparent', color: customBgStyle === opt ? '#fff' : '#6B7280', transition: 'all 0.13s', textTransform: 'capitalize' }}>
+                                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Button Style */}
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
+                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Button Style</span>
+                            <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
+                              {(['rounded', 'pill', 'square'] as const).map(opt => (
+                                <button key={opt} type="button" onClick={() => setCustomButtonStyle(opt)}
+                                  style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customButtonStyle === opt ? 600 : 400, background: customButtonStyle === opt ? '#1E293B' : 'transparent', color: customButtonStyle === opt ? '#fff' : '#6B7280', transition: 'all 0.13s', textTransform: 'capitalize' }}>
+                                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Font Color — auto */}
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8 }}>
+                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font Color</span>
+                            <span style={{ fontSize: 11, color: '#6B7280', background: '#F3F4F6', borderRadius: 4, padding: '2px 7px', marginRight: 8 }}>Auto</span>
+                            <div style={{ width: 24, height: 24, borderRadius: '50%', background: themeFontColor, border: '2px solid rgba(0,0,0,0.12)', flexShrink: 0 }} />
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Card: Global Settings */}
