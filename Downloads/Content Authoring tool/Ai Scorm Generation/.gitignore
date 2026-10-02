@@ -10,3 +10,5 @@ test-results/
 playwright-report/
 design-review/.server.json
 design-review/server.log
+storybook-static/
+*storybook.log
