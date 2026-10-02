@@ -62,6 +62,6 @@ function AppShell() {
   );
 }
 
-const meta = { title: 'SaaS/Screens/App shell', component: AppShell, parameters: { layout: 'fullscreen' } } satisfies Meta<typeof AppShell>;
+const meta = { title: 'SaaS/Screens/App shell', component: AppShell, parameters: { a11y: { test: 'error' }, layout: 'fullscreen' } } satisfies Meta<typeof AppShell>;
 export default meta;
 export const Dashboard: StoryObj<typeof meta> = {};

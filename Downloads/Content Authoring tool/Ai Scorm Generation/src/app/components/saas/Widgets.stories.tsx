@@ -6,7 +6,7 @@ import { ActivityList, EmptyState, ProgressBar, ProgressWidget, StatWidget } fro
 const meta = {
   title: 'SaaS/Widgets',
   tags: ['autodocs'],
-  parameters: { layout: 'padded' },
+  parameters: { a11y: { test: 'error' }, layout: 'padded' },
 } satisfies Meta;
 
 export default meta;

@@ -2,12 +2,12 @@ import { forwardRef, useId, type InputHTMLAttributes, type ReactNode, type Selec
 import { cn } from '../ui/utils';
 
 const fieldBase =
-  'w-full rounded-lg border bg-white px-3 py-[9px] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] outline-none transition-[border-color,box-shadow] ' +
+  'w-full rounded-lg border bg-white px-3 py-[9px] text-[13px] text-[#111827] placeholder:text-[#6B7280] outline-none transition-[border-color,box-shadow] ' +
   'focus:border-[#1565F0] focus:shadow-[0_0_0_3px_rgba(21,101,240,0.12)] ' +
   'disabled:cursor-not-allowed disabled:bg-[#F9FAFB] disabled:text-[#9CA3AF]';
 
 const fieldBorder = (invalid?: boolean) =>
-  invalid ? 'border-[#DC2626] focus:border-[#DC2626] focus:shadow-[0_0_0_3px_rgba(220,38,38,0.12)]' : 'border-[#D1D5DB]';
+  invalid ? 'border-[#DC2626] focus:border-[#DC2626] focus:shadow-[0_0_0_3px_rgba(220,38,38,0.12)]' : 'border-[#6B7280]'; // ≥3:1 against white (WCAG 1.4.11)
 
 export interface FormFieldProps {
   label: string;

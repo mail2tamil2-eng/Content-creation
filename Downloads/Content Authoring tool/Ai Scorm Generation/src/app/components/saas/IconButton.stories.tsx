@@ -6,6 +6,7 @@ import { IconButton } from './IconButton';
 
 const meta = {
   title: 'SaaS/IconButton',
+  parameters: { a11y: { test: 'error' } },
   component: IconButton,
   tags: ['autodocs'],
   args: { label: 'Edit', icon: <Edit />, variant: 'table', tone: 'primary', size: 'md', onClick: fn() },

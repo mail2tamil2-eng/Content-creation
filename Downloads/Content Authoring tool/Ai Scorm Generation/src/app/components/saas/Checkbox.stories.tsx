@@ -5,6 +5,7 @@ import { Checkbox } from './Checkbox';
 
 const meta = {
   title: 'SaaS/Checkbox',
+  parameters: { a11y: { test: 'error' } },
   component: Checkbox,
   tags: ['autodocs'],
   args: { label: 'All slides viewed', checked: true, onChange: fn() },

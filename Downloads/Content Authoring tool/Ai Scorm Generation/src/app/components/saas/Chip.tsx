@@ -18,7 +18,7 @@ export interface ChipProps {
 export function Chip({ children, icon, selected, onClick, onRemove, disabled, className }: ChipProps) {
   const cls = cn(
     'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[13px] transition-colors [&_svg]:size-3',
-    selected ? 'bg-[#EBF3FF] text-[#1565F0] ring-1 ring-[#93C5FD]' : 'bg-[#F3F4F6] text-[#374151]',
+    selected ? 'bg-[#EBF3FF] text-[#1254C7] ring-1 ring-[#93C5FD]' : 'bg-[#F3F4F6] text-[#374151]',
     onClick && !disabled && (selected ? 'hover:bg-[#DBEAFE]' : 'hover:bg-[#E5E7EB]'),
     disabled && 'opacity-50 cursor-not-allowed',
     className,

@@ -40,7 +40,7 @@ const meta = {
   title: 'SaaS/Layout/AppSidebar',
   component: AppSidebar,
   tags: ['autodocs'],
-  parameters: { layout: 'fullscreen' },
+  parameters: { a11y: { test: 'error' }, layout: 'fullscreen' },
   args: {
     groups: CREATOR,
     activeId: 'dashboard',

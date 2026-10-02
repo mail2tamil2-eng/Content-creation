@@ -17,7 +17,7 @@ const meta = {
     leftIcon: { control: false },
     rightIcon: { control: false },
   },
-  parameters: {
+  parameters: { a11y: { test: 'error' },
     docs: {
       description: {
         component:

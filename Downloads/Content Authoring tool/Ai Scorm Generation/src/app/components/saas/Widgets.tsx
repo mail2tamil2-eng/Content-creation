@@ -69,7 +69,7 @@ export interface ProgressBarProps {
   size?: 'sm' | 'md';
 }
 
-const barTone = { primary: 'bg-[#1565F0]', success: 'bg-green-600', warning: 'bg-amber-500', danger: 'bg-red-600' };
+const barTone = { primary: 'bg-[#1565F0]', success: 'bg-green-700', warning: 'bg-[#B45309]', danger: 'bg-red-600' };
 
 export function ProgressBar({ value, max = 100, label, showValue = true, tone = 'primary', size = 'md' }: ProgressBarProps) {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));

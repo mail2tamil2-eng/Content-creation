@@ -8,6 +8,7 @@ import { SectionCard } from './SectionCard';
 
 const meta = {
   title: 'SaaS/SectionCard',
+  parameters: { a11y: { test: 'error' } },
   component: SectionCard,
   tags: ['autodocs'],
   args: { title: 'Course Information', variant: 'default', padding: 'default' },

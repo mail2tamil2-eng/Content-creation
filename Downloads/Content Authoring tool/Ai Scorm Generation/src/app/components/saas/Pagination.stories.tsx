@@ -5,6 +5,7 @@ import { Pagination } from './Pagination';
 
 const meta = {
   title: 'SaaS/Pagination',
+  parameters: { a11y: { test: 'error' } },
   component: Pagination,
   tags: ['autodocs'],
   args: { page: 1, pageSize: 10, total: 42, itemLabel: 'courses', variant: 'full', onPageChange: fn(), onPageSizeChange: fn() },

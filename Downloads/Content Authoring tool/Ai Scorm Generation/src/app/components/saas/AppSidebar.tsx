@@ -52,7 +52,7 @@ export function AppSidebar({
           onClick={onToggleCollapsed}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           aria-expanded={!collapsed}
-          className="absolute -right-[11px] top-[104px] z-40 flex size-[22px] items-center justify-center rounded-full border border-gray-200 bg-white shadow-md transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]"
+          className="absolute -right-3 top-[103px] z-40 flex size-6 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]"
         >
           <ChevronLeft className={cn('size-[13px] text-gray-500 transition-transform duration-200', collapsed && 'rotate-180')} />
         </button>

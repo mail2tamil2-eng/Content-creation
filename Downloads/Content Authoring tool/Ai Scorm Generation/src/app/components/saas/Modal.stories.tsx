@@ -11,7 +11,7 @@ type Args = { size: ModalSize; tone: ModalTone; title: string; description: stri
 const meta = {
   title: 'SaaS/Modal (popup)',
   tags: ['autodocs'],
-  parameters: { layout: 'centered', docs: { story: { inline: false, iframeHeight: 520 } } },
+  parameters: { a11y: { test: 'error' }, layout: 'centered', docs: { story: { inline: false, iframeHeight: 520 } } },
   argTypes: {
     size: { control: 'inline-radio', options: ['sm', 'md', 'lg', 'xl', 'full'] },
     tone: { control: 'inline-radio', options: ['default', 'info', 'success', 'warning', 'danger'] },

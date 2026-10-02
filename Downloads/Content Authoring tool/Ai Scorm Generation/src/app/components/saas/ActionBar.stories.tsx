@@ -7,7 +7,7 @@ const meta = {
   title: 'SaaS/ActionBar',
   component: ActionBar,
   tags: ['autodocs'],
-  parameters: { layout: 'fullscreen' },
+  parameters: { a11y: { test: 'error' }, layout: 'fullscreen' },
   argTypes: { start: { control: false }, end: { control: false } },
 } satisfies Meta<typeof ActionBar>;
 

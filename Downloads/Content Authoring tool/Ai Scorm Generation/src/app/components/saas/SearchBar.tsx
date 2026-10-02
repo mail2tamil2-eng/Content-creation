@@ -50,15 +50,15 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(function S
           size === 'md' && 'h-10 rounded-xl pl-10 pr-10',
           size === 'lg' && 'h-12 rounded-xl pl-10 pr-10 text-[15px]',
           variant === 'filled'
-            ? 'border border-gray-100 bg-gray-50 focus:border-orange-400 focus:ring-2 focus:ring-orange-500/20'
-            : 'border border-[#D1D5DB] bg-white focus:border-[#1565F0] focus:shadow-[0_0_0_3px_rgba(21,101,240,0.12)]',
+            ? 'border border-[#6B7280] bg-gray-50 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
+            : 'border border-[#6B7280] bg-white focus:border-[#1565F0] focus:shadow-[0_0_0_3px_rgba(21,101,240,0.12)]',
         )}
         {...props}
       />
       <div className="absolute right-2.5 top-1/2 flex -translate-y-1/2 items-center gap-1">
         {loading && <Loader2 aria-label="Searching" className="size-4 animate-spin text-gray-400" />}
         {!loading && v && (
-          <button type="button" aria-label="Clear search" onClick={() => set('')} className="rounded p-0.5 text-gray-400 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]">
+          <button type="button" aria-label="Clear search" onClick={() => set('')} className="flex size-6 items-center justify-center rounded text-gray-500 hover:text-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]">
             <X className="size-3.5" />
           </button>
         )}

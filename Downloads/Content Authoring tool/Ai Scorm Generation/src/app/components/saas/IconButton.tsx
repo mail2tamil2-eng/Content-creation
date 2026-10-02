@@ -22,7 +22,7 @@ const toneHover: Record<IconButtonTone, string> = {
 };
 
 const variants: Record<IconButtonVariant, string> = {
-  table: 'text-gray-400 rounded-lg disabled:text-gray-300 disabled:hover:bg-transparent',
+  table: 'text-gray-500 rounded-lg disabled:text-gray-300 disabled:hover:bg-transparent',
   // Back button in page headers
   outline: 'bg-white border border-[#E5E7EB] text-[#6B7280] rounded-[7px] hover:border-[#1565F0] hover:text-[#1565F0] disabled:opacity-50',
   ghost: 'text-gray-500 rounded-lg hover:bg-gray-50 disabled:opacity-50',

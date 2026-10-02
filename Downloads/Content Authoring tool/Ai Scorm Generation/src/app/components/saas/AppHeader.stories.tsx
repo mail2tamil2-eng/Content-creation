@@ -8,7 +8,7 @@ const meta = {
   title: 'SaaS/Layout/AppHeader',
   component: AppHeader,
   tags: ['autodocs'],
-  parameters: { layout: 'fullscreen' },
+  parameters: { a11y: { test: 'error' }, layout: 'fullscreen' },
   args: { userName: 'Dheva', userRole: 'Course Creator', notificationCount: 3, onSearch: fn(), onNotificationsClick: fn(), onUserMenuClick: fn() },
   argTypes: { actions: { control: false } },
 } satisfies Meta<typeof AppHeader>;

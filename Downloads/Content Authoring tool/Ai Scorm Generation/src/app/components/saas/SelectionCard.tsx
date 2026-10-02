@@ -36,7 +36,7 @@ export function SelectionCard({ title, description, selected, onSelect, dotColor
         <span className="text-[13px] font-bold text-[#111827]">{title}</span>
         {selected && <Check aria-hidden className="ml-auto size-3 text-[#1565F0]" />}
       </div>
-      {description && <p className="m-0 text-[13px] leading-normal text-[#6B7280]">{description}</p>}
+      {description && <p className={cn('m-0 text-[13px] leading-normal', selected ? 'text-[#4B5563]' : 'text-[#6B7280]')}>{description}</p>}
     </button>
   );
 }

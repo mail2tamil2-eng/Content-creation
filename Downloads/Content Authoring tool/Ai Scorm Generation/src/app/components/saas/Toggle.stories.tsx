@@ -5,6 +5,7 @@ import { Toggle } from './Toggle';
 
 const meta = {
   title: 'SaaS/Toggle',
+  parameters: { a11y: { test: 'error' } },
   component: Toggle,
   tags: ['autodocs'],
   args: { label: 'Enable subtitles / captions', checked: true, onChange: fn() },

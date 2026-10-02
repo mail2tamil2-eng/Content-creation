@@ -7,6 +7,7 @@ const ALL: BadgeStatus[] = ['published', 'draft', 'edited', 'approved', 'error',
 
 const meta = {
   title: 'SaaS/StatusBadge',
+  parameters: { a11y: { test: 'error' } },
   component: StatusBadge,
   tags: ['autodocs'],
   args: { status: 'published', dot: false },

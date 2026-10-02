@@ -6,6 +6,7 @@ import { SelectionCard } from './SelectionCard';
 
 const meta = {
   title: 'SaaS/SelectionCard',
+  parameters: { a11y: { test: 'error' } },
   component: SelectionCard,
   tags: ['autodocs'],
   args: { title: 'Basic', description: 'Text, images, knowledge checks, quizzes', selected: true, dotColor: '#10B981', onSelect: fn() },

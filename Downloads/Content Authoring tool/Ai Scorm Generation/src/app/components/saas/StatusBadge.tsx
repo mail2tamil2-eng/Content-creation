@@ -21,7 +21,7 @@ const styles: Record<BadgeStatus, { cls: string; dot: string; label: string }> =
   approved: { cls: 'bg-emerald-50 text-emerald-700 border border-emerald-200', dot: 'bg-emerald-500', label: 'Approved' },
   error: { cls: 'bg-red-50 text-red-700 border border-red-200', dot: 'bg-red-500', label: 'Failed' },
   // "Step 1 of 2 · Course Details"
-  step: { cls: 'bg-[#EBF3FF] text-[#1565F0] border border-[#93C5FD] rounded-full px-[9px] py-[3px] text-[13px] font-semibold', dot: 'bg-[#1565F0]', label: 'Step 1 of 2' },
+  step: { cls: 'bg-[#EBF3FF] text-[#1254C7] border border-[#93C5FD] rounded-full px-[9px] py-[3px] text-[13px] font-semibold', dot: 'bg-[#1565F0]', label: 'Step 1 of 2' },
   basic: { cls: 'bg-emerald-100 text-emerald-700 rounded-full font-bold', dot: 'bg-emerald-400', label: 'Basic' },
   intermediate: { cls: 'bg-blue-100 text-blue-700 rounded-full font-bold', dot: 'bg-blue-400', label: 'Intermediate' },
   advanced: { cls: 'bg-violet-100 text-violet-700 rounded-full font-bold', dot: 'bg-violet-400', label: 'Advanced' },

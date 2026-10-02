@@ -12,6 +12,7 @@ const ITEMS: TabItem[] = [
 
 const meta = {
   title: 'SaaS/Tabs',
+  parameters: { a11y: { test: 'error' } },
   component: Tabs,
   tags: ['autodocs'],
   args: { items: ITEMS, variant: 'underline', size: 'md', 'aria-label': 'Editor panels', onValueChange: fn() },

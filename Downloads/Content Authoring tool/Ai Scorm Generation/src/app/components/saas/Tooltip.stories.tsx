@@ -7,7 +7,7 @@ const meta = {
   title: 'SaaS/Tooltip',
   component: Tooltip,
   tags: ['autodocs'],
-  parameters: { layout: 'centered' },
+  parameters: { a11y: { test: 'error' }, layout: 'centered' },
   args: { content: 'Download SCORM package', side: 'top', tone: 'dark', open: true, children: <IconButton label="Download" icon={<Download />} tone="success" /> },
   argTypes: { side: { control: 'inline-radio', options: ['top', 'right', 'bottom', 'left'] }, tone: { control: 'inline-radio', options: ['dark', 'light'] }, children: { control: false } },
   decorators: [(S) => <div className="p-20"><S /></div>],

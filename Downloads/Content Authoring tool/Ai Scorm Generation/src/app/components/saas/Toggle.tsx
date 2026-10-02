@@ -30,7 +30,7 @@ export function Toggle({ checked, onChange, label, description, disabled, classN
         className={cn(
           'relative h-5 w-9 shrink-0 rounded-full transition-colors duration-150 disabled:cursor-not-allowed',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-2',
-          checked ? 'bg-[#1565F0]' : 'bg-[#D1D5DB]',
+          checked ? 'bg-[#1565F0]' : 'bg-[#6B7280]',
         )}
       >
         <span

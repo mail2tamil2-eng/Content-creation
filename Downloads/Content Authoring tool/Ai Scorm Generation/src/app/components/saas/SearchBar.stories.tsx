@@ -4,6 +4,7 @@ import { SearchBar } from './SearchBar';
 
 const meta = {
   title: 'SaaS/SearchBar',
+  parameters: { a11y: { test: 'error' } },
   component: SearchBar,
   tags: ['autodocs'],
   args: { placeholder: 'Search here…', variant: 'filled', size: 'md', onChange: fn(), onSearch: fn() },

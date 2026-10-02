@@ -6,6 +6,7 @@ import { Chip } from './Chip';
 
 const meta = {
   title: 'SaaS/Chip',
+  parameters: { a11y: { test: 'error' } },
   component: Chip,
   tags: ['autodocs'],
   args: { children: 'Title + Text', icon: <FileText /> },

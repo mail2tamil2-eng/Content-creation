@@ -50,14 +50,14 @@ export function Tabs({ items, value, defaultValue, onValueChange, variant = 'und
               size === 'sm' ? 'px-2.5 py-1.5 text-[12px]' : 'px-3.5 py-2 text-[13px]',
               fullWidth && 'flex-1',
               variant === 'underline' && '-mb-px border-b-2 border-transparent hover:text-[#374151] data-[state=active]:border-[#1565F0] data-[state=active]:font-semibold data-[state=active]:text-[#1565F0]',
-              variant === 'pills' && 'rounded-[7px] hover:text-[#374151] data-[state=active]:bg-white data-[state=active]:font-semibold data-[state=active]:text-[#111827] data-[state=active]:shadow-sm',
+              variant === 'pills' && 'rounded-[7px] text-[#4B5563] hover:text-[#111827] data-[state=active]:bg-white data-[state=active]:font-semibold data-[state=active]:text-[#111827] data-[state=active]:shadow-sm',
               variant === 'enclosed' && '-mb-px rounded-t-lg border border-transparent hover:text-[#374151] data-[state=active]:border-[#E5E7EB] data-[state=active]:border-b-white data-[state=active]:bg-white data-[state=active]:font-semibold data-[state=active]:text-[#111827]',
             )}
           >
             {t.icon}
             {t.label}
             {t.count !== undefined && (
-              <span className="rounded-full bg-[#F3F4F6] px-1.5 text-[11px] font-bold text-[#6B7280] group-data-[state=active]:bg-[#EBF3FF] group-data-[state=active]:text-[#1565F0]">{t.count}</span>
+              <span className="rounded-full bg-[#F3F4F6] px-1.5 text-[11px] font-bold text-[#4B5563] group-data-[state=active]:bg-[#EBF3FF] group-data-[state=active]:text-[#1254C7]">{t.count}</span>
             )}
           </RTabs.Trigger>
         ))}

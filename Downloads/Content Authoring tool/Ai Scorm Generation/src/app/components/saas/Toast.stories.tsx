@@ -7,7 +7,7 @@ const meta = {
   title: 'SaaS/Toaster',
   component: AppToaster,
   tags: ['autodocs'],
-  parameters: { layout: 'padded', docs: { story: { inline: false, iframeHeight: 420 } } },
+  parameters: { a11y: { test: 'error' }, layout: 'padded', docs: { story: { inline: false, iframeHeight: 420 } } },
   decorators: [(S) => <div className="min-h-[380px]"><S /><AppToaster /></div>],
 } satisfies Meta<typeof AppToaster>;
 

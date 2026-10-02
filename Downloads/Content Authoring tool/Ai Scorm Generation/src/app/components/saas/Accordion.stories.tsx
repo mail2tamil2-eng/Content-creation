@@ -14,6 +14,7 @@ const ITEMS: AccordionItemData[] = [
 
 const meta = {
   title: 'SaaS/Accordion',
+  parameters: { a11y: { test: 'error' } },
   component: Accordion as React.ComponentType<AccordionProps>,
   tags: ['autodocs'],
   args: { items: ITEMS, variant: 'bordered', type: 'single', defaultValue: 'seek' },

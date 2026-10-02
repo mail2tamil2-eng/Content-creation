@@ -7,6 +7,7 @@ import { StatusBadge } from './StatusBadge';
 
 const meta = {
   title: 'SaaS/PageHeader',
+  parameters: { a11y: { test: 'error' } },
   component: PageHeader,
   tags: ['autodocs'],
   args: {

@@ -54,7 +54,7 @@ const COLUMNS: Column<Course>[] = [
 const meta = {
   title: 'SaaS/DataTable',
   tags: ['autodocs'],
-  parameters: { layout: 'padded' },
+  parameters: { a11y: { test: 'error' }, layout: 'padded' },
 } satisfies Meta;
 
 export default meta;

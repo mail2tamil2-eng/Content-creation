@@ -47,7 +47,7 @@ export function Pagination({
               <select
                 value={pageSize}
                 onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                className="min-w-[72px] cursor-pointer rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 outline-none hover:bg-gray-50 focus:border-[#1565F0]"
+                className="min-w-[72px] cursor-pointer rounded-lg border border-[#6B7280] bg-white px-3 py-2 text-sm text-gray-700 outline-none hover:bg-gray-50 focus:border-[#1565F0]"
               >
                 {pageSizeOptions.map((o) => <option key={o} value={o}>{o}</option>)}
               </select>

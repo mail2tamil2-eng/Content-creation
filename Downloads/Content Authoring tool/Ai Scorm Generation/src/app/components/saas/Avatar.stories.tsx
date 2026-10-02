@@ -3,6 +3,7 @@ import { Avatar } from './Avatar';
 
 const meta = {
   title: 'SaaS/Avatar',
+  parameters: { a11y: { test: 'error' } },
   component: Avatar,
   tags: ['autodocs'],
   args: { name: 'Dheva', tone: 'orange', size: 'md' },

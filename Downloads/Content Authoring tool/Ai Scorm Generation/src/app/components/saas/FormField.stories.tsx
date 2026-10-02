@@ -7,6 +7,7 @@ const LANGUAGES = ['English', 'Tamil', 'Hindi', 'Malayalam', 'Telugu', 'French']
 
 const meta = {
   title: 'SaaS/Form fields',
+  parameters: { a11y: { test: 'error' } },
   component: FormField,
   tags: ['autodocs'],
   decorators: [(S) => <div className="w-[420px]"><S /></div>],

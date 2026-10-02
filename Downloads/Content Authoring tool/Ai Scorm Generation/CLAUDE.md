@@ -91,16 +91,23 @@ tests/                         # Playwright specs (expect app on :5181, installe
 - Every component must work with keyboard only (Tab, Enter, Space, Esc, arrows)
 - Respect `prefers-reduced-motion` (`motion-reduce:` variants / disable `motion` animations)
 - The Storybook a11y panel must show zero violations before a component is approved.
-  `preview.tsx` sets `a11y.test: 'todo'` (warn) until the known gaps below are fixed;
-  switch to `'error'` afterwards.
+  All `SaaS/*` stories set `parameters.a11y.test = 'error'` (and currently pass axe with
+  zero WCAG 2.2 AA violations). Global default in `preview.tsx` is `'todo'` (warn) because
+  legacy app components still use the old colours below.
 
-### Known contrast gaps in the current UI (need a design decision)
-| Where | Pair | Ratio | Fix |
-|-------|------|-------|-----|
-| `Button variant="accent"` / "Resume Editing" | white on orange-500 `#F97316` | 2.8:1 ✗ | text neutral-900 on `#F48120`, or white on accent-700 `#A93715` |
-| Input / select borders | `#D1D5DB` on white | 1.5:1 ✗ (1.4.11) | neutral-500 `#64748B` (4.8:1) |
-| Placeholder text | `#9CA3AF` on white | 2.5:1 ✗ | `#6B7280` (4.8:1) |
-| Primary on soft blue (`soft` button, step pill) | `#1565F0` on `#EBF3FF` | 4.5:1 borderline | keep text ≥ 13px semibold or darken to `#1254C7` |
+### Contrast fixes (applied in `saas/`, still present in legacy pages)
+| Where | Old | New | Ratio |
+|-------|-----|-----|-------|
+| Accent button ("Resume Editing") | white on orange-500 `#F97316` (2.8:1) | white on orange-700 `#C2410C`, hover `#9A3412` | 5.2:1 |
+| Input / select / search / checkbox borders, toggle off track | `#D1D5DB` (1.5:1) | `#6B7280` | 4.8:1 |
+| Placeholder text | `#9CA3AF` (2.5:1) | `#6B7280` | 4.8:1 |
+| Text on soft blue (`soft` button, step pill, selected chip) | `#1565F0` (4.5:1) | `#1254C7` | 6.0:1 |
+| Muted text on soft blue / chip grey | `#6B7280` (4.3:1) | `#4B5563` | 6.9:1 |
+| Table row action icons | gray-400 (2.5:1) | gray-500 | 4.8:1 |
+| Progress fills (warning/success) | amber-500 / green-600 | `#B45309` / green-700 | 4.6:1 |
+| Click targets under 24px | 18–22px | 24px minimum | — |
+
+Never reintroduce the old values. `orange-500` may be used for decorative dots/icon fills only.
 
 ---
 
@@ -112,11 +119,11 @@ Defined in `src/app/components/saas/tokens.ts` (`SAAS`). Use these; don't invent
 | Role | Value | Notes |
 |------|-------|-------|
 | Primary / AI action | `#1565F0` (hover `#1A63E8`) | white text 5.1:1 ✓ |
-| Primary soft bg / border | `#EBF3FF` / `#93C5FD` | selected cards, step pill, soft buttons |
-| Accent (nav, highlights) | orange-500 `#F97316`, active nav bg `#FFF3E5`, active label `#C2410C` | |
+| Primary soft bg / border | `#EBF3FF` / `#93C5FD` | text on it: `#1254C7` |
+| Accent | orange-500 `#F97316` (fills/dots only), buttons `#C2410C`, active nav bg `#FFF3E5` + label `#C2410C` | white on `#C2410C` 5.2:1 ✓ |
 | Brand navy / orange (logo) | `#134780` / `#F48120` | slide "Corporate" design |
 | Text strong / body / muted | `#111827` / `#374151` / `#6B7280` | muted 4.8:1 on white ✓ |
-| Borders | cards `#E5E7EB`, fields `#D1D5DB` | see gaps above |
+| Borders | cards/dividers `#E5E7EB` (decorative), fields/controls `#6B7280` | controls 4.8:1 ✓ |
 | Surfaces | card `#FFFFFF`, page `#F9FAFB`, chip `#F3F4F6` | |
 | Danger | `#DC2626` (text `#B91C1C`) | |
 | Disabled fill | `#C4C4C4` | disabled controls are exempt from contrast |

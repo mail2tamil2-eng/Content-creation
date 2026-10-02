@@ -87,7 +87,7 @@ function CreateCourseScreen() {
 const meta = {
   title: 'SaaS/Screens/Create Course',
   component: CreateCourseScreen,
-  parameters: { layout: 'fullscreen' },
+  parameters: { a11y: { test: 'error' }, layout: 'fullscreen' },
 } satisfies Meta<typeof CreateCourseScreen>;
 
 export default meta;

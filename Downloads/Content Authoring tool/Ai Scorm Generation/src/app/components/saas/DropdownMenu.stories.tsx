@@ -9,7 +9,7 @@ const meta = {
   title: 'SaaS/DropdownMenu',
   component: DropdownMenu,
   tags: ['autodocs'],
-  parameters: { layout: 'centered', docs: { story: { inline: false, iframeHeight: 360 } } },
+  parameters: { a11y: { test: 'error' }, layout: 'centered', docs: { story: { inline: false, iframeHeight: 360 } } },
   decorators: [(S) => <div className="flex min-h-[320px] items-start justify-center pt-4"><S /></div>],
 } satisfies Meta<typeof DropdownMenu>;
 
@@ -20,6 +20,7 @@ type Story = StoryObj<typeof DropdownMenu>;
 export const EditorMore: Story = {
   args: {
     open: true,
+    modal: false, // forced-open demo; real menus are modal
     trigger: <IconButton variant="outline" label="More options" icon={<MoreHorizontal />} />,
     items: [
       { label: 'Rename', icon: <Pencil />, shortcut: 'F2' },
@@ -34,6 +35,7 @@ export const EditorMore: Story = {
 export const UserMenu: Story = {
   args: {
     open: true,
+    modal: false, // forced-open demo; real menus are modal
     trigger: <Button variant="ghost" rightIcon={<ChevronDown />}>Dheva</Button>,
     items: [
       { type: 'label', label: 'Signed in as dheva@axlekorp.com' },
@@ -52,6 +54,7 @@ export const WithCheckboxes: StoryObj = {
     return (
       <DropdownMenu
         open
+        modal={false}
         trigger={<Button variant="secondary" rightIcon={<ChevronDown />}>Columns</Button>}
         items={[
           { type: 'label', label: 'Show columns' },

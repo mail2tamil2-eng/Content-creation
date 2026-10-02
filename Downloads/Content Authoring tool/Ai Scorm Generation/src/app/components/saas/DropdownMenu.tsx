@@ -17,6 +17,8 @@ export interface DropdownMenuProps {
   /** Controlled open state (optional). */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Modal menus hide the rest of the page from screen readers while open (default). */
+  modal?: boolean;
 }
 
 const itemCls =
@@ -24,9 +26,9 @@ const itemCls =
   'data-[highlighted]:bg-[#F3F4F6] data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:size-4 [&_svg]:text-[#6B7280]';
 
 /** "More" (⋯) menus, user menu, row actions. Arrow keys, typeahead, Esc. */
-export function DropdownMenu({ trigger, items, align = 'end', side = 'bottom', open, onOpenChange }: DropdownMenuProps) {
+export function DropdownMenu({ trigger, items, align = 'end', side = 'bottom', open, onOpenChange, modal = true }: DropdownMenuProps) {
   return (
-    <Menu.Root open={open} onOpenChange={onOpenChange}>
+    <Menu.Root open={open} onOpenChange={onOpenChange} modal={modal}>
       <Menu.Trigger asChild>{trigger}</Menu.Trigger>
       <Menu.Portal>
         <Menu.Content
@@ -55,7 +57,7 @@ export function DropdownMenu({ trigger, items, align = 'end', side = 'bottom', o
               >
                 {it.icon}
                 <span className="flex-1">{it.label}</span>
-                {it.shortcut && <span className="text-[11px] tracking-wider text-[#9CA3AF]">{it.shortcut}</span>}
+                {it.shortcut && <span className="text-[11px] tracking-wider text-[#6B7280]">{it.shortcut}</span>}
               </Menu.Item>
             );
           })}
