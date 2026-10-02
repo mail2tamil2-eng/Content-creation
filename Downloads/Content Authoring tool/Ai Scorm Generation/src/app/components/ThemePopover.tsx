@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, Check, ChevronDown, ChevronUp } from 'lucide-react';
 
 // ── Theme catalogue ──────────────────────────────────────────────────────────
-interface ThemeOption {
+export interface ThemeOption {
   id: string;
   name: string;
   primary: string;
@@ -12,7 +12,7 @@ interface ThemeOption {
   isNew: boolean;
 }
 
-const THEME_OPTIONS: ThemeOption[] = [
+export const THEME_OPTIONS: ThemeOption[] = [
   { id: 'sea-glass', name: 'Sea Glass', primary: '#2A9D8F', accent: '#48CAE4', background: '#E8F8F7', isNew: true  },
   { id: 'porcelain', name: 'Porcelain', primary: '#4B5563', accent: '#9CA3AF', background: '#FAFAF8', isNew: true  },
   { id: 'orchid',    name: 'Orchid',    primary: '#6B21A8', accent: '#C084FC', background: '#FDF4FF', isNew: true  },
