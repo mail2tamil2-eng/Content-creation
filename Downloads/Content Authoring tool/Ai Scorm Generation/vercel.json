@@ -1,1 +1,1 @@
-{"framework":"vite","buildCommand":"npm run build","outputDirectory":"dist","rewrites":[{"source":"/((?!assets/).*)","destination":"/index.html"}]}
+{"framework":"vite","buildCommand":"npm run build && npx storybook build -o dist/storybook","outputDirectory":"dist","rewrites":[{"source":"/((?!assets/|storybook/).*)","destination":"/index.html"}]}
