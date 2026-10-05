@@ -1,196 +1,163 @@
-import React from 'react';
-import {
-  X, Check, CheckCircle2, Download, Upload, Sparkles, ArrowRight, ChevronDown,
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { X, CheckCircle2, Sparkles, Check, Download } from 'lucide-react';
 
 interface Section {
   id: string;
   title: string;
-  description: string;
-  topics: { id: string; title: string; slideType?: string }[];
-  expanded: boolean;
+  topics: { id: string; title: string }[];
 }
 
 interface Props {
   courseTitle: string;
   sections: Section[];
-  publishLmsDestination: string;
-  setPublishLmsDestination: React.Dispatch<React.SetStateAction<string>>;
-  publishLmsDropdownOpen: boolean;
-  setPublishLmsDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  publishLmsPushed: boolean;
-  setPublishLmsPushed: React.Dispatch<React.SetStateAction<boolean>>;
-  publishDone: boolean;
-  setPublishDone: React.Dispatch<React.SetStateAction<boolean>>;
   onClose: () => void;
-  onDashboard: () => void;
-  onTranslate: () => void;
+  onDashboard?: () => void;
+  onTranslate?: () => void;
+  // legacy props — kept so existing call-sites don't break
+  publishLmsDestination?: string;
+  setPublishLmsDestination?: React.Dispatch<React.SetStateAction<string>>;
+  publishLmsDropdownOpen?: boolean;
+  setPublishLmsDropdownOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  publishLmsPushed?: boolean;
+  setPublishLmsPushed?: React.Dispatch<React.SetStateAction<boolean>>;
+  publishDone?: boolean;
+  setPublishDone?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const LMS_OPTIONS = ['Zell Learning', 'Agums', 'Hotelhub', 'Datafy'];
-
-export default function PublishModal({
-  courseTitle, sections,
-  publishLmsDestination, setPublishLmsDestination,
-  publishLmsDropdownOpen, setPublishLmsDropdownOpen,
-  publishLmsPushed, setPublishLmsPushed,
-  publishDone, setPublishDone,
-  onClose, onDashboard, onTranslate,
-}: Props) {
+export default function PublishModal({ courseTitle, sections, onClose }: Props) {
+  const [published, setPublished] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const slideCount = sections.reduce((n, s) => n + s.topics.length, 0);
   const scormFilename = `${(courseTitle || 'Course').replace(/\s+/g, '_')}_SCORM.zip`;
+
+  const handlePublish = () => {
+    setPublishing(true);
+    setTimeout(() => {
+      setPublishing(false);
+      setPublished(true);
+    }, 1400);
+  };
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-      onClick={e => { if (e.target === e.currentTarget) { onClose(); setPublishLmsDropdownOpen(false); } }}
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full overflow-hidden flex flex-col" style={{ maxWidth: 640, maxHeight: '90vh' }}>
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#f3f4f6]">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${publishDone ? 'bg-[#16a34a]' : 'bg-[#f48120]'}`}>
-              {publishDone ? <Check className="w-5 h-5 text-white" /> : <CheckCircle2 className="w-5 h-5 text-white" />}
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: 20,
+          boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
+          width: '100%',
+          maxWidth: 560,
+          fontFamily: 'Nunito Sans, system-ui, sans-serif',
+          overflow: 'hidden',
+        }}
+      >
+        {/* ── Header ── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 18px', borderBottom: '1px solid #F3F4F6' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 44, height: 44, borderRadius: '50%', background: published ? '#16A34A' : '#F48120', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              {published
+                ? <Check size={20} color="#fff" strokeWidth={2.5} />
+                : <CheckCircle2 size={20} color="#fff" />
+              }
             </div>
             <div>
-              <h2 className="text-lg font-bold text-[#101828]">{publishDone ? 'Course Published' : 'Publish Course'}</h2>
-              <p className="text-xs text-[#6b7280] mt-0.5">
-                {publishDone ? 'Your course is published. Download it or open the translation page.' : 'Generate the final SCORM package and publish your course'}
+              <p style={{ fontSize: 17, fontWeight: 700, color: '#101828', margin: 0 }}>
+                {published ? 'Course Published!' : 'Publish Course'}
+              </p>
+              <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>
+                {published
+                  ? 'Your SCORM package is ready to download.'
+                  : 'Generate the final SCORM package and publish your course'}
               </p>
             </div>
           </div>
-          <button type="button" onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors">
-            <X className="w-4 h-4 text-[#6b7280]" />
+          <button
+            onClick={onClose}
+            style={{ width: 32, height: 32, borderRadius: 9, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', transition: 'background 0.15s' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+          >
+            <X size={16} />
           </button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+        {/* ── Body ── */}
+        <div style={{ padding: '20px 24px' }}>
+          <div style={{ border: '1px solid #E5E7EB', borderRadius: 14, overflow: 'hidden' }}>
 
-          {/* Phase 1: pre-publish */}
-          {!publishDone && (
-            <div className="rounded-2xl border border-[#e5e7eb] overflow-hidden">
-              <div className="px-6 py-5 bg-[#fafafa] border-b border-[#f3f4f6] space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-[#f48120]" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#101828]">{courseTitle || 'Untitled Course'}</p>
-                    <p className="text-xs text-[#6b7280]">SCORM 1.2 · {sections.reduce((n, s) => n + s.topics.length, 0)} slides</p>
-                  </div>
+            {/* Course info row */}
+            <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: '#FFF3E5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Sparkles size={18} color="#F48120" />
                 </div>
-                <p className="text-xs text-[#6b7280] leading-relaxed">
-                  Publishing will generate the final SCORM package from your current course settings and make it available for download and distribution.
-                </p>
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#101828', margin: 0 }}>{courseTitle || 'Untitled Course'}</p>
+                  <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>SCORM 1.2 · {slideCount} slide{slideCount !== 1 ? 's' : ''}</p>
+                </div>
               </div>
-              <div className="px-6 py-4 bg-white flex items-center justify-end">
-                <button type="button"
-                  onClick={() => setPublishDone(true)}
-                  className="flex items-center gap-2 px-7 py-2.5 bg-[#f48120] hover:bg-orange-600 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Publish
-                </button>
-              </div>
+              <p style={{ fontSize: 13, color: '#6B7280', lineHeight: 1.6, margin: 0 }}>
+                Publishing will generate the final SCORM package from your current course settings and make it available for download and distribution.
+              </p>
             </div>
-          )}
 
-
-          {/* Phase 2: post-publish */}
-          {publishDone && (
-            <>
-              {/* SCORM ready banner */}
-              <div className="flex items-center justify-between bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl px-5 py-3.5">
-                <div className="flex items-center gap-2.5">
-                  <Check className="w-4 h-4 text-[#16a34a] flex-shrink-0" />
-                  <span className="text-sm font-medium text-[#166534]">
-                    SCORM 1.2 package ready — <span className="font-semibold">{scormFilename}</span>
-                  </span>
+            {/* Action row */}
+            <div style={{ padding: '14px 20px', borderTop: '1px solid #F3F4F6', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: published ? 'space-between' : 'flex-end' }}>
+              {published && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#16A34A' }} />
+                  <span style={{ fontSize: 13, color: '#166534', fontWeight: 500 }}>Ready — {scormFilename}</span>
                 </div>
-                <button type="button"
-                  className="flex items-center gap-1.5 px-4 py-1.5 border border-[#d1d5db] bg-white rounded-lg text-sm font-medium text-[#374151] hover:bg-gray-50 transition-colors flex-shrink-0 ml-4">
-                  <Download className="w-3.5 h-3.5" />
-                  Download
+              )}
+              {published ? (
+                <button
+                  onClick={() => {}}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 10, border: 'none', background: '#16A34A', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.15s' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#15803D'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#16A34A'; }}
+                >
+                  <Download size={14} /> Download SCORM
                 </button>
-              </div>
-
-              {/* Push to LMS */}
-              <div className="border border-[#e5e7eb] rounded-2xl">
-                <div className="px-5 py-4 bg-[#fafafa] border-b border-[#f3f4f6] rounded-t-2xl">
-                  <p className="text-sm font-bold text-[#101828]">Push to LMS</p>
-                </div>
-                <div className="px-5 py-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-[#374151]">Destination</span>
-                    <button type="button"
-                      onClick={() => setPublishLmsDropdownOpen(v => !v)}
-                      className="flex items-center gap-2 px-4 py-2 border border-[#d1d5db] rounded-lg bg-white text-sm text-[#101828] hover:border-gray-400 transition-colors min-w-[190px] justify-between">
-                      <span>{publishLmsDestination}</span>
-                      <ChevronDown className={`w-4 h-4 text-[#6b7280] transition-transform ${publishLmsDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                  </div>
-                  {publishLmsDropdownOpen && (
-                    <div className="border border-[#d1d5db] rounded-xl overflow-hidden">
-                      {LMS_OPTIONS.map((opt, i) => (
-                        <button key={opt} type="button"
-                          onClick={() => { setPublishLmsDestination(opt); setPublishLmsDropdownOpen(false); setPublishLmsPushed(false); }}
-                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between
-                            ${i > 0 ? 'border-t border-[#f3f4f6]' : ''}
-                            ${publishLmsDestination === opt ? 'bg-[#eff6ff] text-[#1d4ed8] font-semibold' : 'bg-white text-[#101828] hover:bg-gray-50'}`}>
-                          {opt}
-                          {publishLmsDestination === opt && <Check className="w-3.5 h-3.5 text-[#2b7fff]" />}
-                        </button>
-                      ))}
-                    </div>
+              ) : (
+                <button
+                  onClick={handlePublish}
+                  disabled={publishing}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 24px', borderRadius: 10, border: 'none', background: publishing ? '#F9AB68' : '#F48120', color: '#fff', fontSize: 13, fontWeight: 600, cursor: publishing ? 'default' : 'pointer', transition: 'background 0.15s' }}
+                  onMouseEnter={e => { if (!publishing) (e.currentTarget as HTMLElement).style.background = '#E07310'; }}
+                  onMouseLeave={e => { if (!publishing) (e.currentTarget as HTMLElement).style.background = '#F48120'; }}
+                >
+                  {publishing ? (
+                    <>
+                      <svg style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="4" />
+                        <path fill="#fff" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                      </svg>
+                      Publishing…
+                    </>
+                  ) : (
+                    <><CheckCircle2 size={14} /> Publish</>
                   )}
-                  <div className="border-t border-[#f3f4f6]" />
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {publishLmsPushed
-                        ? <><div className="w-2 h-2 rounded-full bg-[#16a34a]" /><span className="text-sm text-[#166534] font-medium">Delivered to {publishLmsDestination}</span></>
-                        : <><div className="w-2 h-2 rounded-full bg-[#9ca3af]" /><span className="text-sm text-[#6b7280]">Not yet delivered</span></>
-                      }
-                    </div>
-                    <button type="button"
-                      onClick={() => setPublishLmsPushed(true)}
-                      disabled={publishLmsPushed}
-                      className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-60"
-                      style={{ background: publishLmsPushed ? '#16a34a' : '#b45309' }}>
-                      {publishLmsPushed ? <Check className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
-                      {publishLmsPushed ? 'Pushed' : 'Push'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-blue-100 bg-blue-50 p-5">
-                <h3 className="text-sm font-semibold text-[#134780]">Create a language version</h3>
-                <p className="mt-1 text-sm text-gray-600">Translate, preview and approve your course on its dedicated translation page.</p>
-                <button type="button" onClick={onTranslate} className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#134780] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0f3660]">
-                  Translate course <ArrowRight className="h-4 w-4" />
                 </button>
-              </div>
-            </>
-          )}
-
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[#f3f4f6] bg-[#fafafa]">
-          <button type="button" onClick={onClose}
-            className="px-5 py-2.5 border border-[#d1d5db] rounded-xl text-sm font-medium text-[#374151] hover:bg-gray-50 transition-colors">
+        {/* ── Footer ── */}
+        <div style={{ padding: '0 24px 20px' }}>
+          <button
+            onClick={onClose}
+            style={{ padding: '9px 22px', borderRadius: 10, border: '1px solid #D1D5DB', background: '#fff', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer', transition: 'background 0.15s' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
+          >
             Close
           </button>
-          {publishDone && (
-            <button type="button" onClick={onDashboard}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#134780] hover:bg-[#0f3660] text-white rounded-xl text-sm font-semibold transition-colors">
-              <ArrowRight className="w-4 h-4" />
-              Go to Dashboard
-            </button>
-          )}
         </div>
-
       </div>
     </div>
   );
