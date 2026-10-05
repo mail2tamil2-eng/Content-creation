@@ -2,7 +2,7 @@ import { Languages, Edit, Copy, Trash2, Download, ArrowRight, FileUp } from 'luc
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router';
 import { useCourseContext } from '../context/CourseContext';
-import { Badge } from './ui/badge';
+import { StatusBadge } from './saas';
 
 // Mock user mapping for display names
 const USER_NAMES: Record<string, string> = {
@@ -92,15 +92,7 @@ export function DashboardCourseTable() {
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    {course.status === 'published' ? (
-                      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                        Published
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
-                        Draft
-                      </Badge>
-                    )}
+                    <StatusBadge status={course.status === 'published' ? 'published' : 'draft'} />
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">

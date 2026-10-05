@@ -1,20 +1,10 @@
 import { Languages } from 'lucide-react';
 import { useState } from 'react';
-import { Edit, Copy, Trash2, Download, ChevronLeft, ChevronRight, ChevronDown, FileUp, AlertCircle, User } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Edit, Copy, Trash2, Download, FileUp } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useCourseContext } from '../context/CourseContext';
 import { useNavigate } from 'react-router';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from './ui/alert-dialog';
-import { Badge } from './ui/badge';
+import { StatusBadge, Pagination, ConfirmDialog } from './saas';
 
 // Mock user mapping for display names
 const USER_NAMES: Record<string, string> = {
@@ -38,7 +28,6 @@ export function CourseTable() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [isShowDropdownOpen, setIsShowDropdownOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<number | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
@@ -55,7 +44,6 @@ export function CourseTable() {
   const handleItemsPerPageChange = (value: number) => {
     setItemsPerPage(value);
     setCurrentPage(1);
-    setIsShowDropdownOpen(false);
   };
 
   const handlePublish = async (courseId: number) => {
@@ -142,15 +130,7 @@ export function CourseTable() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      {course.status === 'published' ? (
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                          Published
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
-                          Draft
-                        </Badge>
-                      )}
+                      <StatusBadge status={course.status === 'published' ? 'published' : 'draft'} />
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -288,104 +268,28 @@ export function CourseTable() {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {/* Show Dropdown */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Show</span>
-              <div className="relative">
-                <button
-                  onClick={() => setIsShowDropdownOpen(!isShowDropdownOpen)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors min-w-[80px] justify-between"
-                >
-                  <span>{itemsPerPage}</span>
-                  <ChevronDown className="w-4 h-4 text-gray-500" />
-                </button>
-                {isShowDropdownOpen && (
-                  <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[80px]">
-                    {showOptions.map((option) => (
-                      <button
-                        key={option}
-                        onClick={() => handleItemsPerPageChange(option)}
-                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                          itemsPerPage === option ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Showing text */}
-            <div className="text-sm text-gray-600">
-              Showing <span className="font-medium">{startIndex + 1}</span> to <span className="font-medium">{Math.min(endIndex, courses.length)}</span> of{' '}
-              <span className="font-medium">{courses.length}</span> courses
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4 text-gray-600" />
-            </motion.button>
-
-            <div className="flex items-center gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <motion.button
-                  key={page}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => goToPage(page)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    currentPage === page
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  {page}
-                </motion.button>
-              ))}
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronRight className="w-4 h-4 text-gray-600" />
-            </motion.button>
-          </div>
+        <div className="px-6 py-4 border-t border-gray-100">
+          <Pagination
+            page={currentPage}
+            pageSize={itemsPerPage}
+            total={courses.length}
+            onPageChange={goToPage}
+            onPageSizeChange={handleItemsPerPageChange}
+            pageSizeOptions={showOptions}
+            itemLabel="courses"
+          />
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the course.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete course?"
+        description="This action cannot be undone. The course will be permanently deleted."
+        confirmLabel="Delete"
+        tone="danger"
+        onConfirm={confirmDelete}
+      />
     </>
   );
 }

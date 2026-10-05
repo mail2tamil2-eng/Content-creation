@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import {
-  Globe, Settings, MoreHorizontal, Pencil,
-  Upload, Play, Save, Copy, Trash2, PanelRightOpen, Layout,
+  Globe, Settings, Pencil,
+  Upload, Play, Save, PanelRightOpen, Layout,
 } from 'lucide-react';
 import { ThemePopover, ThemeSettings } from './ThemePopover';
 import { TemplatePopover } from './TemplatePopover';
@@ -10,16 +10,12 @@ interface EditorTopToolbarProps {
   courseTitle: string;
   language?: string;
   rightPanelOpen: boolean;
-  showMoreMenu: boolean;
   isSidebarCollapsed?: boolean;
   onToggleRightPanel: () => void;
-  onToggleMoreMenu: () => void;
   onOpenCourseSettings: () => void;
   onPublish: () => void;
   onPreview: () => void;
   onSaveDraft: () => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
   onApplyTheme: (settings: ThemeSettings) => void;
   currentDesignId?: string;
   onApplyTemplate?: (designId: string) => void;
@@ -29,16 +25,12 @@ export function EditorTopToolbar({
   courseTitle,
   language = 'English',
   rightPanelOpen,
-  showMoreMenu,
   isSidebarCollapsed = false,
   onToggleRightPanel,
-  onToggleMoreMenu,
   onOpenCourseSettings,
   onPublish,
   onPreview,
   onSaveDraft,
-  onDuplicate,
-  onDelete,
   onApplyTheme,
   currentDesignId = 'corporate',
   onApplyTemplate,
@@ -116,37 +108,6 @@ export function EditorTopToolbar({
           <Settings size={18} />
         </button>
 
-        {/* ⋯ More menu */}
-        <div className="relative">
-          <button
-            onClick={onToggleMoreMenu}
-            title="More options"
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-              showMoreMenu ? 'bg-gray-100' : 'hover:bg-gray-100'
-            }`}
-          >
-            <MoreHorizontal size={18} className="text-gray-700" />
-          </button>
-
-          {showMoreMenu && (
-            <div
-              className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 py-1.5 overflow-hidden"
-              style={{ width: '200px' }}
-            >
-              <button onClick={onSaveDraft} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left">
-                <Save size={15} className="text-gray-400" /> Save Draft
-              </button>
-              <button onClick={onDuplicate} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left">
-                <Copy size={15} className="text-gray-400" /> Duplicate Course
-              </button>
-              <div className="my-1 border-t border-gray-100" />
-              <button onClick={onDelete} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors text-left">
-                <Trash2 size={15} /> Move to Trash
-              </button>
-            </div>
-          )}
-        </div>
-
         <div className="bg-gray-200 shrink-0 mx-1" style={{ width: '1px', height: '24px' }} />
 
         {/* ▦ Template */}
@@ -177,6 +138,17 @@ export function EditorTopToolbar({
         >
           <Pencil size={15} />
           <span className="hidden sm:inline">Theme</span>
+        </button>
+
+        {/* Save Draft */}
+        <button
+          onClick={onSaveDraft}
+          title="Save draft"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+          style={{ fontSize: '14px' }}
+        >
+          <Save size={15} />
+          <span className="hidden sm:inline">Save Draft</span>
         </button>
 
         {/* Publish */}

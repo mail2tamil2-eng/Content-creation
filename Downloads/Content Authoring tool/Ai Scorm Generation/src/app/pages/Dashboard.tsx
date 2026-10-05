@@ -1,10 +1,10 @@
 import { motion } from 'motion/react';
 import { useOutletContext } from 'react-router';
 import { Hero } from '../components/Hero';
-import { StatsCard } from '../components/StatsCard';
 import { RecentCourse } from '../components/RecentCourse';
 import { DashboardCourseTable } from '../components/DashboardCourseTable';
-import { BookOpen, Clock, XCircle, FileCheck } from 'lucide-react';
+import { StatWidget } from '../components/saas';
+import { Clock, XCircle, FileCheck } from 'lucide-react';
 import { useCourseContext } from '../context/CourseContext';
 
 interface LayoutContext {
@@ -34,12 +34,11 @@ export function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <StatsCard
-            title="Total Course Created"
+          <StatWidget
+            label="Total Course Created"
             value={totalPublished}
             icon={FileCheck}
-            bgColor="bg-blue-50"
-            iconColor="text-blue-600"
+            tone="blue"
           />
         </motion.div>
         <motion.div
@@ -47,12 +46,11 @@ export function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <StatsCard
-            title="Total course in Draft"
+          <StatWidget
+            label="Total course in Draft"
             value={totalDraft}
             icon={Clock}
-            bgColor="bg-amber-50"
-            iconColor="text-amber-600"
+            tone="amber"
           />
         </motion.div>
         <motion.div
@@ -60,13 +58,12 @@ export function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <StatsCard
-            title="Used vs Available License"
+          <StatWidget
+            label="Used vs Available License"
             value={usedLicenses}
-            subtitle={`${availableLicenses} Available license`}
+            hint={`${availableLicenses} Available license`}
             icon={XCircle}
-            bgColor="bg-pink-50"
-            iconColor="text-pink-600"
+            tone="pink"
           />
         </motion.div>
         <motion.div

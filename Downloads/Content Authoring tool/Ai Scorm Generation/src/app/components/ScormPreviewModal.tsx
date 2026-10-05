@@ -55,9 +55,11 @@ export default function ScormPreviewModal({
   const correctIdx = 2;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-[200] bg-black/75 backdrop-blur-sm">
+      {/* Constrain modal below the 80px app header so it never overlaps it */}
+      <div className="absolute inset-x-0 bottom-0 flex items-center justify-center p-4" style={{ top: 80 }}>
       <div className="relative flex flex-col rounded-2xl overflow-hidden shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6)] w-full"
-        style={{ background: '#101828', maxWidth: 1080, maxHeight: '90vh' }}>
+        style={{ background: '#101828', maxWidth: 1080, maxHeight: 'calc(100vh - 96px)' }}>
 
         {/* TOP NAV BAR */}
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-0 border-b border-[#364153]" style={{ background: 'rgba(0,0,0,0.5)', height: 77 }}>
@@ -219,6 +221,7 @@ export default function ScormPreviewModal({
           </div>
         </div>
 
+      </div>
       </div>
     </div>
   );

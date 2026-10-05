@@ -402,7 +402,7 @@ function VideoFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
 
 function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [enabled, setEnabled]     = useState((t.narrationEnabled as boolean) ?? false);
+  const [enabled, setEnabled]     = useState((t.narrationEnabled as boolean) ?? true);
   const [generated, setGenerated] = useState((t.narrationGenerated as boolean) ?? false);
   const [lang, setLang]           = useState((t.narrationLang as string) || 'en');
   const [voice, setVoice]         = useState((t.narrationVoice as string) || 'female-en');

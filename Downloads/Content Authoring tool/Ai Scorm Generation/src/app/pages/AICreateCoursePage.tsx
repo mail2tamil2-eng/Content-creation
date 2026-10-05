@@ -24,6 +24,7 @@ import { type ThemeSettings, THEME_OPTIONS } from '../components/ThemePopover';
 import { CourseSidebar, type CSSection } from '../components/CourseSidebar';
 import { SlideSettingsPanel } from '../components/SlideSettingsPanel';
 import { SlideLibraryModal } from '../components/SlideLibraryModal';
+import { SelectInput } from '../components/saas';
 
 // -- Types --
 type Complexity = 'basic' | 'intermediate' | 'advanced';
@@ -88,24 +89,27 @@ const SLIDE_TYPES: SlideTypeConfig[] = [
 ];
 
 const COMPLEXITY_CONFIG: Record<Complexity, {
-  label: string; tagline: string; color: string; ring: string; badge: string; dot: string; slideIds: string[];
+  label: string; tagline: string; color: string; ring: string; badge: string; dot: string; slideIds: string[]; minTopics: number; contentTypes: string;
 }> = {
   basic: {
-    label: 'Basic', tagline: 'Text, images, knowledge checks, quizzes',
+    label: 'Basic', tagline: 'Fundamental concepts with simple explanations',
     color: 'bg-emerald-50 border-emerald-200', ring: 'border-emerald-500',
     badge: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-400',
+    minTopics: 3, contentTypes: 'Text & Image',
     slideIds: ['title-text', 'title-bullets', 'image-visual', 'knowledge-check', 'quiz'],
   },
   intermediate: {
-    label: 'Intermediate', tagline: 'Basic + video, audio, spokesperson, scenarios',
+    label: 'Intermediate', tagline: 'Concepts with additional depth and examples',
     color: 'bg-blue-50 border-blue-200', ring: 'border-blue-500',
     badge: 'bg-blue-100 text-blue-700', dot: 'bg-blue-400',
+    minTopics: 5, contentTypes: 'Text, Media & Interactive',
     slideIds: ['title-text', 'title-bullets', 'image-visual', 'video', 'audio', 'spokesperson', 'scenario', 'knowledge-check', 'quiz'],
   },
   advanced: {
-    label: 'Advanced', tagline: 'Intermediate + summaries, branching scenarios',
+    label: 'Advanced', tagline: 'Complex concepts with applications and scenarios',
     color: 'bg-violet-50 border-violet-200', ring: 'border-violet-500',
     badge: 'bg-violet-100 text-violet-700', dot: 'bg-violet-400',
+    minTopics: 5, contentTypes: 'Text, Media, Interactive & Simulation',
     slideIds: ['title-text', 'title-bullets', 'image-visual', 'video', 'audio', 'spokesperson', 'scenario', 'knowledge-check', 'quiz', 'summary'],
   },
 };
@@ -135,7 +139,6 @@ export function AICreateCoursePage() {
   const [title, setTitle] = useState('');
   const [complexity, setComplexity] = useState<Complexity>('basic');
   const [duration, setDuration] = useState('');
-  const [durationUnit, setDurationUnit] = useState<'hours' | 'minutes'>('hours');
   const [language, setLanguage] = useState('English');
   const [audience, setAudience] = useState('');
   const [objective, setObjective] = useState('');
@@ -185,6 +188,8 @@ export function AICreateCoursePage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [navMode, setNavMode] = useState<NavigationMode>('free');
   const [completionSrcs, setCompletionSrcs] = useState<CompletionCriteriaSource[]>([]);
+  const [quizPassPct, setQuizPassPct] = useState(80);
+  const [slideViewPct, setSlideViewPct] = useState(80);
   const [bookmarking, setBookmarking] = useState(true);
   const [transcript, setTranscript] = useState(false);
   const [seekBar, setSeekBar] = useState<SeekBarControl>('enable');
@@ -210,8 +215,6 @@ export function AICreateCoursePage() {
   const [rightOpen, setRightOpen] = useState(true);
   const [showCourseSettings, setShowCourseSettings] = useState(false);
   const [changeTypeOpen, setChangeTypeOpen] = useState(false);
-
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   // Theme popover overrides (applied on top of base presentationSettings)
   const [themeOverride, setThemeOverride] = useState<Partial<PresentationSettings> | null>(null);
@@ -331,10 +334,10 @@ export function AICreateCoursePage() {
       const rawSections: Section[] = [
         {
           id: 's1', title: `Introduction to ${title}`,
-          description: 'Overview and learning objectives', expanded: true,
+          description: 'Overview and course objectives', expanded: true,
           topics: [
             { id: 's1-1', title: 'Course Overview',     slideType: 'title-text' },
-            { id: 's1-2', title: 'Learning Objectives', slideType: 'title-bullets' },
+            { id: 's1-2', title: 'Course Objectives', slideType: 'title-bullets' },
             ...(ids.includes('spokesperson') ? [{ id: 's1-3', title: 'Meet the Instructor', slideType: 'spokesperson' }] : []),
           ],
         },
@@ -630,7 +633,13 @@ export function AICreateCoursePage() {
                         <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{cc.label}</span>
                         {active && <Check size={12} style={{ marginLeft: 'auto', color: P }} />}
                       </div>
-                      <p style={{ fontSize: 13, color: '#6B7280', margin: 0, lineHeight: 1.5 }}>{cc.tagline}</p>
+                      <p style={{ fontSize: 12, color: '#6B7280', margin: '0 0 8px', lineHeight: 1.5 }}>{cc.tagline}</p>
+                      <div style={{ borderTop: '1px solid #F3F4F6', paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: active ? P : '#6B7280' }}>
+                          Min. {cc.minTopics} topics
+                        </span>
+                        <span style={{ fontSize: 11, color: '#9CA3AF', lineHeight: 1.4 }}>{cc.contentTypes}</span>
+                      </div>
                     </button>
                   );
                 })}
@@ -643,31 +652,25 @@ export function AICreateCoursePage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Duration</label>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <input
-                      type="number" min="1" placeholder="30"
+                      type="number" min="10" max="60" placeholder="10"
                       value={duration} onChange={e => setDuration(e.target.value)}
                       style={{ flex: 1, border: '1px solid #D1D5DB', borderRadius: 8, padding: '9px 12px', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
                       onFocus={e => { e.currentTarget.style.borderColor = P; }}
                       onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }}
                     />
-                    <select
-                      value={durationUnit} onChange={e => setDurationUnit(e.target.value as 'hours' | 'minutes')}
-                      style={{ border: '1px solid #D1D5DB', borderRadius: 8, padding: '9px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}
-                    >
-                      <option value="minutes">min</option>
-                      <option value="hours">hrs</option>
-                    </select>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#6B7280', whiteSpace: 'nowrap' }}>min</span>
                   </div>
+                  <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>10 – 60 min</p>
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Language</label>
-                  <select
-                    value={language} onChange={e => setLanguage(e.target.value)}
-                    style={{ width: '100%', border: '1px solid #D1D5DB', borderRadius: 8, padding: '9px 12px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}
-                  >
-                    {LANGUAGES.map(l => <option key={l}>{l}</option>)}
-                  </select>
+                  <SelectInput
+                    value={language}
+                    onChange={e => setLanguage(e.target.value)}
+                    options={LANGUAGES}
+                  />
                 </div>
               </div>
             </div>
@@ -686,14 +689,14 @@ export function AICreateCoursePage() {
               />
             </div>
 
-            {/* Card: Learning Objectives */}
+            {/* Card: Course Objectives */}
             <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
                 <div>
                   <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: 0 }}>
-                    Learning Objectives
+                    Course Objectives
                   </h2>
-                  <p style={{ fontSize: 13, color: '#6B7280', margin: '3px 0 0' }}>What learners will be able to do after this course</p>
+                  <p style={{ fontSize: 13, color: '#6B7280', margin: '3px 0 0' }}>Define the key goals and outcomes learners will achieve by completing this course</p>
                 </div>
                 <button
                   type="button" onClick={generateObjective} disabled={generatingObj}
@@ -711,7 +714,7 @@ export function AICreateCoursePage() {
                     <input
                       value={obj}
                       onChange={e => { const n = [...objectives]; n[i] = e.target.value; setObjectives(n); }}
-                      placeholder={`Learning objective ${i + 1}`}
+                      placeholder={`Course objective ${i + 1}`}
                       style={{ flex: 1, border: '1px solid #D1D5DB', borderRadius: 8, padding: '9px 12px', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
                       onFocus={e => { e.currentTarget.style.borderColor = P; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(79,70,229,0.1)'; }}
                       onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; e.currentTarget.style.boxShadow = 'none'; }}
@@ -1161,11 +1164,14 @@ export function AICreateCoursePage() {
                           <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Navigation Mode</p>
                           <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>How learners move through slides</p>
                         </div>
-                        <select value={navMode} onChange={e => setNavMode(e.target.value as NavigationMode)}
-                          style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
-                          <option value="free">Free Navigation</option>
-                          <option value="linear">Linear</option>
-                        </select>
+                        <div style={{ position: 'relative' }}>
+                          <select value={navMode} onChange={e => setNavMode(e.target.value as NavigationMode)}
+                            style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 30px 7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer', appearance: 'none' }}>
+                            <option value="free">Free Navigation</option>
+                            <option value="linear">Linear</option>
+                          </select>
+                          <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
+                        </div>
                       </div>
 
                       {/* ── Seek Bar Control ── */}
@@ -1175,21 +1181,27 @@ export function AICreateCoursePage() {
                             <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Seek Bar Control</p>
                             <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Control seek bar visibility and behaviour</p>
                           </div>
-                          <select value={seekBar} onChange={e => setSeekBar(e.target.value as SeekBarControl)}
-                            style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
-                            <option value="enable">Enable Seek Bar</option>
-                            <option value="hide">Hide Seek Bar Completely</option>
-                          </select>
+                          <div style={{ position: 'relative' }}>
+                            <select value={seekBar} onChange={e => setSeekBar(e.target.value as SeekBarControl)}
+                              style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 30px 7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer', appearance: 'none' }}>
+                              <option value="enable">Enable Seek Bar</option>
+                              <option value="hide">Hide Seek Bar Completely</option>
+                            </select>
+                            <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
+                          </div>
                         </div>
                         {seekBar === 'enable' && (
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingLeft: 14 }}>
                             <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>Seek bar behaviour</p>
-                            <select value={seekBarOption} onChange={e => setSeekBarOption(e.target.value as SeekBarOption)}
-                              style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
-                              <option value="drag">Allow user to drag Seek Bar</option>
-                              <option value="drag-after-completion">Allow drag after completion</option>
-                              <option value="read-only">Seek bar is read only</option>
-                            </select>
+                            <div style={{ position: 'relative' }}>
+                              <select value={seekBarOption} onChange={e => setSeekBarOption(e.target.value as SeekBarOption)}
+                                style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 30px 7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer', appearance: 'none' }}>
+                                <option value="drag">Allow user to drag Seek Bar</option>
+                                <option value="drag-after-completion">Allow drag after completion</option>
+                                <option value="read-only">Seek bar is read only</option>
+                              </select>
+                              <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1211,21 +1223,24 @@ export function AICreateCoursePage() {
                           <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Transition</p>
                           <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Animation applied between slides</p>
                         </div>
-                        <select value={slideTransition} onChange={e => setSlideTransition(e.target.value)}
-                          style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
-                          <option value="none">None</option>
-                          <option value="fade">Fade</option>
-                          <option value="push-up">Push Up</option>
-                          <option value="push-down">Push Down</option>
-                          <option value="push-left">Push Left</option>
-                          <option value="push-right">Push Right</option>
-                          <option value="wipe-left">Wipe Left</option>
-                          <option value="wipe-right">Wipe Right</option>
-                          <option value="split">Split</option>
-                          <option value="reveal">Reveal</option>
-                          <option value="cover-left">Cover Left</option>
-                          <option value="cover-right">Cover Right</option>
-                        </select>
+                        <div style={{ position: 'relative' }}>
+                          <select value={slideTransition} onChange={e => setSlideTransition(e.target.value)}
+                            style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 30px 7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer', appearance: 'none' }}>
+                            <option value="none">None</option>
+                            <option value="fade">Fade</option>
+                            <option value="push-up">Push Up</option>
+                            <option value="push-down">Push Down</option>
+                            <option value="push-left">Push Left</option>
+                            <option value="push-right">Push Right</option>
+                            <option value="wipe-left">Wipe Left</option>
+                            <option value="wipe-right">Wipe Right</option>
+                            <option value="split">Split</option>
+                            <option value="reveal">Reveal</option>
+                            <option value="cover-left">Cover Left</option>
+                            <option value="cover-right">Cover Right</option>
+                          </select>
+                          <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
+                        </div>
                       </div>
 
                       {/* ── Slide Duration ── */}
@@ -1259,22 +1274,87 @@ export function AICreateCoursePage() {
                         <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: '0 0 4px' }}>Completion Criteria</p>
                         <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 10px' }}>When is the course marked complete? Select all that apply</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                          {([
-                            { value: 'quiz',            label: 'Quiz Percentage Completion' },
-                            { value: 'slide-view',      label: 'Slide View Percentage' },
-                            { value: 'knowledge-check', label: 'Knowledge Check Completion' },
-                          ] as { value: CompletionCriteriaSource; label: string }[]).map(opt => {
-                            const checked = completionSrcs.includes(opt.value);
+
+                          {/* Quiz Percentage Completion */}
+                          {(() => {
+                            const checked = completionSrcs.includes('quiz');
                             return (
-                              <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, background: checked ? PL : '#F9FAFB', border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, transition: 'all 0.12s', userSelect: 'none' }}
-                                onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== opt.value) : [...prev, opt.value])}>
+                              <div style={{ borderRadius: 8, border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, background: checked ? PL : '#F9FAFB', transition: 'all 0.12s', overflow: 'hidden' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', userSelect: 'none' as const }}
+                                  onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'quiz') : [...prev, 'quiz'])}>
+                                  <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P : '#D1D5DB'}`, background: checked ? P : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
+                                    {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
+                                  </span>
+                                  <span style={{ fontSize: 13, color: checked ? P : '#374151', fontWeight: checked ? 500 : 400, flex: 1 }}>Quiz Percentage Completion</span>
+                                </label>
+                                {checked && (
+                                  <div style={{ padding: '0 10px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <span style={{ fontSize: 13, color: '#6B7280' }}>Minimum pass score</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+                                      <input
+                                        type="number" min="1" max="100"
+                                        value={quizPassPct}
+                                        onChange={e => setQuizPassPct(Math.max(1, Math.min(100, Number(e.target.value))))}
+                                        onClick={e => e.stopPropagation()}
+                                        style={{ width: 56, border: `1px solid #93C5FD`, borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: P, fontWeight: 600 }}
+                                        onFocus={e => { e.currentTarget.style.borderColor = P; }}
+                                        onBlur={e => { e.currentTarget.style.borderColor = '#93C5FD'; }}
+                                      />
+                                      <span style={{ fontSize: 13, fontWeight: 600, color: P }}>%</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
+
+                          {/* Slide View Percentage */}
+                          {(() => {
+                            const checked = completionSrcs.includes('slide-view');
+                            return (
+                              <div style={{ borderRadius: 8, border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, background: checked ? PL : '#F9FAFB', transition: 'all 0.12s', overflow: 'hidden' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', userSelect: 'none' as const }}
+                                  onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'slide-view') : [...prev, 'slide-view'])}>
+                                  <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P : '#D1D5DB'}`, background: checked ? P : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
+                                    {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
+                                  </span>
+                                  <span style={{ fontSize: 13, color: checked ? P : '#374151', fontWeight: checked ? 500 : 400, flex: 1 }}>Slide View Percentage</span>
+                                </label>
+                                {checked && (
+                                  <div style={{ padding: '0 10px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <span style={{ fontSize: 13, color: '#6B7280' }}>Minimum slides viewed</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+                                      <input
+                                        type="number" min="1" max="100"
+                                        value={slideViewPct}
+                                        onChange={e => setSlideViewPct(Math.max(1, Math.min(100, Number(e.target.value))))}
+                                        onClick={e => e.stopPropagation()}
+                                        style={{ width: 56, border: `1px solid #93C5FD`, borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: P, fontWeight: 600 }}
+                                        onFocus={e => { e.currentTarget.style.borderColor = P; }}
+                                        onBlur={e => { e.currentTarget.style.borderColor = '#93C5FD'; }}
+                                      />
+                                      <span style={{ fontSize: 13, fontWeight: 600, color: P }}>%</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
+
+                          {/* Knowledge Check Completion */}
+                          {(() => {
+                            const checked = completionSrcs.includes('knowledge-check');
+                            return (
+                              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, background: checked ? PL : '#F9FAFB', border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, transition: 'all 0.12s', userSelect: 'none' as const }}
+                                onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'knowledge-check') : [...prev, 'knowledge-check'])}>
                                 <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P : '#D1D5DB'}`, background: checked ? P : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
                                   {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
                                 </span>
-                                <span style={{ fontSize: 13, color: checked ? P : '#374151', fontWeight: checked ? 500 : 400 }}>{opt.label}</span>
+                                <span style={{ fontSize: 13, color: checked ? P : '#374151', fontWeight: checked ? 500 : 400 }}>Knowledge Check Completion</span>
                               </label>
                             );
-                          })}
+                          })()}
+
                         </div>
                       </div>
 
@@ -1468,16 +1548,12 @@ export function AICreateCoursePage() {
             courseTitle={title}
             language={language}
             rightPanelOpen={rightOpen}
-            showMoreMenu={showMoreMenu}
             isSidebarCollapsed={isSidebarCollapsed}
             onToggleRightPanel={() => setRightOpen(v => !v)}
-            onToggleMoreMenu={() => setShowMoreMenu(v => !v)}
             onOpenCourseSettings={() => setShowCourseSettings(true)}
             onPublish={() => setShowPublish(true)}
             onPreview={() => setShowScorm(true)}
-            onSaveDraft={() => { toast.success('Draft saved', { description: `"${title}" saved.` }); setShowMoreMenu(false); }}
-            onDuplicate={() => { toast.info('Duplicate coming soon'); setShowMoreMenu(false); }}
-            onDelete={() => { navigate('/courses'); setShowMoreMenu(false); }}
+            onSaveDraft={() => { toast.success('Draft saved', { description: `"${title}" saved.` }); }}
             onApplyTheme={handleApplyTheme}
             currentDesignId={designId}
             onApplyTemplate={id => {
@@ -1689,30 +1765,100 @@ export function AICreateCoursePage() {
 
                   {/* Completion Criteria */}
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-                      <div>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Completion Criteria</p>
-                        <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Select all that apply</p>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 14px', marginTop: 8 }}>
-                      {([
-                        { value: 'quiz' as CompletionCriteriaSource, label: 'Quiz score' },
-                        { value: 'slide-view' as CompletionCriteriaSource, label: 'Slide view %' },
-                        { value: 'knowledge-check' as CompletionCriteriaSource, label: 'Knowledge check' },
-                        { value: 'final-assessment' as CompletionCriteriaSource, label: 'Final assessment' },
-                      ]).map(opt => {
-                        const checked = completionSrcs.includes(opt.value);
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: '0 0 2px' }}>Completion Criteria</p>
+                    <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 8px' }}>Select all that apply</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+
+                      {/* Quiz score */}
+                      {(() => {
+                        const checked = completionSrcs.includes('quiz');
                         return (
-                          <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', userSelect: 'none' }}
-                            onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== opt.value) : [...prev, opt.value])}>
-                            <span style={{ width: 15, height: 15, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
-                              {checked && <Check size={9} style={{ color: '#fff', strokeWidth: 3 }} />}
+                          <div style={{ borderRadius: 8, border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, background: checked ? '#EBF3FF' : '#F9FAFB', transition: 'all 0.12s', overflow: 'hidden' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', userSelect: 'none' as const }}
+                              onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'quiz') : [...prev, 'quiz'])}>
+                              <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
+                                {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
+                              </span>
+                              <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 500 : 400, flex: 1 }}>Quiz score</span>
+                            </label>
+                            {checked && (
+                              <div style={{ padding: '0 10px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <span style={{ fontSize: 12, color: '#6B7280' }}>Minimum pass score</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+                                  <input type="number" min="1" max="100" value={quizPassPct}
+                                    onChange={e => setQuizPassPct(Math.max(1, Math.min(100, Number(e.target.value))))}
+                                    onClick={e => e.stopPropagation()}
+                                    style={{ width: 52, border: '1px solid #93C5FD', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: '#1565F0', fontWeight: 600 }}
+                                    onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
+                                    onBlur={e => { e.currentTarget.style.borderColor = '#93C5FD'; }}
+                                  />
+                                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1565F0' }}>%</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Slide view % */}
+                      {(() => {
+                        const checked = completionSrcs.includes('slide-view');
+                        return (
+                          <div style={{ borderRadius: 8, border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, background: checked ? '#EBF3FF' : '#F9FAFB', transition: 'all 0.12s', overflow: 'hidden' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', userSelect: 'none' as const }}
+                              onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'slide-view') : [...prev, 'slide-view'])}>
+                              <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
+                                {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
+                              </span>
+                              <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 500 : 400, flex: 1 }}>Slide view %</span>
+                            </label>
+                            {checked && (
+                              <div style={{ padding: '0 10px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <span style={{ fontSize: 12, color: '#6B7280' }}>Minimum slides viewed</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+                                  <input type="number" min="1" max="100" value={slideViewPct}
+                                    onChange={e => setSlideViewPct(Math.max(1, Math.min(100, Number(e.target.value))))}
+                                    onClick={e => e.stopPropagation()}
+                                    style={{ width: 52, border: '1px solid #93C5FD', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: '#1565F0', fontWeight: 600 }}
+                                    onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
+                                    onBlur={e => { e.currentTarget.style.borderColor = '#93C5FD'; }}
+                                  />
+                                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1565F0' }}>%</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Knowledge check */}
+                      {(() => {
+                        const checked = completionSrcs.includes('knowledge-check');
+                        return (
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, background: checked ? '#EBF3FF' : '#F9FAFB', border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, transition: 'all 0.12s', userSelect: 'none' as const }}
+                            onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'knowledge-check') : [...prev, 'knowledge-check'])}>
+                            <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
+                              {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
                             </span>
-                            <span style={{ fontSize: 13, color: '#374151' }}>{opt.label}</span>
+                            <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 500 : 400 }}>Knowledge check</span>
                           </label>
                         );
-                      })}
+                      })()}
+
+                      {/* Final assessment */}
+                      {(() => {
+                        const checked = completionSrcs.includes('final-assessment');
+                        return (
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, background: checked ? '#EBF3FF' : '#F9FAFB', border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, transition: 'all 0.12s', userSelect: 'none' as const }}
+                            onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'final-assessment') : [...prev, 'final-assessment'])}>
+                            <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
+                              {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
+                            </span>
+                            <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 500 : 400 }}>Final assessment</span>
+                          </label>
+                        );
+                      })()}
+
                     </div>
                   </div>
 
