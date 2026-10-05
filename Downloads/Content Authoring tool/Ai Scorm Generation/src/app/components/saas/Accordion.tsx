@@ -52,7 +52,7 @@ export function Accordion(props: AccordionProps) {
                 'group flex w-full items-center gap-2.5 text-left transition-colors',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1565F0]',
                 'disabled:cursor-not-allowed disabled:opacity-50',
-                variant === 'flush' ? 'px-1 py-3' : 'px-4 py-3.5 hover:bg-[#F9FAFB]',
+                variant === 'flush' ? 'pl-1 pr-3 py-3' : 'pl-4 pr-3 py-3.5 hover:bg-[#F9FAFB]',
               )}
             >
               {it.icon && <span className="text-[#6B7280] [&_svg]:size-4">{it.icon}</span>}

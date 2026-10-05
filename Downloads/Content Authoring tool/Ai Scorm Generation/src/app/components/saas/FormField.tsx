@@ -1,4 +1,5 @@
 import { forwardRef, useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '../ui/utils';
 
 const fieldBase =
@@ -92,16 +93,23 @@ export interface SelectInputProps extends SelectHTMLAttributes<HTMLSelectElement
 
 export const SelectInput = forwardRef<HTMLSelectElement, SelectInputProps>(function SelectInput({ invalid, options, className, ...props }, ref) {
   return (
-    <select
-      ref={ref}
-      aria-invalid={invalid || undefined}
-      className={cn(fieldBase, fieldBorder(invalid), 'cursor-pointer', className)}
-      {...props}
-    >
-      {options.map((o) => {
-        const opt = typeof o === 'string' ? { value: o, label: o } : o;
-        return <option key={opt.value} value={opt.value}>{opt.label}</option>;
-      })}
-    </select>
+    <div className="relative">
+      <select
+        ref={ref}
+        aria-invalid={invalid || undefined}
+        className={cn(fieldBase, fieldBorder(invalid), 'cursor-pointer appearance-none pr-9', className)}
+        {...props}
+      >
+        {options.map((o) => {
+          const opt = typeof o === 'string' ? { value: o, label: o } : o;
+          return <option key={opt.value} value={opt.value}>{opt.label}</option>;
+        })}
+      </select>
+      {/* Custom caret — pointer-events-none so clicks pass through to the <select> */}
+      <ChevronDown
+        aria-hidden
+        className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#6B7280]"
+      />
+    </div>
   );
 });

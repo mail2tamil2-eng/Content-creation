@@ -1,5 +1,6 @@
 import axleLogo from '../../imports/AXLE-Korp-LOGO__2_.jpg';
-import { LayoutDashboard, BookOpen, ChevronLeft } from 'lucide-react';
+import axleMark from '../../imports/axle-mark.svg';
+import { LayoutDashboard, BookOpen, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router';
 
@@ -47,67 +48,66 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
       style={{ height: '100vh', overflow: 'hidden', fontFamily: 'Nunito Sans, system-ui, sans-serif' }}
     >
       {/* ── Logo row — same height as global header ── */}
-      <div
-        className="border-b border-gray-100 shrink-0 flex items-center"
-        style={{
-          height: HEADER_H,
-          padding: isCollapsed ? '0 12px' : '0 20px',
-          justifyContent: isCollapsed ? 'center' : 'flex-start',
-          overflow: 'hidden',
-        }}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          {isCollapsed ? (
-            <motion.div
-              key="mark"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.12 }}
-              style={{
-                width: 36, height: 36, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
-              }}
-            >
+      <AnimatePresence mode="wait" initial={false}>
+        {isCollapsed ? (
+          /* ChatGPT-style: clicking/hovering the logo mark expands the sidebar */
+          <motion.button
+            key="collapsed-logo"
+            type="button"
+            onClick={() => setIsCollapsed(false)}
+            aria-label="Expand sidebar"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12 }}
+            className="group border-b border-gray-100 shrink-0 w-full flex items-center justify-center transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1565F0]"
+            style={{ height: HEADER_H, padding: '0 12px', background: 'transparent', cursor: 'pointer' }}
+          >
+            <span style={{ position: 'relative', width: 36, height: 36, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {/* Orange A-mark — fades out on hover */}
               <img
-                src={axleLogo}
+                src={axleMark}
                 alt="Axle KORP"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'left center' }}
+                className="transition-opacity duration-150 group-hover:opacity-0"
+                style={{ width: 36, height: 36, objectFit: 'contain' }}
               />
-            </motion.div>
-          ) : (
-            <motion.img
-              key="full"
+              {/* Expand icon — fades in on hover, pill matches the expanded PanelLeftClose button */}
+              <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                <span className="flex size-8 items-center justify-center rounded-lg bg-transparent transition-colors group-hover:bg-gray-100">
+                  <PanelLeftOpen size={18} color="#6B7280" />
+                </span>
+              </span>
+            </span>
+          </motion.button>
+        ) : (
+          <motion.div
+            key="expanded-logo"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12 }}
+            className="border-b border-gray-100 shrink-0 flex items-center"
+            style={{ height: HEADER_H, padding: '0 12px 0 20px' }}
+          >
+            <img
               src={axleLogo}
               alt="Axle KORP"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.12 }}
-              style={{ height: 36, width: 'auto', objectFit: 'contain', display: 'block', maxWidth: 160 }}
+              style={{ height: 36, width: 'auto', objectFit: 'contain', display: 'block', maxWidth: 140, flex: '1 1 auto', minWidth: 0 }}
             />
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── Collapse / expand chevron — floats on the right edge ── */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        className="absolute bg-white border border-gray-200 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-md z-40"
-        style={{
-          width: 22, height: 22,
-          right: -11,
-          top: HEADER_H + 24,
-        }}
-      >
-        <motion.div
-          animate={{ rotate: isCollapsed ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-        >
-          <ChevronLeft size={13} className="text-gray-500" />
-        </motion.div>
-      </button>
+            {/* PanelLeftClose — collapses sidebar, lives inside the header row */}
+            <button
+              type="button"
+              onClick={() => setIsCollapsed(true)}
+              aria-label="Collapse navigation"
+              title="Collapse navigation"
+              className="group/collapse relative flex shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]"
+              style={{ width: 32, height: 32, marginLeft: 4 }}
+            >
+              <PanelLeftClose size={18} className="text-gray-500" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-hidden" style={{ padding: '12px 10px 0' }}>

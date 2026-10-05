@@ -2,12 +2,20 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { BarChart3, BookOpen, Languages, LayoutDashboard, Settings, ShoppingCart, Target, TicketPercent, Users } from 'lucide-react';
 import logo from '../../../imports/AXLE-Korp-LOGO__2_.jpg';
+import mark from '../../../imports/axle-mark.svg';
 import { AppSidebar, type NavGroup } from './AppSidebar';
 
 const CREATOR: NavGroup[] = [
   { items: [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'courses', label: 'Course Authoring', icon: BookOpen },
+    {
+      id: 'courses', label: 'Course Authoring', icon: BookOpen,
+      children: [
+        { id: 'courses-all', label: 'All Courses' },
+        { id: 'courses-drafts', label: 'Drafts', badge: 4 },
+        { id: 'courses-published', label: 'Published' },
+      ],
+    },
   ] },
 ];
 
@@ -30,11 +38,7 @@ const ADMIN: NavGroup[] = [
 ];
 
 const Logo = <img src={logo} alt="Axle KORP" className="block h-9 w-auto max-w-[160px] object-contain" />;
-const Mark = (
-  <span className="block size-9 overflow-hidden rounded-lg">
-    <img src={logo} alt="Axle KORP" className="size-full object-cover object-left" />
-  </span>
-);
+const Mark = <img src={mark} alt="Axle KORP" className="block size-9 object-contain" />;
 
 const meta = {
   title: 'SaaS/Layout/AppSidebar',
@@ -66,6 +70,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const CourseCreator: Story = {};
+export const WithSubNav: Story = { args: { activeId: 'courses-drafts' } };
 export const Collapsed: Story = { args: { collapsed: true } };
 export const SiteAdminGrouped: Story = { args: { groups: ADMIN, activeId: 'courses' } };
 export const SiteAdminCollapsed: Story = { args: { groups: ADMIN, activeId: 'courses', collapsed: true } };
