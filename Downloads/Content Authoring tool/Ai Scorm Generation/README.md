@@ -36,3 +36,17 @@ the initial Dashboard evidence and report interactions.
 The current design baseline is provisional because this checkout has no gallery
 route. See `DESIGN_SYSTEM.md` and `design-review/review-notes.md`.
   
+
+## Storybook
+
+```bash
+npm run storybook        # http://localhost:6006
+npm run build-storybook  # static build in storybook-static/
+```
+
+- **Foundations** — design tokens, approved contrast pairs, icon library
+- **SaaS** — reusable product components in `src/app/components/saas/` (all variants and states) and reference screens
+- **App (current) / Dashboard / Courses / Editor / Slides / Translation** — existing app components
+- **Primitives (shadcn)** — `src/app/components/ui/`
+
+Use the toolbar to switch light/dark theme; the Accessibility panel runs axe (WCAG 2.2 AA). See `CLAUDE.md` for conventions.
