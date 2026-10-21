@@ -830,7 +830,7 @@ export function AICreateCoursePage() {
                           {(['predefined', 'custom', 'blank'] as const).map(t => {
                             const labels = { predefined: 'Predefined Template', custom: 'Custom Template', blank: 'Blank Template' };
                             const active = templateType === t;
-                            return <button key={t} onClick={() => setTemplateType(t)} style={{ flex: 1, padding: '8px 0', borderRadius: 7, border: 'none', background: active ? '#fff' : 'transparent', color: active ? '#111827' : '#6B7280', fontSize: 13, fontWeight: active ? 600 : 400, cursor: 'pointer', boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s' }}>{labels[t]}</button>;
+                            return <button key={t} onClick={() => { setTemplateType(t); setAiTemplate(false); }} style={{ flex: 1, padding: '8px 0', borderRadius: 7, border: 'none', background: active ? '#fff' : 'transparent', color: active ? '#111827' : '#6B7280', fontSize: 13, fontWeight: active ? 600 : 400, cursor: 'pointer', boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s' }}>{labels[t]}</button>;
                           })}
                         </div>
                         {templateType === 'predefined' && (
@@ -843,7 +843,7 @@ export function AICreateCoursePage() {
                                 const bg = dk ? '#111827' : preset.background === 'warm' ? '#FEF9EE' : '#FFFFFF';
                                 const isSelected = selectedPredefined === d.id;
                                 return (
-                                  <button key={d.id} type="button" onClick={() => { setSelectedPredefined(d.id); setDesignId(d.id); }}
+                                  <button key={d.id} type="button" onClick={() => { setSelectedPredefined(d.id); setDesignId(d.id); setAiTemplate(false); }}
                                     style={{ position: 'relative', borderRadius: 10, border: `2px solid ${isSelected ? P : '#E5E7EB'}`, background: isSelected ? PL : '#fff', padding: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}>
                                     <span style={{ width: '100%', height: 44, borderRadius: 6, border: '1px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '0 8px', background: bg, flexShrink: 0 }}>
                                       <span style={{ height: 6, width: 22, borderRadius: 3, background: preset.primaryColor }} />
@@ -986,6 +986,7 @@ export function AICreateCoursePage() {
                                     setCustomSecondary(theme.accent);
                                     const warmBgs = ['#FFF9E8', '#FFFBF2'];
                                     setCustomBgStyle(warmBgs.includes(theme.background) ? 'warm' : 'light');
+                                    setAiTheme(false);
                                   }}
                                   style={{ position: 'relative', borderRadius: 9, border: `2px solid ${isSel ? theme.primary : '#E5E7EB'}`, background: '#fff', padding: 7, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}
                                   onMouseEnter={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; }}
@@ -1017,7 +1018,7 @@ export function AICreateCoursePage() {
                               <span style={{ fontSize: 12, color: '#6B7280', marginRight: 8, fontFamily: 'monospace' }}>{row.value.toUpperCase()}</span>
                               <label style={{ width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', position: 'relative', display: 'block', flexShrink: 0 }}>
                                 <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: row.value, border: '2px solid rgba(0,0,0,0.12)' }} />
-                                <input type="color" value={row.value} onChange={e => row.set(e.target.value)} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none', padding: 0 }} />
+                                <input type="color" value={row.value} onChange={e => { row.set(e.target.value); setAiTheme(false); }} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none', padding: 0 }} />
                               </label>
                             </div>
                           ))}
@@ -1025,7 +1026,7 @@ export function AICreateCoursePage() {
                           <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
                             <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font</span>
                             <div style={{ position: 'relative' }}>
-                              <select value={customFont} onChange={e => setCustomFont(e.target.value)}
+                              <select value={customFont} onChange={e => { setCustomFont(e.target.value); setAiTheme(false); }}
                                 style={{ border: '1px solid #E5E7EB', borderRadius: 7, padding: '5px 28px 5px 10px', fontSize: 13, color: '#111827', background: '#fff', appearance: 'none', cursor: 'pointer', outline: 'none' }}>
                                 {THEME_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                               </select>
@@ -1037,7 +1038,7 @@ export function AICreateCoursePage() {
                             <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Background</span>
                             <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
                               {(['light', 'warm', 'dark'] as const).map(opt => (
-                                <button key={opt} type="button" onClick={() => setCustomBgStyle(opt)}
+                                <button key={opt} type="button" onClick={() => { setCustomBgStyle(opt); setAiTheme(false); }}
                                   style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customBgStyle === opt ? 600 : 400, background: customBgStyle === opt ? '#1E293B' : 'transparent', color: customBgStyle === opt ? '#fff' : '#6B7280', transition: 'all 0.13s', textTransform: 'capitalize' }}>
                                   {opt.charAt(0).toUpperCase() + opt.slice(1)}
                                 </button>
@@ -1049,7 +1050,7 @@ export function AICreateCoursePage() {
                             <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Button Style</span>
                             <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
                               {(['rounded', 'pill', 'square'] as const).map(opt => (
-                                <button key={opt} type="button" onClick={() => setCustomButtonStyle(opt)}
+                                <button key={opt} type="button" onClick={() => { setCustomButtonStyle(opt); setAiTheme(false); }}
                                   style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customButtonStyle === opt ? 600 : 400, background: customButtonStyle === opt ? '#1E293B' : 'transparent', color: customButtonStyle === opt ? '#fff' : '#6B7280', transition: 'all 0.13s', textTransform: 'capitalize' }}>
                                   {opt.charAt(0).toUpperCase() + opt.slice(1)}
                                 </button>
