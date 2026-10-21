@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
-  Globe, Settings, Pencil,
+  Settings, Pencil,
   Upload, Play, Save, PanelRightOpen, Layout,
 } from 'lucide-react';
 import { ThemePopover, ThemeSettings } from './ThemePopover';
@@ -45,40 +45,6 @@ export function EditorTopToolbar({
 
   return (
     <>
-      {/*
-        Left row — only takes vertical space when the course sidebar is visible.
-        When collapsed the canvas fills full height; the floating pill in
-        AICreateCoursePage covers the top-left area.
-      */}
-      {!isSidebarCollapsed && (
-        <div
-          className="shrink-0 flex items-center"
-          style={{ height: '54px', paddingLeft: '14px' }}
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <div
-              className="flex items-center bg-white border border-gray-200 shadow-sm overflow-hidden shrink-0"
-              style={{ height: '44px', borderRadius: '10px', padding: '0 14px', maxWidth: '370px' }}
-            >
-              <span
-                className="font-semibold text-gray-900 truncate"
-                style={{ fontSize: '14px', maxWidth: '230px' }}
-                title={courseTitle}
-              >
-                {courseTitle || 'Untitled Course'}
-              </span>
-
-              <div className="bg-gray-200 shrink-0 mx-3" style={{ width: '1px', height: '22px' }} />
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                <Globe size={15} className="text-gray-500" />
-                <span className="text-gray-600" style={{ fontSize: '14px' }}>{language}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/*
         Right action panel — position: fixed, viewport-relative.
         right transitions between 336px (sidebar open) and 16px (sidebar closed)

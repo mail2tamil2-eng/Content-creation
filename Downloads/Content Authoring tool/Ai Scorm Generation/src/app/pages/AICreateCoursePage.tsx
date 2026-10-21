@@ -9,7 +9,7 @@ import {
   Volume2, Navigation, Captions,
   SkipBack, SkipForward, LogOut, Menu as MenuIcon,
   Maximize, X, MoreHorizontal, Palette,
-  PanelLeftClose, PanelLeftOpen,
+  PanelLeftClose, PanelLeftOpen, Monitor,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
@@ -86,6 +86,7 @@ const SLIDE_TYPES: SlideTypeConfig[] = [
   { id: 'knowledge-check',  label: 'Knowledge Check',     description: 'Ungraded comprehension check with instant feedback',  Icon: ClipboardList },
   { id: 'quiz',             label: 'Quiz',                description: 'Graded assessment with scoring and a passing bar',    Icon: HelpCircle },
   { id: 'summary',          label: 'Summary',             description: 'Key learning points and takeaways',                   Icon: Bookmark },
+  { id: 'simulation',       label: 'Simulation',          description: 'Interactive step-by-step task or process walkthrough',  Icon: Monitor },
 ];
 
 const COMPLEXITY_CONFIG: Record<Complexity, {
@@ -110,7 +111,7 @@ const COMPLEXITY_CONFIG: Record<Complexity, {
     color: 'bg-violet-50 border-violet-200', ring: 'border-violet-500',
     badge: 'bg-violet-100 text-violet-700', dot: 'bg-violet-400',
     minTopics: 5, contentTypes: 'Text, Media, Interactive & Simulation',
-    slideIds: ['title-text', 'title-bullets', 'image-visual', 'video', 'audio', 'spokesperson', 'scenario', 'knowledge-check', 'quiz', 'summary'],
+    slideIds: ['title-text', 'title-bullets', 'image-visual', 'video', 'audio', 'spokesperson', 'scenario', 'knowledge-check', 'quiz', 'summary', 'simulation'],
   },
 };
 
@@ -170,6 +171,7 @@ export function AICreateCoursePage() {
   const [customFont, setCustomFont]                 = useState('Inter');
   const [customBgStyle, setCustomBgStyle]           = useState<'light' | 'warm' | 'dark'>('light');
   const [customButtonStyle, setCustomButtonStyle]   = useState<'rounded' | 'pill' | 'square'>('rounded');
+  const [customFontColor, setCustomFontColor]       = useState('');
   // Custom template
   const [customLogoPreview, setCustomLogoPreview] = useState('');
   const [headerEnabled, setHeaderEnabled] = useState(false);
@@ -254,15 +256,28 @@ export function AICreateCoursePage() {
   const design = COURSE_DESIGNS.find(d => d.id === designId) || COURSE_DESIGNS[0];
   const preset = THEME_PRESETS.find(p => p.id === design.theme) || THEME_PRESETS[0];
   const isDark = preset.background === 'dark';
-  const themeBgColor   = customBgStyle === 'dark' ? '#111827' : customBgStyle === 'warm' ? '#FEF9EE' : '#FFFFFF';
-  const themeFontColor = customBgStyle === 'dark' ? '#FFFFFF' : '#172033';
+  const themeBgColor      = customBgStyle === 'dark' ? '#111827' : customBgStyle === 'warm' ? '#FEF9EE' : '#FFFFFF';
+  const autoFontColor     = customBgStyle === 'dark' ? '#FFFFFF' : '#172033';
+  const themeFontColor    = customFontColor || autoFontColor;
   const baseSettings: PresentationSettings = aiTheme
     ? { template: 'vivid-blue', primary: '#134780', accent: '#F48120', background: '#111C2D', foreground: '#FFFFFF', font: 'Inter', buttonStyle: 'rounded', layout: 'single', logo: logoPreview || undefined }
     : { template: design.template, primary: customPrimary, accent: customSecondary, background: themeBgColor, foreground: themeFontColor, font: customFont, buttonStyle: customButtonStyle, layout: 'single', logo: logoPreview || undefined };
 
-  const presentationSettings: PresentationSettings = themeOverride
-    ? { ...baseSettings, ...themeOverride }
-    : baseSettings;
+  const customTemplateOverrides: Partial<PresentationSettings> = templateType === 'custom' ? {
+    showHeader: headerEnabled,
+    headerShowLogo: headerIncludeLogo,
+    headerShowCourseName: headerIncludeCourseName,
+    showFooter: footerEnabled,
+    footerShowCourseName: footerIncludeCourseName,
+    footerShowPageNum: footerIncludePageNum,
+    footerCopyright: footerIncludeCopyright ? copyrightText : undefined,
+    footerWatermark: footerIncludeWatermark ? watermarkText : undefined,
+  } : {};
+
+  const presentationSettings: PresentationSettings = {
+    ...(themeOverride ? { ...baseSettings, ...themeOverride } : baseSettings),
+    ...customTemplateOverrides,
+  };
 
   const handleApplyTheme = (ts: ThemeSettings) => {
     const bg = ts.backgroundStyle === 'dark' ? '#0F172A'
@@ -810,7 +825,7 @@ export function AICreateCoursePage() {
                         </div>
                         <ToggleSwitch enabled={aiTemplate} onChange={setAiTemplate} />
                       </div>
-                      {!aiTemplate && (<>
+                      <>
                         <div style={{ display: 'flex', gap: 3, background: '#F3F4F6', borderRadius: 9, padding: 3 }}>
                           {(['predefined', 'custom', 'blank'] as const).map(t => {
                             const labels = { predefined: 'Predefined Template', custom: 'Custom Template', blank: 'Blank Template' };
@@ -850,8 +865,7 @@ export function AICreateCoursePage() {
                           </div>
                         )}
                         {templateType === 'custom' && (
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 20 }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                               <div>
                                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Organization Logo</label>
                                 <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', border: `2px dashed ${customLogoPreview ? P : '#D1D5DB'}`, borderRadius: 8, cursor: 'pointer', background: customLogoPreview ? PL : '#FAFAFA', transition: 'all 0.13s' }}
@@ -861,7 +875,7 @@ export function AICreateCoursePage() {
                                   {customLogoPreview ? <><img src={customLogoPreview} alt="logo" style={{ height: 28, objectFit: 'contain', maxWidth: 80 }} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Logo uploaded</span><button type="button" onClick={e => { e.preventDefault(); setCustomLogoPreview(''); }} style={{ marginLeft: 'auto', fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button></> : <><Upload size={15} color="#6B7280" /><span style={{ fontSize: 13, color: '#6B7280' }}>Upload logo — PNG, JPG, JPEG, SVG · max 5 MB</span></>}
                                 </label>
                               </div>
-                              {[{ label: 'Header', enabled: headerEnabled, toggle: () => setHeaderEnabled(v => !v), items: [{ label: 'Organization Logo', value: headerIncludeLogo, set: setHeaderIncludeLogo }, { label: 'Course Name', value: headerIncludeCourseName, set: setHeaderIncludeCourseName }] }, { label: 'Footer', enabled: footerEnabled, toggle: () => setFooterEnabled(v => !v), items: [{ label: 'Organization Name', value: footerIncludeOrgName, set: setFooterIncludeOrgName }, { label: 'Course Name', value: footerIncludeCourseName, set: setFooterIncludeCourseName }, { label: 'Page / Slide Number', value: footerIncludePageNum, set: setFooterIncludePageNum }] }].map(section => (
+                              {[{ label: 'Header', enabled: headerEnabled, toggle: () => setHeaderEnabled(v => !v), items: [{ label: 'Organization Logo', value: headerIncludeLogo, set: setHeaderIncludeLogo }, { label: 'Course Name', value: headerIncludeCourseName, set: setHeaderIncludeCourseName }] }, { label: 'Footer', enabled: footerEnabled, toggle: () => setFooterEnabled(v => !v), items: [{ label: 'Course Name', value: footerIncludeCourseName, set: setFooterIncludeCourseName }, { label: 'Page / Slide Number', value: footerIncludePageNum, set: setFooterIncludePageNum }] }].map(section => (
                                 <div key={section.label} style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
                                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F9FAFB' }}>
                                     <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{section.label}</span>
@@ -893,21 +907,6 @@ export function AICreateCoursePage() {
                                   )}
                                 </div>
                               ))}
-                            </div>
-                            <div style={{ position: 'sticky', top: 0 }}>
-                              <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Live Preview</p>
-                              <div style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden', background: '#fff' }}>
-                                {headerEnabled ? <div style={{ background: '#1F2937', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, minHeight: 36 }}>{headerIncludeLogo && (customLogoPreview ? <img src={customLogoPreview} alt="logo" style={{ height: 18, objectFit: 'contain', maxWidth: 50 }} /> : <div style={{ width: 28, height: 14, borderRadius: 2, background: 'rgba(255,255,255,0.3)' }} />)}{headerIncludeCourseName && <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.9)', fontWeight: 600, flex: 1 }}>{title || 'Course Name'}</span>}</div> : <div style={{ background: '#F3F4F6', padding: '8px 12px' }}><span style={{ fontSize: 11, color: '#9CA3AF' }}>Header disabled</span></div>}
-                                <div style={{ padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 5, minHeight: 80 }}>
-                                  <div style={{ height: 8, borderRadius: 3, background: '#E5E7EB', width: '55%' }} />
-                                  <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '80%' }} />
-                                  <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '65%' }} />
-                                  <div style={{ height: 5, borderRadius: 3, background: '#F3F4F6', width: '72%' }} />
-                                </div>
-                                {footerEnabled ? <div style={{ background: '#F9FAFB', borderTop: '1px solid #E5E7EB', padding: '6px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 28, flexWrap: 'wrap', gap: 4 }}><div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>{footerIncludeOrgName && <span style={{ fontSize: 10, color: '#374151', fontWeight: 600 }}>Org Name</span>}{footerIncludeCourseName && <span style={{ fontSize: 10, color: '#6B7280' }}>{title || 'Course Name'}</span>}{footerIncludeCopyright && copyrightText && <span style={{ fontSize: 10, color: '#6B7280' }}>{copyrightText}</span>}{footerIncludeWatermark && watermarkText && <span style={{ fontSize: 10, color: '#DC2626', opacity: 0.4, fontWeight: 700 }}>{watermarkText}</span>}</div>{footerIncludePageNum && <span style={{ fontSize: 10, color: '#6B7280' }}>1 / 12</span>}</div> : <div style={{ background: '#F9FAFB', borderTop: '1px solid #E5E7EB', padding: '6px 12px' }}><span style={{ fontSize: 11, color: '#9CA3AF' }}>Footer disabled</span></div>}
-                              </div>
-                              <p style={{ margin: '6px 0 0', fontSize: 12, color: '#6B7280' }}>Updates in real time as you configure</p>
-                            </div>
                           </div>
                         )}
                         {templateType === 'blank' && (
@@ -922,7 +921,7 @@ export function AICreateCoursePage() {
                             </div>
                           </div>
                         )}
-                      </>)}
+                      </>
                     </div>
                   </motion.div>
                 )}
@@ -972,9 +971,8 @@ export function AICreateCoursePage() {
                         <ToggleSwitch enabled={aiTheme} onChange={setAiTheme} />
                       </div>
 
-                      {/* ── Preset grid (hidden when AI on) ── */}
-                      {!aiTheme && (
-                        <div>
+                      {/* ── Preset grid ── */}
+                      <div>
                           <p style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 8px' }}>Preset Themes</p>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
                             {THEME_OPTIONS.map(theme => {
@@ -1005,11 +1003,9 @@ export function AICreateCoursePage() {
                             })}
                           </div>
                         </div>
-                      )}
 
                       {/* ── Customise ── */}
-                      {!aiTheme && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                           <p style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>Customise</p>
 
                           {([
@@ -1063,11 +1059,16 @@ export function AICreateCoursePage() {
 
                           <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8 }}>
                             <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font Color</span>
-                            <span style={{ fontSize: 11, color: '#6B7280', background: '#F3F4F6', borderRadius: 4, padding: '2px 7px', marginRight: 8 }}>Auto</span>
-                            <div style={{ width: 24, height: 24, borderRadius: '50%', background: themeFontColor, border: '2px solid rgba(0,0,0,0.12)', flexShrink: 0 }} />
+                            <span style={{ fontSize: 12, color: '#6B7280', fontFamily: 'monospace', marginRight: 8 }}>{themeFontColor.toUpperCase()}</span>
+                            {customFontColor && (
+                              <button type="button" onClick={() => setCustomFontColor('')} style={{ fontSize: 11, color: '#6B7280', background: '#F3F4F6', border: 'none', borderRadius: 4, padding: '2px 7px', marginRight: 8, cursor: 'pointer' }}>Auto</button>
+                            )}
+                            <label style={{ width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', position: 'relative', display: 'block', flexShrink: 0 }}>
+                              <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: themeFontColor, border: '2px solid rgba(0,0,0,0.12)' }} />
+                              <input type="color" value={themeFontColor} onChange={e => setCustomFontColor(e.target.value)} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none', padding: 0 }} />
+                            </label>
                           </div>
                         </div>
-                      )}
 
                     </div>
                   </motion.div>
@@ -1728,21 +1729,6 @@ export function AICreateCoursePage() {
 
               {/* Drawer body */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
-
-                {/* ── Language ── */}
-                <div style={{ marginBottom: 24 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px' }}>Language</p>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Course Language</p>
-                      <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Language used for this course</p>
-                    </div>
-                    <select value={language} onChange={e => setLanguage(e.target.value)}
-                      style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
-                      {LANGUAGES.map(l => <option key={l}>{l}</option>)}
-                    </select>
-                  </div>
-                </div>
 
                 <div style={{ height: 1, background: '#F3F4F6', marginBottom: 24 }} />
 
