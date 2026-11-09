@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   X, CheckCircle2, Sparkles, Download, AlertCircle,
   RotateCcw, Loader2, Check, Upload, Search, ChevronDown, Building2, LayoutDashboard, ArrowLeft,
+  ListChecks, ChevronRight,
 } from 'lucide-react';
 
 interface Section {
@@ -26,6 +27,8 @@ interface Props {
   setPublishDone?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+type CompletionSource = 'quiz' | 'slide-view' | 'knowledge-check' | 'final-assessment';
+
 interface Tenant { id: string; name: string; url: string; color: string; bg: string; }
 
 const ALL_TENANTS: Tenant[] = [
@@ -42,10 +45,15 @@ const ALL_TENANTS: Tenant[] = [
 ];
 
 type GlobalStep  = 'idle' | 'generating' | 'validating' | 'transferring' | 'done';
-type Phase       = 'select' | 'publishing' | 'done' | 'error';
+type Phase       = 'criteria' | 'select' | 'publishing' | 'done' | 'error';
 type TenantStatus = 'pending' | 'active' | 'done' | 'error';
 
 export default function PublishModal({ courseTitle, sections, onClose, onDashboard }: Props) {
+  // ── completion criteria ───────────────────────────────────
+  const [completionSrcs, setCompletionSrcs] = useState<CompletionSource[]>([]);
+  const [quizPassPct, setQuizPassPct]       = useState(80);
+  const [slideViewPct, setSlideViewPct]     = useState(80);
+
   // ── selection ────────────────────────────────────────────
   const [selectedIds, setSelectedIds] = useState<string[]>(['axlekorp']);
   const [dropOpen, setDropOpen]       = useState(false);
@@ -65,7 +73,7 @@ export default function PublishModal({ courseTitle, sections, onClose, onDashboa
   }, [dropOpen]);
 
   // ── publishing ───────────────────────────────────────────
-  const [phase, setPhase]               = useState<Phase>('select');
+  const [phase, setPhase]               = useState<Phase>('criteria');
   const [globalStep, setGlobalStep]     = useState<GlobalStep>('idle');
   const [tenantStatus, setTenantStatus] = useState<Record<string, TenantStatus>>({});
   const [retryKey, setRetryKey]         = useState(0);
@@ -127,8 +135,13 @@ export default function PublishModal({ courseTitle, sections, onClose, onDashboa
   // header
   const iconBg    = phase === 'done' ? '#F0FDF4' : phase === 'error' ? '#FEF2F2' : '#EBF3FF';
   const iconColor = phase === 'done' ? '#15803D' : phase === 'error' ? '#B91C1C' : '#1565F0';
-  const heading   = phase === 'select' ? 'Publish to LMS' : phase === 'done' ? 'Course Published!' : phase === 'error' ? 'Publishing Failed' : 'Publishing to LMS';
-  const subhead   = phase === 'select'     ? 'Select one or more LMS tenants to publish this course'
+  const heading   = phase === 'criteria'   ? 'Completion Criteria'
+                  : phase === 'select'     ? 'Publish to LMS'
+                  : phase === 'done'       ? 'Course Published!'
+                  : phase === 'error'      ? 'Publishing Failed'
+                  :                          'Publishing to LMS';
+  const subhead   = phase === 'criteria'   ? 'Set when this course is marked complete for a learner'
+                  : phase === 'select'     ? 'Select one or more LMS tenants to publish this course'
                   : phase === 'done'       ? `Successfully published to ${chosenTenants.length} tenant${chosenTenants.length > 1 ? 's' : ''}.`
                   : phase === 'error'      ? 'An error occurred during publishing. Please try again.'
                   : globalStep === 'generating' ? 'Generating SCORM package…'
@@ -147,9 +160,10 @@ export default function PublishModal({ courseTitle, sections, onClose, onDashboa
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 18px', borderBottom: '1px solid #F3F4F6', borderRadius: '20px 20px 0 0', overflow: 'hidden', background: '#fff' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{ width: 46, height: 46, borderRadius: '50%', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.3s' }}>
-              {phase === 'done'  ? <CheckCircle2 size={22} color={iconColor} />
-             : phase === 'error' ? <AlertCircle  size={22} color={iconColor} />
-             :                     <Upload        size={20} color={iconColor} />}
+              {phase === 'done'      ? <CheckCircle2 size={22} color={iconColor} />
+             : phase === 'error'     ? <AlertCircle  size={22} color={iconColor} />
+             : phase === 'criteria'  ? <ListChecks   size={20} color={iconColor} />
+             :                         <Upload        size={20} color={iconColor} />}
             </div>
             <div>
               <p style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }}>{heading}</p>
@@ -177,6 +191,113 @@ export default function PublishModal({ courseTitle, sections, onClose, onDashboa
               <p style={{ fontSize: 11, color: '#6B7280', margin: '1px 0 0' }}>SCORM 1.2 · {slideCount} slide{slideCount !== 1 ? 's' : ''}</p>
             </div>
           </div>
+
+          {/* ═══ CRITERIA PHASE ═══ */}
+          {phase === 'criteria' && (
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Mark complete when — select all that apply
+              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+
+                {/* Quiz score */}
+                {(() => {
+                  const checked = completionSrcs.includes('quiz');
+                  return (
+                    <div style={{ borderRadius: 8, border: `1.5px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, background: checked ? '#EBF3FF' : '#F9FAFB', transition: 'all 0.12s', overflow: 'hidden' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 12px', userSelect: 'none' as const }}
+                        onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'quiz') : [...prev, 'quiz'])}>
+                        <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
+                          {checked && <Check size={10} color="#fff" strokeWidth={3} />}
+                        </span>
+                        <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 600 : 400, flex: 1 }}>Quiz score</span>
+                      </label>
+                      {checked && (
+                        <div style={{ padding: '0 12px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ fontSize: 12, color: '#6B7280' }}>Minimum pass score</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+                            <input type="number" min="1" max="100" value={quizPassPct}
+                              onChange={e => setQuizPassPct(Math.max(1, Math.min(100, Number(e.target.value))))}
+                              onClick={e => e.stopPropagation()}
+                              style={{ width: 52, border: '1px solid #93C5FD', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: '#1565F0', fontWeight: 600 }}
+                              onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
+                              onBlur={e => { e.currentTarget.style.borderColor = '#93C5FD'; }}
+                            />
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#1565F0' }}>%</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Slide view % */}
+                {(() => {
+                  const checked = completionSrcs.includes('slide-view');
+                  return (
+                    <div style={{ borderRadius: 8, border: `1.5px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, background: checked ? '#EBF3FF' : '#F9FAFB', transition: 'all 0.12s', overflow: 'hidden' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 12px', userSelect: 'none' as const }}
+                        onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'slide-view') : [...prev, 'slide-view'])}>
+                        <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
+                          {checked && <Check size={10} color="#fff" strokeWidth={3} />}
+                        </span>
+                        <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 600 : 400, flex: 1 }}>Slide view percentage</span>
+                      </label>
+                      {checked && (
+                        <div style={{ padding: '0 12px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span style={{ fontSize: 12, color: '#6B7280' }}>Minimum slides viewed</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+                            <input type="number" min="1" max="100" value={slideViewPct}
+                              onChange={e => setSlideViewPct(Math.max(1, Math.min(100, Number(e.target.value))))}
+                              onClick={e => e.stopPropagation()}
+                              style={{ width: 52, border: '1px solid #93C5FD', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: '#1565F0', fontWeight: 600 }}
+                              onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
+                              onBlur={e => { e.currentTarget.style.borderColor = '#93C5FD'; }}
+                            />
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#1565F0' }}>%</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Knowledge check */}
+                {(() => {
+                  const checked = completionSrcs.includes('knowledge-check');
+                  return (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 12px', borderRadius: 8, background: checked ? '#EBF3FF' : '#F9FAFB', border: `1.5px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, transition: 'all 0.12s', userSelect: 'none' as const }}
+                      onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'knowledge-check') : [...prev, 'knowledge-check'])}>
+                      <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
+                        {checked && <Check size={10} color="#fff" strokeWidth={3} />}
+                      </span>
+                      <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 600 : 400 }}>Knowledge check</span>
+                    </label>
+                  );
+                })()}
+
+                {/* Final assessment */}
+                {(() => {
+                  const checked = completionSrcs.includes('final-assessment');
+                  return (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 12px', borderRadius: 8, background: checked ? '#EBF3FF' : '#F9FAFB', border: `1.5px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, transition: 'all 0.12s', userSelect: 'none' as const }}
+                      onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'final-assessment') : [...prev, 'final-assessment'])}>
+                      <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
+                        {checked && <Check size={10} color="#fff" strokeWidth={3} />}
+                      </span>
+                      <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 600 : 400 }}>Final assessment</span>
+                    </label>
+                  );
+                })()}
+
+              </div>
+              {completionSrcs.length === 0 && (
+                <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8, marginBottom: 0 }}>
+                  No criteria selected — course defaults to slide completion tracking
+                </p>
+              )}
+            </div>
+          )}
 
           {/* ═══ SELECT PHASE ═══ */}
           {phase === 'select' && (
@@ -326,7 +447,7 @@ export default function PublishModal({ courseTitle, sections, onClose, onDashboa
           )}
 
           {/* ═══ PUBLISHING / DONE / ERROR PHASE ═══ */}
-          {phase !== 'select' && (
+          {(phase === 'publishing' || phase === 'done' || phase === 'error') && (
             <>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 6 }}>
                 <GlobalStepRow label="Generating SCORM package"
@@ -405,18 +526,47 @@ export default function PublishModal({ courseTitle, sections, onClose, onDashboa
         </div>
 
         {/* ── Footer ── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: phase === 'done' ? 'space-between' : 'flex-end', padding: '14px 24px 20px', borderTop: '1px solid #F3F4F6', borderRadius: '0 0 20px 20px', overflow: 'hidden', background: '#fff' }}>
-          {phase === 'done' && (
-            <button
-              onClick={() => { setPhase('select'); setGlobalStep('idle'); setTenantStatus({}); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 9, border: '1.5px solid #E5E7EB', background: '#fff', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer', transition: 'background 0.15s' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
-            >
-              <ArrowLeft size={14} /> Back
-            </button>
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px 20px', borderTop: '1px solid #F3F4F6', borderRadius: '0 0 20px 20px', overflow: 'hidden', background: '#fff' }}>
+          {/* Left side: back buttons */}
+          <div>
+            {phase === 'done' && (
+              <button
+                onClick={() => { setPhase('criteria'); setGlobalStep('idle'); setTenantStatus({}); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 9, border: '1.5px solid #E5E7EB', background: '#fff', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer', transition: 'background 0.15s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
+              >
+                <ArrowLeft size={14} /> Back
+              </button>
+            )}
+            {phase === 'select' && (
+              <button
+                onClick={() => setPhase('criteria')}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 9, border: '1.5px solid #E5E7EB', background: '#fff', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer', transition: 'background 0.15s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
+              >
+                <ArrowLeft size={14} /> Back
+              </button>
+            )}
+          </div>
           <div style={{ display: 'flex', gap: 8 }}>
+            {phase === 'criteria' && (
+              <>
+                <button onClick={onClose}
+                  style={{ padding: '8px 18px', borderRadius: 9, border: '1.5px solid #E5E7EB', background: '#fff', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer', transition: 'background 0.15s' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}>
+                  Cancel
+                </button>
+                <button onClick={() => setPhase('select')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 9, border: 'none', background: '#1565F0', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.15s' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#1A63E8'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#1565F0'; }}>
+                  Choose LMS <ChevronRight size={14} />
+                </button>
+              </>
+            )}
             {phase === 'select' && (
               <button onClick={handlePublish} disabled={selectedIds.length === 0}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 22px', borderRadius: 9, border: 'none', background: selectedIds.length === 0 ? '#C4C4C4' : '#1565F0', color: '#fff', fontSize: 13, fontWeight: 600, cursor: selectedIds.length === 0 ? 'not-allowed' : 'pointer', transition: 'background 0.15s' }}

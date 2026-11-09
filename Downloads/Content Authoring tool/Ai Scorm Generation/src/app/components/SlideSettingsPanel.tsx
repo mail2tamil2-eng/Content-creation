@@ -43,6 +43,7 @@ const NARRATION_TONES  = [
   {value:'energetic',label:'Energetic'},{value:'calm',label:'Calm'},
 ];
 
+
 // ── Slide type display map ────────────────────────────────────────────────────
 
 interface TypeInfo { name: string; category: 'TEXT' | 'MEDIA' | 'INTERACTIVE' | 'QUIZ'; color: string; bg: string; }
@@ -402,7 +403,7 @@ function VideoFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
 
 function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [enabled, setEnabled]     = useState((t.narrationEnabled as boolean) ?? true);
+  const [enabled, setEnabled]     = useState((t.narrationEnabled as boolean) ?? false);
   const [generated, setGenerated] = useState((t.narrationGenerated as boolean) ?? false);
   const [lang, setLang]           = useState((t.narrationLang as string) || 'en');
   const [voice, setVoice]         = useState((t.narrationVoice as string) || 'female-en');
@@ -1210,8 +1211,7 @@ function TypeFields({ topic, onUpdate }: { topic: CSTopic; onUpdate: (u: Partial
 export function SlideSettingsPanel({
   topic, onUpdate, onClose, onChangeSlideType, onDelete, onEnhanceWithAI, enhancing, onRegenerateSlide,
 }: SlideSettingsPanelProps) {
-  const [topicTitle, setTopicTitle]   = useState(topic.title);
-  const [description, setDescription] = useState((topic.description as string) || '');
+  const [topicTitle, setTopicTitle] = useState(topic.title);
 
   const st   = topic.slideType as string;
   const tid  = topic.templateId as string | undefined;
@@ -1227,20 +1227,20 @@ export function SlideSettingsPanel({
       {/* Header */}
       <div style={{ padding: '12px 16px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#111827' }}>Topic Settings</p>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#111827' }}>Slide Settings</p>
           <p style={{ margin: '2px 0 0', fontSize: 13, color: '#6B7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
             {topic.title || 'New topic'}
           </p>
         </div>
-        {/* Regenerate slide structure */}
+        {/* Enhance with AI */}
         {onRegenerateSlide && (
-          <button onClick={onRegenerateSlide} title="Regenerate slide structure"
+          <button onClick={onRegenerateSlide} title="Enhance with AI"
             style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${BORDER}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', flexShrink: 0 }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; (e.currentTarget as HTMLElement).style.color = P; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; (e.currentTarget as HTMLElement).style.color = '#6B7280'; }}
-          ><RotateCcw size={14} /></button>
+          ><Sparkles size={14} /></button>
         )}
-        <button onClick={onClose} title="Collapse Topic Settings"
+        <button onClick={onClose} title="Collapse Slide Settings"
           style={{ width: 28, height: 28, borderRadius: 7, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', flexShrink: 0 }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#374151'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF'; }}
@@ -1258,11 +1258,6 @@ export function SlideSettingsPanel({
             <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#111827' }}>{info.displayName}</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: info.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{info.category}</span>
           </div>
-          <button onClick={onChangeSlideType}
-            style={{ marginTop: 7, fontSize: 13, fontWeight: 500, color: P, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.textDecoration = 'none'; }}
-          ><RefreshCw size={11} />Change slide type</button>
         </div>
 
         {/* Content: Title + Objective */}
@@ -1270,10 +1265,6 @@ export function SlideSettingsPanel({
           <div>
             <FieldLabel>Topic title</FieldLabel>
             <SInput value={topicTitle} placeholder="Enter topic title…" onChange={v => { setTopicTitle(v); onUpdate({ title: v }); }} />
-          </div>
-          <div>
-            <FieldLabel>Learning objective</FieldLabel>
-            <SInput rows={2} value={description} placeholder="What will the learner know or do after this slide?" onChange={v => { setDescription(v); onUpdate({ description: v }); }} />
           </div>
         </FieldGroup>
 
@@ -1291,20 +1282,6 @@ export function SlideSettingsPanel({
 
       </div>
 
-      {/* Footer actions */}
-      <div style={{ padding: '12px 16px', borderTop: `1px solid ${BORDER}`, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <button onClick={onEnhanceWithAI} disabled={enhancing}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px 0', borderRadius: 9, border: `1.5px solid ${P}`, background: '#fff', color: P, fontSize: 13, fontWeight: 600, cursor: enhancing ? 'default' : 'pointer', opacity: enhancing ? 0.7 : 1 }}
-          onMouseEnter={e => { if (!enhancing) { (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; } }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}>
-          <Sparkles size={14} />{enhancing ? 'Enhancing…' : 'Enhance with AI'}
-        </button>
-        <button onClick={onDelete}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 0', borderRadius: 9, border: '1px solid #FECACA', background: 'none', color: '#DC2626', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
-        ><Trash2 size={14} />Delete topic</button>
-      </div>
     </div>
   );
 }

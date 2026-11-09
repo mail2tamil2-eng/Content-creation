@@ -30,8 +30,6 @@ import { SelectInput } from '../components/saas';
 type Complexity = 'basic' | 'intermediate' | 'advanced';
 type NavigationMode = 'free' | 'linear';
 type SeekBarControl = 'enable' | 'hide';
-type CompletionCriteriaSource = 'quiz' | 'slide-view' | 'knowledge-check';
-type SeekBarOption = 'drag' | 'drag-after-completion' | 'read-only';
 type ThemeBackground = 'light' | 'warm' | 'dark';
 type ButtonStyle = 'rounded' | 'pill' | 'square';
 
@@ -182,11 +180,7 @@ export function AICreateCoursePage() {
   const [watermarkText, setWatermarkText] = useState('');
 
   // Global Settings
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [navMode, setNavMode] = useState<NavigationMode>('free');
-  const [completionSrcs, setCompletionSrcs] = useState<CompletionCriteriaSource[]>([]);
-  const [quizPassPct, setQuizPassPct] = useState(80);
-  const [slideViewPct, setSlideViewPct] = useState(80);
   const [bookmarking, setBookmarking] = useState(true);
   const [transcript, setTranscript] = useState(false);
   const [seekBar, setSeekBar] = useState<SeekBarControl>('enable');
@@ -194,8 +188,6 @@ export function AICreateCoursePage() {
   const [slideTransition, setSlideTransition] = useState('none');
   const [backgroundMusic, setBackgroundMusic] = useState(false);
   const [backgroundMusicFile, setBackgroundMusicFile] = useState('');
-  const [bgMusicAi, setBgMusicAi] = useState(true);
-  const [seekBarOption, setSeekBarOption] = useState<SeekBarOption>('drag');
 
   // Step 2
   const [sections, setSections] = useState<Section[]>([]);
@@ -961,293 +953,45 @@ export function AICreateCoursePage() {
               </AnimatePresence>
             </div>
 
-            {/* Card: Player Settings */}
-            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, overflow: 'hidden' }}>
+            {/* ---- Action buttons — inside left column, aligns with form cards ---- */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, paddingBottom: 32 }}>
               <button
-                type="button" onClick={() => setSettingsOpen(!settingsOpen)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', background: 'none', border: 'none', cursor: 'pointer', transition: 'background 0.12s' }}
+                onClick={() => navigate(-1)}
+                style={{ padding: '9px 20px', fontSize: 13, fontWeight: 500, color: '#374151', border: '1px solid #E5E7EB', borderRadius: 9, background: '#fff', cursor: 'pointer', transition: 'background 0.12s' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Settings size={14} style={{ color: '#6B7280' }} />
-                  </div>
-                  <div style={{ textAlign: 'left' }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Player Settings</p>
-                    <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Navigation, seek bar, completion &amp; accessibility</p>
-                  </div>
-                </div>
-                <ChevronDown size={15} style={{ color: '#6B7280', transform: settingsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                Cancel
               </button>
-              <AnimatePresence initial={false}>
-                {settingsOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
-                    style={{ overflow: 'hidden' }}
-                  >
-                    <div style={{ borderTop: '1px solid #F3F4F6', padding: '0 24px', display: 'flex', flexDirection: 'column' }}>
-
-                      {/* ── Background Music ── */}
-                      <div style={{ padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                          <div>
-                            <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Background Music</p>
-                            <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Play ambient audio throughout the course</p>
-                          </div>
-                          <ToggleSwitch enabled={backgroundMusic} onChange={v => { setBackgroundMusic(v); if (!v) setBackgroundMusicFile(''); }} />
-                        </div>
-                        {backgroundMusic && (
-                          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                            <div style={{ display: 'flex', gap: 8 }}>
-                              {([
-                                { val: true,  label: 'AI Generate',  sub: 'AI creates suitable background music' },
-                                { val: false, label: 'Upload Audio',  sub: 'Upload your own MP3 / WAV file' },
-                              ] as { val: boolean; label: string; sub: string }[]).map(opt => (
-                                <button key={String(opt.val)} type="button" onClick={() => setBgMusicAi(opt.val)}
-                                  style={{ flex: 1, padding: '10px 12px', borderRadius: 9, border: `1.5px solid ${bgMusicAi === opt.val ? P : '#E5E7EB'}`, background: bgMusicAi === opt.val ? PL : '#F9FAFB', cursor: 'pointer', textAlign: 'left', transition: 'all 0.13s' }}>
-                                  <p style={{ fontSize: 13, fontWeight: 600, color: bgMusicAi === opt.val ? P : '#111827', margin: 0 }}>{opt.label}</p>
-                                  <p style={{ fontSize: 12, color: '#6B7280', margin: '2px 0 0' }}>{opt.sub}</p>
-                                </button>
-                              ))}
-                            </div>
-                            {bgMusicAi ? (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: PL, borderRadius: 8, border: '1px solid #93C5FD' }}>
-                                <Sparkles size={13} color={P} />
-                                <span style={{ fontSize: 13, color: P }}>AI will generate suitable background music based on course content</span>
-                              </div>
-                            ) : (
-                              <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', border: `2px dashed ${backgroundMusicFile ? '#93C5FD' : '#D1D5DB'}`, borderRadius: 10, cursor: 'pointer', background: backgroundMusicFile ? '#EBF3FF' : 'transparent', transition: 'all 0.13s' }}
-                                onMouseEnter={e => { if (!backgroundMusicFile) { (e.currentTarget as HTMLElement).style.borderColor = '#1565F0'; (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; } }}
-                                onMouseLeave={e => { if (!backgroundMusicFile) { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = 'transparent'; } }}>
-                                <div style={{ width: 32, height: 32, borderRadius: 7, background: backgroundMusicFile ? '#E0E7FF' : '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                  <Volume2 size={14} style={{ color: backgroundMusicFile ? '#1565F0' : '#9CA3AF' }} />
-                                </div>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <p style={{ fontSize: 13, fontWeight: 500, color: '#374151', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    {backgroundMusicFile || 'Upload audio file'}
-                                  </p>
-                                  <p style={{ fontSize: 12, color: '#6B7280', margin: '2px 0 0' }}>MP3 or WAV · max 10 MB</p>
-                                </div>
-                                {backgroundMusicFile && (
-                                  <button type="button" onClick={e => { e.preventDefault(); setBackgroundMusicFile(''); }}
-                                    style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                    <X size={13} style={{ color: '#6B7280' }} />
-                                  </button>
-                                )}
-                                <input type="file" accept="audio/mp3,audio/wav,audio/*" style={{ display: 'none' }}
-                                  onChange={e => { const f = e.target.files?.[0]; if (f && f.size <= 10 * 1024 * 1024) setBackgroundMusicFile(f.name); }} />
-                              </label>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* ── Navigation Mode ── */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
-                        <div>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Navigation Mode</p>
-                          <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>How learners move through slides</p>
-                        </div>
-                        <div style={{ position: 'relative' }}>
-                          <select value={navMode} onChange={e => setNavMode(e.target.value as NavigationMode)}
-                            style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 30px 7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer', appearance: 'none' }}>
-                            <option value="free">Free Navigation</option>
-                            <option value="linear">Linear</option>
-                          </select>
-                          <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
-                        </div>
-                      </div>
-
-                      {/* ── Seek Bar Control ── */}
-                      <div style={{ padding: '14px 0', borderBottom: '1px solid #F3F4F6', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                          <div>
-                            <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Seek Bar Control</p>
-                            <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Control seek bar visibility and behaviour</p>
-                          </div>
-                          <div style={{ position: 'relative' }}>
-                            <select value={seekBar} onChange={e => setSeekBar(e.target.value as SeekBarControl)}
-                              style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 30px 7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer', appearance: 'none' }}>
-                              <option value="enable">Enable Seek Bar</option>
-                              <option value="hide">Hide Seek Bar Completely</option>
-                            </select>
-                            <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
-                          </div>
-                        </div>
-                        {seekBar === 'enable' && (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingLeft: 14 }}>
-                            <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>Seek bar behaviour</p>
-                            <div style={{ position: 'relative' }}>
-                              <select value={seekBarOption} onChange={e => setSeekBarOption(e.target.value as SeekBarOption)}
-                                style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 30px 7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer', appearance: 'none' }}>
-                                <option value="drag">Allow user to drag Seek Bar</option>
-                                <option value="drag-after-completion">Allow drag after completion</option>
-                                <option value="read-only">Seek bar is read only</option>
-                              </select>
-                              <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* ── Bookmarking ── */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
-                        <div>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Bookmarking</p>
-                          <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>
-                            {bookmarking ? 'Saves last position; learner prompted to resume on relaunch' : 'Course starts from first slide on each launch'}
-                          </p>
-                        </div>
-                        <ToggleSwitch enabled={bookmarking} onChange={setBookmarking} />
-                      </div>
-
-                      {/* ── Transition ── */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
-                        <div>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Transition</p>
-                          <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Animation applied between slides</p>
-                        </div>
-                        <div style={{ position: 'relative' }}>
-                          <select value={slideTransition} onChange={e => setSlideTransition(e.target.value)}
-                            style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 30px 7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer', appearance: 'none' }}>
-                            <option value="none">None</option>
-                            <option value="fade">Fade</option>
-                            <option value="push-up">Push Up</option>
-                            <option value="push-down">Push Down</option>
-                            <option value="push-left">Push Left</option>
-                            <option value="push-right">Push Right</option>
-                            <option value="wipe-left">Wipe Left</option>
-                            <option value="wipe-right">Wipe Right</option>
-                            <option value="split">Split</option>
-                            <option value="reveal">Reveal</option>
-                            <option value="cover-left">Cover Left</option>
-                            <option value="cover-right">Cover Right</option>
-                          </select>
-                          <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
-                        </div>
-                      </div>
-
-                      {/* ── Slide Duration ── */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
-                        <div>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Slide Duration</p>
-                          <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Time before auto-advancing to next slide (0 = manual)</p>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <input type="number" min="0" max="300" value={slideDuration}
-                            onChange={e => setSlideDuration(Math.max(0, Math.min(300, Number(e.target.value))))}
-                            style={{ width: 64, border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', textAlign: 'center', fontFamily: 'inherit' }}
-                            onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
-                            onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }}
-                          />
-                          <span style={{ fontSize: 13, color: '#6B7280' }}>sec</span>
-                        </div>
-                      </div>
-
-                      {/* ── Transcript ── */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid #F3F4F6' }}>
-                        <div>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Transcript</p>
-                          <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>AI generates an editable transcript available to learners</p>
-                        </div>
-                        <ToggleSwitch enabled={transcript} onChange={setTranscript} />
-                      </div>
-
-                      {/* ── Completion Criteria ── */}
-                      <div style={{ padding: '14px 0' }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: '0 0 4px' }}>Completion Criteria</p>
-                        <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 10px' }}>When is the course marked complete? Select all that apply</p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-
-                          {/* Quiz Percentage Completion */}
-                          {(() => {
-                            const checked = completionSrcs.includes('quiz');
-                            return (
-                              <div style={{ borderRadius: 8, border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, background: checked ? PL : '#F9FAFB', transition: 'all 0.12s', overflow: 'hidden' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', userSelect: 'none' as const }}
-                                  onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'quiz') : [...prev, 'quiz'])}>
-                                  <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P : '#D1D5DB'}`, background: checked ? P : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
-                                    {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
-                                  </span>
-                                  <span style={{ fontSize: 13, color: checked ? P : '#374151', fontWeight: checked ? 500 : 400, flex: 1 }}>Quiz Percentage Completion</span>
-                                </label>
-                                {checked && (
-                                  <div style={{ padding: '0 10px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <span style={{ fontSize: 13, color: '#6B7280' }}>Minimum pass score</span>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
-                                      <input
-                                        type="number" min="1" max="100"
-                                        value={quizPassPct}
-                                        onChange={e => setQuizPassPct(Math.max(1, Math.min(100, Number(e.target.value))))}
-                                        onClick={e => e.stopPropagation()}
-                                        style={{ width: 56, border: `1px solid #93C5FD`, borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: P, fontWeight: 600 }}
-                                        onFocus={e => { e.currentTarget.style.borderColor = P; }}
-                                        onBlur={e => { e.currentTarget.style.borderColor = '#93C5FD'; }}
-                                      />
-                                      <span style={{ fontSize: 13, fontWeight: 600, color: P }}>%</span>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })()}
-
-                          {/* Slide View Percentage */}
-                          {(() => {
-                            const checked = completionSrcs.includes('slide-view');
-                            return (
-                              <div style={{ borderRadius: 8, border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, background: checked ? PL : '#F9FAFB', transition: 'all 0.12s', overflow: 'hidden' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', userSelect: 'none' as const }}
-                                  onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'slide-view') : [...prev, 'slide-view'])}>
-                                  <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P : '#D1D5DB'}`, background: checked ? P : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
-                                    {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
-                                  </span>
-                                  <span style={{ fontSize: 13, color: checked ? P : '#374151', fontWeight: checked ? 500 : 400, flex: 1 }}>Slide View Percentage</span>
-                                </label>
-                                {checked && (
-                                  <div style={{ padding: '0 10px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <span style={{ fontSize: 13, color: '#6B7280' }}>Minimum slides viewed</span>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
-                                      <input
-                                        type="number" min="1" max="100"
-                                        value={slideViewPct}
-                                        onChange={e => setSlideViewPct(Math.max(1, Math.min(100, Number(e.target.value))))}
-                                        onClick={e => e.stopPropagation()}
-                                        style={{ width: 56, border: `1px solid #93C5FD`, borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: P, fontWeight: 600 }}
-                                        onFocus={e => { e.currentTarget.style.borderColor = P; }}
-                                        onBlur={e => { e.currentTarget.style.borderColor = '#93C5FD'; }}
-                                      />
-                                      <span style={{ fontSize: 13, fontWeight: 600, color: P }}>%</span>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })()}
-
-                          {/* Knowledge Check Completion */}
-                          {(() => {
-                            const checked = completionSrcs.includes('knowledge-check');
-                            return (
-                              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, background: checked ? PL : '#F9FAFB', border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, transition: 'all 0.12s', userSelect: 'none' as const }}
-                                onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'knowledge-check') : [...prev, 'knowledge-check'])}>
-                                <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P : '#D1D5DB'}`, background: checked ? P : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
-                                  {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
-                                </span>
-                                <span style={{ fontSize: 13, color: checked ? P : '#374151', fontWeight: checked ? 500 : 400 }}>Knowledge Check Completion</span>
-                              </label>
-                            );
-                          })()}
-
-                        </div>
-                      </div>
-
-                    </div>
-                  </motion.div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {!canGenerate && (
+                  <span style={{ fontSize: 13, color: '#6B7280' }}>
+                    Add a course title to continue
+                  </span>
                 )}
-              </AnimatePresence>
+                <button
+                  onClick={generateCourse} disabled={generating || !canGenerate}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', fontSize: 13, fontWeight: 600, color: '#fff', background: canGenerate && !generating ? P : '#C4C4C4', borderRadius: 9, border: 'none', cursor: canGenerate && !generating ? 'pointer' : 'not-allowed', transition: 'background 0.15s' }}
+                  onMouseEnter={e => { if (canGenerate && !generating) (e.currentTarget as HTMLElement).style.background = PH; }}
+                  onMouseLeave={e => { if (canGenerate && !generating) (e.currentTarget as HTMLElement).style.background = P; }}
+                >
+                  {generating ? (
+                    <>
+                      <svg style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                      </svg>
+                      Generating your course...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={14} />
+                      Generate Course
+                      <ArrowRight size={14} />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
           </div>
@@ -1285,52 +1029,10 @@ export function AICreateCoursePage() {
 
           </div>
           </div>
+
         </div>
 
         </div>{/* end scrollable area */}
-
-        {/* ---- Bottom action bar — pinned to bottom of flex column ---- */}
-        <div style={{ flexShrink: 0, background: '#fff', borderTop: '1px solid #E5E7EB', padding: '14px 28px' }}>
-          <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <button
-              onClick={() => navigate(-1)}
-              style={{ padding: '9px 20px', fontSize: 13, fontWeight: 500, color: '#374151', border: '1px solid #E5E7EB', borderRadius: 9, background: '#fff', cursor: 'pointer', transition: 'background 0.12s' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
-            >
-              Cancel
-            </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {!canGenerate && (
-                <span style={{ fontSize: 13, color: '#6B7280' }}>
-                  Add a course title to continue
-                </span>
-              )}
-              <button
-                onClick={generateCourse} disabled={generating || !canGenerate}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 24px', fontSize: 13, fontWeight: 600, color: '#fff', background: canGenerate && !generating ? P : '#C4C4C4', borderRadius: 9, border: 'none', cursor: canGenerate && !generating ? 'pointer' : 'not-allowed', transition: 'background 0.15s' }}
-                onMouseEnter={e => { if (canGenerate && !generating) (e.currentTarget as HTMLElement).style.background = PH; }}
-                onMouseLeave={e => { if (canGenerate && !generating) (e.currentTarget as HTMLElement).style.background = P; }}
-              >
-                {generating ? (
-                  <>
-                    <svg style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                    </svg>
-                    Generating your course...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={14} />
-                    Generate Course
-                    <ArrowRight size={14} />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     );
   }
@@ -1529,7 +1231,7 @@ export function AICreateCoursePage() {
           </div>{/* end canvas row */}
         </div>{/* end left column */}
 
-          {/* ==== Right panel: Topic Settings — full height ==== */}
+          {/* ==== Right panel: Slide Settings — full height ==== */}
           <aside style={{
             width: rightOpen ? 320 : 0,
             flexShrink: 0,
@@ -1603,7 +1305,7 @@ export function AICreateCoursePage() {
                   <div style={{ width: 28, height: 28, borderRadius: 7, background: '#EBF3FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Settings size={14} style={{ color: '#1565F0' }} />
                   </div>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>Course Settings</h2>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>Player Settings</h2>
                 </div>
                 <button onClick={() => setShowCourseSettings(false)} style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#374151'; }}
@@ -1618,7 +1320,7 @@ export function AICreateCoursePage() {
                 <div style={{ height: 1, background: '#F3F4F6', marginBottom: 24 }} />
 
                 {/* ── Global Settings ── */}
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 16px' }}>Global Settings</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 16px' }}>Player Settings</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
                   {/* Navigation Mode */}
@@ -1632,105 +1334,6 @@ export function AICreateCoursePage() {
                       <option value="free">Free navigation</option>
                       <option value="linear">Linear</option>
                     </select>
-                  </div>
-
-                  {/* Completion Criteria */}
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: '0 0 2px' }}>Completion Criteria</p>
-                    <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 8px' }}>Select all that apply</p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-
-                      {/* Quiz score */}
-                      {(() => {
-                        const checked = completionSrcs.includes('quiz');
-                        return (
-                          <div style={{ borderRadius: 8, border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, background: checked ? '#EBF3FF' : '#F9FAFB', transition: 'all 0.12s', overflow: 'hidden' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', userSelect: 'none' as const }}
-                              onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'quiz') : [...prev, 'quiz'])}>
-                              <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
-                                {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
-                              </span>
-                              <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 500 : 400, flex: 1 }}>Quiz score</span>
-                            </label>
-                            {checked && (
-                              <div style={{ padding: '0 10px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <span style={{ fontSize: 12, color: '#6B7280' }}>Minimum pass score</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
-                                  <input type="number" min="1" max="100" value={quizPassPct}
-                                    onChange={e => setQuizPassPct(Math.max(1, Math.min(100, Number(e.target.value))))}
-                                    onClick={e => e.stopPropagation()}
-                                    style={{ width: 52, border: '1px solid #93C5FD', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: '#1565F0', fontWeight: 600 }}
-                                    onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
-                                    onBlur={e => { e.currentTarget.style.borderColor = '#93C5FD'; }}
-                                  />
-                                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1565F0' }}>%</span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })()}
-
-                      {/* Slide view % */}
-                      {(() => {
-                        const checked = completionSrcs.includes('slide-view');
-                        return (
-                          <div style={{ borderRadius: 8, border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, background: checked ? '#EBF3FF' : '#F9FAFB', transition: 'all 0.12s', overflow: 'hidden' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', userSelect: 'none' as const }}
-                              onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'slide-view') : [...prev, 'slide-view'])}>
-                              <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
-                                {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
-                              </span>
-                              <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 500 : 400, flex: 1 }}>Slide view %</span>
-                            </label>
-                            {checked && (
-                              <div style={{ padding: '0 10px 10px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <span style={{ fontSize: 12, color: '#6B7280' }}>Minimum slides viewed</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
-                                  <input type="number" min="1" max="100" value={slideViewPct}
-                                    onChange={e => setSlideViewPct(Math.max(1, Math.min(100, Number(e.target.value))))}
-                                    onClick={e => e.stopPropagation()}
-                                    style={{ width: 52, border: '1px solid #93C5FD', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: '#1565F0', fontWeight: 600 }}
-                                    onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
-                                    onBlur={e => { e.currentTarget.style.borderColor = '#93C5FD'; }}
-                                  />
-                                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1565F0' }}>%</span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })()}
-
-                      {/* Knowledge check */}
-                      {(() => {
-                        const checked = completionSrcs.includes('knowledge-check');
-                        return (
-                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, background: checked ? '#EBF3FF' : '#F9FAFB', border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, transition: 'all 0.12s', userSelect: 'none' as const }}
-                            onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'knowledge-check') : [...prev, 'knowledge-check'])}>
-                            <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
-                              {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
-                            </span>
-                            <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 500 : 400 }}>Knowledge check</span>
-                          </label>
-                        );
-                      })()}
-
-                      {/* Final assessment */}
-                      {(() => {
-                        const checked = completionSrcs.includes('final-assessment');
-                        return (
-                          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, background: checked ? '#EBF3FF' : '#F9FAFB', border: `1px solid ${checked ? '#93C5FD' : '#E5E7EB'}`, transition: 'all 0.12s', userSelect: 'none' as const }}
-                            onClick={() => setCompletionSrcs(prev => checked ? prev.filter(v => v !== 'final-assessment') : [...prev, 'final-assessment'])}>
-                            <span style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? '#1565F0' : '#D1D5DB'}`, background: checked ? '#1565F0' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.12s' }}>
-                              {checked && <Check size={10} style={{ color: '#fff', strokeWidth: 3 }} />}
-                            </span>
-                            <span style={{ fontSize: 13, color: checked ? '#1565F0' : '#374151', fontWeight: checked ? 500 : 400 }}>Final assessment</span>
-                          </label>
-                        );
-                      })()}
-
-                    </div>
                   </div>
 
                   {/* Slide Duration */}

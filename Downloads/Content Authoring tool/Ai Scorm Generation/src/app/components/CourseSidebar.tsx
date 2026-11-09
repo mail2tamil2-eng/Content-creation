@@ -295,8 +295,6 @@ export function SectionMenu({
   return (
     <PortalMenu x={x} y={y} onClose={onClose}>
       <MenuItem icon={<Pencil size={14} />} label="Edit section" onClick={() => { onEdit(); onClose(); }} />
-      <MenuItem icon={<Sparkles size={14} />} label="Add section with AI" onClick={() => { onAddWithAI(); onClose(); }} />
-      <MenuItem icon={<GripVertical size={14} />} label="Reorder section" onClick={() => { onClose(); }} />
       <MenuItem icon={<RefreshCw size={14} />} label="Regenerate complete section" onClick={() => { onRegenerate(); onClose(); }} />
       <MenuItem icon={<Trash2 size={14} />} label="Delete section" danger divider onClick={() => { onDelete(); onClose(); }} />
     </PortalMenu>
@@ -380,19 +378,17 @@ function AddSlideWithAIModal({
 
 // ── TopicMenu ─────────────────────────────────────────────────────────────────
 export function TopicMenu({
-  x, y, onClose, onEdit, onAdd, onAddWithAI, onRegenerate, onDelete,
+  x, y, onClose, onEdit, onRegenerate, onDelete,
 }: {
   x: number; y: number; onClose: () => void;
-  onEdit: () => void; onAdd: () => void; onAddWithAI: () => void;
+  onEdit: () => void;
   onRegenerate: () => void; onDelete: () => void;
 }) {
   return (
     <PortalMenu x={x} y={y} onClose={onClose}>
-      <MenuItem icon={<Pencil size={14} />} label="Edit topic" onClick={() => { onEdit(); onClose(); }} />
-      <MenuItem icon={<Plus size={14} />} label="Add topic" onClick={() => { onAdd(); onClose(); }} />
-      <MenuItem icon={<Sparkles size={14} />} label="Add with AI prompt" onClick={() => { onAddWithAI(); onClose(); }} />
-      <MenuItem icon={<RefreshCw size={14} />} label="Regenerate topic" onClick={() => { onRegenerate(); onClose(); }} />
-      <MenuItem icon={<Trash2 size={14} />} label="Delete topic" danger divider onClick={() => { onDelete(); onClose(); }} />
+      <MenuItem icon={<Pencil size={14} />} label="Edit slide" onClick={() => { onEdit(); onClose(); }} />
+      <MenuItem icon={<RefreshCw size={14} />} label="Regenerate slide" onClick={() => { onRegenerate(); onClose(); }} />
+      <MenuItem icon={<Trash2 size={14} />} label="Delete slide" danger divider onClick={() => { onDelete(); onClose(); }} />
     </PortalMenu>
   );
 }
@@ -426,7 +422,7 @@ function TopicInsertControl({
       <button
         className="cs-insert-btn"
         onClick={e => { e.stopPropagation(); onInsert(); }}
-        title="Insert topic here"
+        title="Insert slide here"
         style={{
           position: 'absolute', top: '50%', left: 48,
           transform: 'translate(-50%, -50%)',
@@ -510,7 +506,7 @@ export function TopicItem({
             const r = menuRef.current!.getBoundingClientRect();
             onMenu(r.left - 170, r.bottom + 4);
           }}
-          title="Topic options"
+          title="Slide options"
           style={{
             width: 24, height: 24, borderRadius: 6, border: 'none', background: 'none',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -578,14 +574,28 @@ export function SectionItem({
         onMouseLeave={() => setRowHovered(false)}
         style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          padding: '0 10px 0 12px',
+          padding: '0 10px 0 8px',
           height: 44,
           borderRadius: 8,
           background: isExpanded ? SECTION_ACTIVE_BG : rowHovered ? HOVER_BG : 'transparent',
-          cursor: 'pointer', outline: 'none', userSelect: 'none',
+          cursor: rowHovered ? 'grab' : 'pointer', outline: 'none', userSelect: 'none',
           transition: 'background 0.12s',
         }}
       >
+        {/* Drag handle — visible on hover, hidden otherwise */}
+        <span
+          title="Drag to reorder"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 16, flexShrink: 0,
+            color: '#9CA3AF',
+            opacity: rowHovered ? 1 : 0,
+            transition: 'opacity 0.15s',
+            cursor: 'grab',
+          }}
+        >
+          <GripVertical size={14} />
+        </span>
         <FileText size={15} style={{ flexShrink: 0, color: isExpanded ? P : '#6B7280' }} />
 
         <span style={{
@@ -759,7 +769,6 @@ export function CourseSidebar({
   // Add section
   const [showAddMenu, setShowAddMenu] = useState<{ x: number; y: number } | null>(null);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
-  const [addSlideAI, setAddSlideAI] = useState<{ si: number; afterTi: number } | null>(null);
   const addBtnRef = useRef<HTMLButtonElement>(null);
 
   // Drag & drop reorder
@@ -803,7 +812,7 @@ export function CourseSidebar({
   const doAddBlankSection = () => {
     const newSec = {
       id: uid(), title: 'Untitled section', description: '', expanded: false,
-      topics: [{ id: uid(), title: 'New topic', slideType: 'title-bullets', content: '', bullets: [], locked: false }],
+      topics: [{ id: uid(), title: 'New slide', slideType: 'title-bullets', content: '', bullets: [], locked: false }],
     };
     onSectionsChange(prev => [...prev, newSec as never]);
     setExpandedId(newSec.id);
@@ -837,7 +846,7 @@ export function CourseSidebar({
 
   // ── Topic mutations ────────────────────────────────────────────────────────
   const doAddTopic = (si: number, afterTi: number, slideType = 'title-bullets', templateId?: string) => {
-    const newTopic = { id: uid(), title: 'New topic', slideType, templateId, content: '', bullets: [], locked: false };
+    const newTopic = { id: uid(), title: 'New slide', slideType, templateId, content: '', bullets: [], locked: false };
     onSectionsChange(prev => prev.map((s, i) => {
       if (i !== si) return s;
       const topics = [...s.topics];
@@ -1044,8 +1053,6 @@ export function CourseSidebar({
           x={topicMenu.x} y={topicMenu.y}
           onClose={() => setTopicMenu(null)}
           onEdit={() => setEditTopic({ si: topicMenu.si, ti: topicMenu.ti, title: sections[topicMenu.si]?.topics[topicMenu.ti]?.title ?? '' })}
-          onAdd={() => doAddTopic(topicMenu.si, topicMenu.ti)}
-          onAddWithAI={() => setAddSlideAI({ si: topicMenu.si, afterTi: topicMenu.ti })}
           onRegenerate={() => setConfirmRegenTopic({ si: topicMenu.si, ti: topicMenu.ti })}
           onDelete={() => setConfirmDelTopic({ si: topicMenu.si, ti: topicMenu.ti })}
         />
@@ -1066,7 +1073,7 @@ export function CourseSidebar({
       {confirmDelSection !== null && (
         <ConfirmModal
           title="Delete section?"
-          message={`"${sections[confirmDelSection]?.title}" and all its topics will be permanently removed.`}
+          message={`"${sections[confirmDelSection]?.title}" and all its slides will be permanently removed.`}
           confirmLabel="Delete"
           danger
           onConfirm={() => doDeleteSection(confirmDelSection)}
@@ -1078,7 +1085,7 @@ export function CourseSidebar({
       {confirmRegenSection !== null && (
         <ConfirmModal
           title="Regenerate section?"
-          message="All topics in this section will be replaced with AI-generated content. This cannot be undone."
+          message="All slides in this section will be replaced with AI-generated content. This cannot be undone."
           confirmLabel="Regenerate"
           onConfirm={() => doRegenerateSection(confirmRegenSection)}
           onClose={() => setConfirmRegenSection(null)}
@@ -1088,9 +1095,9 @@ export function CourseSidebar({
       {/* ── Edit topic ── */}
       {editTopic && (
         <EditModal
-          title="Edit topic"
+          title="Edit slide"
           value={editTopic.title}
-          placeholder="Topic title…"
+          placeholder="Slide title…"
           onSave={v => doEditTopic(editTopic.si, editTopic.ti, v)}
           onClose={() => setEditTopic(null)}
         />
@@ -1099,7 +1106,7 @@ export function CourseSidebar({
       {/* ── Delete topic confirm ── */}
       {confirmDelTopic && (
         <ConfirmModal
-          title="Delete topic?"
+          title="Delete slide?"
           message={`"${sections[confirmDelTopic.si]?.topics[confirmDelTopic.ti]?.title}" will be permanently removed.`}
           confirmLabel="Delete"
           danger
@@ -1111,8 +1118,8 @@ export function CourseSidebar({
       {/* ── Regenerate topic confirm ── */}
       {confirmRegenTopic && (
         <ConfirmModal
-          title="Regenerate topic?"
-          message="This topic's content will be replaced with AI-generated content."
+          title="Regenerate slide?"
+          message="This slide's content will be replaced with AI-generated content."
           confirmLabel="Regenerate"
           onConfirm={() => doRegenerateTopic(confirmRegenTopic.si, confirmRegenTopic.ti)}
           onClose={() => setConfirmRegenTopic(null)}
@@ -1127,13 +1134,6 @@ export function CourseSidebar({
         />
       )}
 
-      {/* ── Add slide with AI modal ── */}
-      {addSlideAI && (
-        <AddSlideWithAIModal
-          onAdd={prompt => doAddTopicWithAI(addSlideAI.si, addSlideAI.afterTi, prompt)}
-          onClose={() => setAddSlideAI(null)}
-        />
-      )}
 
       {/* ── Slide Library modal ── */}
       <SlideLibraryModal

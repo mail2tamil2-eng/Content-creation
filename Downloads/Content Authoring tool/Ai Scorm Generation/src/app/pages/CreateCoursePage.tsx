@@ -97,7 +97,7 @@ export function CreateCoursePage() {
   const [isResumeOpen, setIsResumeOpen] = useState(false);
   const [isPlayerControlsOpen, setIsPlayerControlsOpen] = useState(false);
 
-  // Global Settings (Step 2)
+  // Player Settings (Step 2)
   const [enableBookmarking, setEnableBookmarking] = useState(true);
   const [globalSlideTransition, setGlobalSlideTransition] = useState('none');
   const [globalDurationMode, setGlobalDurationMode] = useState<'auto' | 'manual'>('auto');
@@ -123,7 +123,7 @@ export function CreateCoursePage() {
 
   const steps = [
     { id: 1, label: 'Course Detail' },
-    { id: 2, label: 'Global Settings' },
+    { id: 2, label: 'Player Settings' },
     { id: 3, label: 'Generate Course' }
   ];
 
@@ -832,12 +832,12 @@ export function CreateCoursePage() {
             </>
           )}
 
-          {/* Step 2: Global Settings */}
+          {/* Step 2: Player Settings */}
           {currentStep === 2 && (
             <>
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  Global Settings
+                  Player Settings
                 </h2>
                 <p className="text-gray-600">
                   Configure default settings that apply across all slides in your course

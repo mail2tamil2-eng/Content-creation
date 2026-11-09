@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
 import {
-  Settings, Pencil,
+  Settings,
   Upload, Play, Save, PanelRightOpen, Layout,
 } from 'lucide-react';
-import { ThemePopover, ThemeSettings } from './ThemePopover';
+import { type ThemeSettings } from './ThemePopover';
 import { TemplatePopover } from './TemplatePopover';
 
 interface EditorTopToolbarProps {
@@ -35,10 +35,8 @@ export function EditorTopToolbar({
   currentDesignId = 'corporate',
   onApplyTemplate,
 }: EditorTopToolbarProps) {
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const themeButtonRef = useRef<HTMLButtonElement>(null);
-  const [isTemplateOpen, setIsTemplateOpen] = useState(false);
-  const templateButtonRef = useRef<HTMLButtonElement>(null);
+  const [isDesignOpen, setIsDesignOpen] = useState(false);
+  const designButtonRef = useRef<HTMLButtonElement>(null);
 
   // right: 336 = sidebar width (320) + gap (16). Transitions with sidebar open/close.
   const actionRight = rightPanelOpen ? 336 : 16;
@@ -48,7 +46,7 @@ export function EditorTopToolbar({
       {/*
         Right action panel — position: fixed, viewport-relative.
         right transitions between 336px (sidebar open) and 16px (sidebar closed)
-        to always sit 16px to the left of the Topic Settings boundary.
+        to always sit 16px to the left of the Slide Settings boundary.
         top: 85 = 80px global header + 5px padding, centering in the 54px toolbar row.
       */}
       <div
@@ -68,7 +66,7 @@ export function EditorTopToolbar({
         {/* Settings gear */}
         <button
           onClick={onOpenCourseSettings}
-          title="Course settings"
+          title="Player settings"
           className="hidden sm:flex w-8 h-8 rounded-lg items-center justify-center transition-colors hover:bg-gray-100 text-gray-700"
         >
           <Settings size={18} />
@@ -76,34 +74,19 @@ export function EditorTopToolbar({
 
         <div className="bg-gray-200 shrink-0 mx-1" style={{ width: '1px', height: '24px' }} />
 
-        {/* ▦ Template */}
+        {/* ▦ Template & Theme (merged) */}
         <button
-          ref={templateButtonRef}
-          onClick={() => { setIsTemplateOpen(v => !v); setIsThemeOpen(false); }}
-          aria-expanded={isTemplateOpen}
+          ref={designButtonRef}
+          onClick={() => setIsDesignOpen(v => !v)}
+          aria-expanded={isDesignOpen}
           aria-haspopup="dialog"
           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            isTemplateOpen ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
+            isDesignOpen ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
           }`}
           style={{ fontSize: '14px' }}
         >
           <Layout size={15} />
           <span className="hidden sm:inline">Template</span>
-        </button>
-
-        {/* ✏ Theme */}
-        <button
-          ref={themeButtonRef}
-          onClick={() => { setIsThemeOpen(v => !v); setIsTemplateOpen(false); }}
-          aria-expanded={isThemeOpen}
-          aria-haspopup="dialog"
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            isThemeOpen ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'
-          }`}
-          style={{ fontSize: '14px' }}
-        >
-          <Pencil size={15} />
-          <span className="hidden sm:inline">Theme</span>
         </button>
 
         {/* Save Draft */}
@@ -138,7 +121,7 @@ export function EditorTopToolbar({
           <Play size={16} className="text-gray-700" />
         </button>
 
-        {/* Expand Topic Settings — only when panel is collapsed */}
+        {/* Expand Slide Settings — only when panel is collapsed */}
         {!rightPanelOpen && (
           <>
             <div className="bg-gray-200 shrink-0 mx-1" style={{ width: '1px', height: '24px' }} />
@@ -165,28 +148,20 @@ export function EditorTopToolbar({
                   zIndex: 100,
                 }}
               >
-                Expand Topic Settings
+                Expand Slide Settings
               </span>
             </div>
           </>
         )}
       </div>
 
-      {/* Theme Popover */}
-      <ThemePopover
-        isOpen={isThemeOpen}
-        onClose={() => setIsThemeOpen(false)}
-        anchorEl={themeButtonRef.current}
-        onApply={settings => { onApplyTheme(settings); }}
-      />
-
       {/* Template Popover */}
       <TemplatePopover
-        isOpen={isTemplateOpen}
-        onClose={() => setIsTemplateOpen(false)}
-        anchorEl={templateButtonRef.current}
+        isOpen={isDesignOpen}
+        onClose={() => setIsDesignOpen(false)}
+        anchorEl={designButtonRef.current}
         currentDesignId={currentDesignId}
-        onApply={id => { onApplyTemplate?.(id); setIsTemplateOpen(false); }}
+        onApply={id => { onApplyTemplate?.(id); setIsDesignOpen(false); }}
       />
     </>
   );
