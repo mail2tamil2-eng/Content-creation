@@ -607,7 +607,7 @@ export function AICreateCoursePage() {
                 <textarea
                   rows={3}
                   style={{ ...fieldStyle, resize: 'vertical' as const, lineHeight: 1.6 }}
-                  placeholder="Describe what this course is about and what learners will gain..."
+                  placeholder="Describe what this course is about"
                   value={objective}
                   onChange={e => setObjective(e.target.value)}
                   onFocus={focusField} onBlur={blurField}
