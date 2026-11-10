@@ -707,18 +707,28 @@ export function AICreateCoursePage() {
               <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 14px' }}>Duration &amp; Language</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Duration</label>
+                  <label htmlFor="course-duration" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Duration</label>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <input
-                      type="number" min="10" placeholder="10"
-                      value={duration} onChange={e => setDuration(e.target.value)}
+                      id="course-duration"
+                      type="number" min="10" max="60" step="1" placeholder="10"
+                      inputMode="numeric" aria-describedby="course-duration-hint"
+                      value={duration}
+                      onChange={e => {
+                        const raw = e.target.value.replace(/[^0-9]/g, '');
+                        // Typing can't go above 60; values under 10 are corrected on blur
+                        setDuration(raw !== '' && Number(raw) > 60 ? '60' : raw);
+                      }}
                       style={{ flex: 1, border: '1px solid #D1D5DB', borderRadius: 8, padding: '9px 12px', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
                       onFocus={e => { e.currentTarget.style.borderColor = P; }}
-                      onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }}
+                      onBlur={e => {
+                        e.currentTarget.style.borderColor = '#D1D5DB';
+                        if (duration !== '' && Number(duration) < 10) setDuration('10');
+                      }}
                     />
                     <span style={{ fontSize: 13, fontWeight: 600, color: '#6B7280', whiteSpace: 'nowrap' }}>min</span>
                   </div>
-                  <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 4 }}>10 min minimum</p>
+                  <p id="course-duration-hint" style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>10-60 min</p>
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Language</label>
