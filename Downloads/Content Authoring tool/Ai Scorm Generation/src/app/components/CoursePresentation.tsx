@@ -48,7 +48,6 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
         <header className="course-slide-header">
           {hLogo && settings.logo && <img src={settings.logo} alt="Course logo" />}
           {hCourseName && <span>{courseTitle || 'Untitled Course'}</span>}
-          <span>{String(index + 1).padStart(2, '0')}</span>
         </header>
       )}
       <main className="course-slide-main">
