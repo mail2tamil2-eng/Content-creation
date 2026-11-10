@@ -288,7 +288,7 @@ export function AICreateCoursePage() {
   const previewTopic: CourseTopic = {
     id: 'preview', title: title || 'Your Course Title',
     slideType: 'title-text', contentReady: true,
-    content: objectives[0] || objective || 'Your course overview will appear here after you enter the course details above.',
+    content: objective || 'Your course overview will appear here after you enter the course details above.',
   };
 
   // Actions
