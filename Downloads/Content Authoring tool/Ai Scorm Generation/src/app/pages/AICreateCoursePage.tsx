@@ -24,7 +24,6 @@ import { type ThemeSettings, THEME_OPTIONS } from '../components/ThemePopover';
 import { CourseSidebar, type CSSection } from '../components/CourseSidebar';
 import { SlideSettingsPanel } from '../components/SlideSettingsPanel';
 import { SlideLibraryModal } from '../components/SlideLibraryModal';
-import { SelectInput } from '../components/saas';
 import { TemplateGallery } from '../components/templates/TemplateGallery';
 import { COURSE_TEMPLATES, DEFAULT_TEMPLATE_ID, getTemplate } from '../components/templates/courseTemplates';
 
@@ -91,10 +90,10 @@ const COMPLEXITY_CONFIG: Record<Complexity, {
 };
 
 // -- Helpers --
-function ToggleSwitch({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean) => void }) {
+function ToggleSwitch({ enabled, onChange, labelledBy }: { enabled: boolean; onChange: (v: boolean) => void; labelledBy?: string }) {
   return (
     <button
-      type="button" role="switch" aria-checked={enabled} onClick={() => onChange(!enabled)}
+      type="button" role="switch" aria-checked={enabled} aria-labelledby={labelledBy} onClick={() => onChange(!enabled)}
       className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${enabled ? 'bg-[#2D74FA] focus:ring-blue-400' : 'bg-gray-300 focus:ring-gray-400'}`}
     >
       <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${enabled ? 'translate-x-5' : 'translate-x-0'}`} />
@@ -519,7 +518,13 @@ export function AICreateCoursePage() {
   // STEP 1 — Course Details (2-column with live preview)
   // ================================================================
   if (step === 1) {
-    const canGenerate = title.trim().length > 0;
+    const durationNum = Number(duration);
+    const missing = [
+      !title.trim() && 'course title',
+      !(duration !== '' && durationNum >= 10 && durationNum <= 60) && 'duration',
+      !language && 'language',
+    ].filter(Boolean) as string[];
+    const canGenerate = missing.length === 0;
     const P = '#1565F0';
     const PH = '#1A63E8';
     const PL = '#EBF3FF';
@@ -697,11 +702,12 @@ export function AICreateCoursePage() {
               <div role="presentation" style={{ borderTop: '1px solid #F3F4F6', margin: '20px 0' }} />
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 1fr) minmax(160px, 1fr) minmax(220px, 2fr)', gap: 16, alignItems: 'start' }}>
                 <div>
-                  <label htmlFor="course-duration" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Duration</label>
+                  <label htmlFor="course-duration" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Duration <span aria-hidden="true" style={{ color: '#DC2626' }}>*</span></label>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <input
                       id="course-duration"
-                      type="number" min="10" max="60" step="1" placeholder="10"
+                      type="number" min="10" max="60" step="1" placeholder="e.g. 30"
+                      required aria-required="true"
                       inputMode="numeric" aria-describedby="course-duration-hint"
                       value={duration}
                       onChange={e => {
@@ -709,10 +715,10 @@ export function AICreateCoursePage() {
                         // Typing can't go above 60; values under 10 are corrected on blur
                         setDuration(raw !== '' && Number(raw) > 60 ? '60' : raw);
                       }}
-                      style={{ flex: 1, border: '1px solid #D1D5DB', borderRadius: 8, padding: '9px 12px', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
-                      onFocus={e => { e.currentTarget.style.borderColor = P; }}
+                      style={{ ...fieldStyle, flex: 1, minWidth: 0 }}
+                      onFocus={focusField}
                       onBlur={e => {
-                        e.currentTarget.style.borderColor = '#D1D5DB';
+                        blurField(e);
                         if (duration !== '' && Number(duration) < 10) setDuration('10');
                       }}
                     />
@@ -721,13 +727,21 @@ export function AICreateCoursePage() {
                   <p id="course-duration-hint" style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>10-60 min</p>
                 </div>
                 <div>
-                  <label htmlFor="course-language" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Language</label>
-                  <SelectInput
-                    id="course-language"
-                    value={language}
-                    onChange={e => setLanguage(e.target.value)}
-                    options={LANGUAGES}
-                  />
+                  <label htmlFor="course-language" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Language <span aria-hidden="true" style={{ color: '#DC2626' }}>*</span></label>
+                  <div style={{ position: 'relative' }}>
+                    <select
+                      id="course-language"
+                      required aria-required="true"
+                      value={language}
+                      onChange={e => setLanguage(e.target.value)}
+                      style={{ ...fieldStyle, appearance: 'none', WebkitAppearance: 'none', background: '#fff', color: '#111827', paddingRight: 34, cursor: 'pointer' }}
+                      onFocus={focusField as unknown as React.FocusEventHandler<HTMLSelectElement>}
+                      onBlur={blurField as unknown as React.FocusEventHandler<HTMLSelectElement>}
+                    >
+                      {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                    <ChevronDown size={15} aria-hidden="true" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
+                  </div>
                 </div>
                 <div>
                   <label htmlFor="course-audience" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Target Audience</label>
@@ -744,35 +758,36 @@ export function AICreateCoursePage() {
 
               {/* — Assessment Settings — */}
               <div role="presentation" style={{ borderTop: '1px solid #F3F4F6', margin: '20px 0' }} />
-              <h3 style={{ fontSize: 13, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Assessment Settings</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #F3F4F6' }}>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: '#111827', flex: 1 }}>Add Quiz</span>
+              <h3 style={{ fontSize: 13, fontWeight: 700, color: '#111827', margin: '0 0 10px' }}>Assessment Settings</h3>
+              {/* Both options on one line (wrap below ~640px) */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                <div style={{ flex: '1 1 300px', minWidth: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', border: '1px solid #E5E7EB', borderRadius: 8, minHeight: 46, boxSizing: 'border-box' }}>
+                  <span id="assess-quiz-label" style={{ fontSize: 13, fontWeight: 500, color: '#111827', flex: 1 }}>Add Quiz</span>
                   {addQuiz && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 12 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{ fontSize: 12, color: '#6B7280' }}>Questions</span>
                       <input type="number" min="1" max="50" value={addQuizQuestions}
                         onChange={e => setAddQuizQuestions(Math.max(1, Math.min(50, Number(e.target.value))))}
                         style={{ width: 52, border: '1px solid #D1D5DB', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center' }}
                         onFocus={e => { e.currentTarget.style.borderColor = P; }}
                         onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />
-                    </div>
+                    </label>
                   )}
-                  <ToggleSwitch enabled={addQuiz} onChange={setAddQuiz} />
+                  <ToggleSwitch enabled={addQuiz} onChange={setAddQuiz} labelledBy="assess-quiz-label" />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', padding: '10px 0' }}>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: '#111827', flex: 1 }}>Knowledge Check per Topic</span>
+                <div style={{ flex: '1 1 300px', minWidth: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', border: '1px solid #E5E7EB', borderRadius: 8, minHeight: 46, boxSizing: 'border-box' }}>
+                  <span id="assess-kc-label" style={{ fontSize: 13, fontWeight: 500, color: '#111827', flex: 1 }}>Knowledge Check per Topic</span>
                   {knowledgeCheck && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 12 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{ fontSize: 12, color: '#6B7280' }}>Questions</span>
                       <input type="number" min="1" max="20" value={knowledgeCheckQuestions}
                         onChange={e => setKnowledgeCheckQuestions(Math.max(1, Math.min(20, Number(e.target.value))))}
                         style={{ width: 52, border: '1px solid #D1D5DB', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center' }}
                         onFocus={e => { e.currentTarget.style.borderColor = P; }}
                         onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />
-                    </div>
+                    </label>
                   )}
-                  <ToggleSwitch enabled={knowledgeCheck} onChange={setKnowledgeCheck} />
+                  <ToggleSwitch enabled={knowledgeCheck} onChange={setKnowledgeCheck} labelledBy="assess-kc-label" />
                 </div>
               </div>
             </div>
@@ -897,34 +912,42 @@ export function AICreateCoursePage() {
                             {customLogoPreview ? <><img src={customLogoPreview} alt="logo" style={{ height: 28, objectFit: 'contain', maxWidth: 80 }} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Logo uploaded</span><button type="button" onClick={e => { e.preventDefault(); setCustomLogoPreview(''); }} style={{ marginLeft: 'auto', fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button></> : <><Upload size={15} color="#6B7280" /><span style={{ fontSize: 13, color: '#6B7280' }}>Upload logo</span></>}
                           </label>
                         </div>
-                        {[{ label: 'Header', enabled: headerEnabled, toggle: () => setHeaderEnabled(v => !v), items: [{ label: 'Organization Logo', value: headerIncludeLogo, set: setHeaderIncludeLogo }, { label: 'Course Name', value: headerIncludeCourseName, set: setHeaderIncludeCourseName }] }, { label: 'Footer', enabled: footerEnabled, toggle: () => setFooterEnabled(v => !v), items: [{ label: 'Course Name', value: footerIncludeCourseName, set: setFooterIncludeCourseName }, { label: 'Page / Slide Number', value: footerIncludePageNum, set: setFooterIncludePageNum }] }].map(section => (
+                        {[
+                          { label: 'Header', enabled: headerEnabled, toggle: () => setHeaderEnabled(v => !v), items: [
+                            { label: 'Organization Logo', value: headerIncludeLogo, set: setHeaderIncludeLogo },
+                            { label: 'Course Name', value: headerIncludeCourseName, set: setHeaderIncludeCourseName },
+                          ] },
+                          { label: 'Footer', enabled: footerEnabled, toggle: () => setFooterEnabled(v => !v), items: [
+                            { label: 'Course Name', value: footerIncludeCourseName, set: setFooterIncludeCourseName },
+                            { label: 'Page / Slide Number', value: footerIncludePageNum, set: setFooterIncludePageNum },
+                            { label: 'Copyright Information', value: footerIncludeCopyright, set: setFooterIncludeCopyright },
+                            { label: 'Watermark', value: footerIncludeWatermark, set: setFooterIncludeWatermark },
+                          ] },
+                        ].map(section => (
                           <div key={section.label} style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F9FAFB' }}>
                               <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{section.label}</span>
-                              <button type="button" onClick={section.toggle} style={{ width: 36, height: 20, borderRadius: 10, background: section.enabled ? P : '#D1D5DB', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
+                              <button type="button" role="switch" aria-checked={section.enabled} aria-label={`Show ${section.label.toLowerCase()}`} onClick={section.toggle} style={{ width: 36, height: 20, borderRadius: 10, background: section.enabled ? P : '#D1D5DB', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
                                 <span style={{ position: 'absolute', top: 2, left: section.enabled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                               </button>
                             </div>
                             {section.enabled && (
-                              <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                {section.items.map(({ label, value, set }) => (
-                                  <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                                    <input type="checkbox" checked={value} onChange={e => set(e.target.checked)} style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
-                                    <span style={{ fontSize: 13, color: '#374151' }}>{label}</span>
-                                  </label>
-                                ))}
-                                {section.label === 'Footer' && <>
-                                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                                    <input type="checkbox" checked={footerIncludeCopyright} onChange={e => setFooterIncludeCopyright(e.target.checked)} style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
-                                    <span style={{ fontSize: 13, color: '#374151' }}>Copyright Information</span>
-                                  </label>
-                                  {footerIncludeCopyright && <input value={copyrightText} onChange={e => setCopyrightText(e.target.value)} placeholder="e.g. 2025 Acme Corp." style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', marginLeft: 22 }} onFocus={e => { e.currentTarget.style.borderColor = P; }} onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />}
-                                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                                    <input type="checkbox" checked={footerIncludeWatermark} onChange={e => setFooterIncludeWatermark(e.target.checked)} style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer' }} />
-                                    <span style={{ fontSize: 13, color: '#374151' }}>Watermark</span>
-                                  </label>
-                                  {footerIncludeWatermark && <input value={watermarkText} onChange={e => setWatermarkText(e.target.value)} placeholder="e.g. CONFIDENTIAL" style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', marginLeft: 22 }} onFocus={e => { e.currentTarget.style.borderColor = P; }} onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />}
-                                </>}
+                              <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {/* All options on one line (wraps on narrow screens) */}
+                                <div role="group" aria-label={`${section.label} content`} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: 24, rowGap: 8 }}>
+                                  {section.items.map(({ label, value, set }) => (
+                                    <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                      <input type="checkbox" checked={value} onChange={e => set(e.target.checked)} style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer', margin: 0 }} />
+                                      <span style={{ fontSize: 13, color: '#374151' }}>{label}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                                {section.label === 'Footer' && (footerIncludeCopyright || footerIncludeWatermark) && (
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                                    {footerIncludeCopyright && <input aria-label="Copyright text" value={copyrightText} onChange={e => setCopyrightText(e.target.value)} placeholder="Copyright, e.g. 2025 Acme Corp." style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', flex: '1 1 220px', minWidth: 0 }} onFocus={e => { e.currentTarget.style.borderColor = P; }} onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />}
+                                    {footerIncludeWatermark && <input aria-label="Watermark text" value={watermarkText} onChange={e => setWatermarkText(e.target.value)} placeholder="Watermark, e.g. CONFIDENTIAL" style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', flex: '1 1 220px', minWidth: 0 }} onFocus={e => { e.currentTarget.style.borderColor = P; }} onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />}
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
@@ -949,7 +972,7 @@ export function AICreateCoursePage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {!canGenerate && (
                   <span style={{ fontSize: 13, color: '#6B7280' }}>
-                    Add a course title to continue
+                    Add {missing.length > 1 ? missing.slice(0, -1).join(', ') + ' and ' + missing[missing.length - 1] : missing[0]} to continue
                   </span>
                 )}
                 <button
