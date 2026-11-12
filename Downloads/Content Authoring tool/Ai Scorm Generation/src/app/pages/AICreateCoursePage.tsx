@@ -609,15 +609,12 @@ export function AICreateCoursePage() {
                   onFocus={focusField} onBlur={blurField}
                 />
               </div>
-            </div>
 
-            {/* Card: Course Outcome */}
-            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
+              {/* — Course Outcome — */}
+              <div role="presentation" style={{ borderTop: '1px solid #F3F4F6', margin: '20px 0' }} />
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
                 <div>
-                  <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: 0 }}>
-                    Course Outcome
-                  </h2>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: '#111827', margin: 0 }}>Course Outcome</h3>
                   <p style={{ fontSize: 13, color: '#6B7280', margin: '3px 0 0' }}>Define the key outcomes learners will achieve by completing this course</p>
                 </div>
                 <button
@@ -662,12 +659,11 @@ export function AICreateCoursePage() {
               >
                 <Plus size={13} /> Add outcome
               </button>
-            </div>
 
-            {/* Card: Course Complexity */}
-            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
+              {/* — Course Complexity — */}
+              <div role="presentation" style={{ borderTop: '1px solid #F3F4F6', margin: '20px 0' }} />
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: 0 }}>Course Complexity</h2>
+                <h3 style={{ fontSize: 13, fontWeight: 700, color: '#111827', margin: 0 }}>Course Complexity</h3>
                 <span style={{ fontSize: 13, color: '#6B7280' }}>Sets available slide types</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
@@ -696,12 +692,10 @@ export function AICreateCoursePage() {
                   );
                 })}
               </div>
-            </div>
 
-            {/* Card: Duration & Language */}
-            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
-              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 14px' }}>Duration &amp; Language</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {/* — Duration, Language & Target Audience (one row) — */}
+              <div role="presentation" style={{ borderTop: '1px solid #F3F4F6', margin: '20px 0' }} />
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 1fr) minmax(160px, 1fr) minmax(220px, 2fr)', gap: 16, alignItems: 'start' }}>
                 <div>
                   <label htmlFor="course-duration" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Duration</label>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -727,33 +721,30 @@ export function AICreateCoursePage() {
                   <p id="course-duration-hint" style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>10-60 min</p>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Language</label>
+                  <label htmlFor="course-language" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Language</label>
                   <SelectInput
+                    id="course-language"
                     value={language}
                     onChange={e => setLanguage(e.target.value)}
                     options={LANGUAGES}
                   />
                 </div>
+                <div>
+                  <label htmlFor="course-audience" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Target Audience</label>
+                  <input
+                    id="course-audience"
+                    style={fieldStyle}
+                    placeholder="e.g. Marketing professionals, entry-level managers"
+                    value={audience}
+                    onChange={e => setAudience(e.target.value)}
+                    onFocus={focusField} onBlur={blurField}
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Card: Target Audience */}
-            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
-              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 14px' }}>
-                Target Audience
-              </h2>
-              <input
-                style={fieldStyle}
-                placeholder="e.g. Marketing professionals, entry-level managers"
-                value={audience}
-                onChange={e => setAudience(e.target.value)}
-                onFocus={focusField} onBlur={blurField}
-              />
-            </div>
-
-            {/* Card: Assessment Settings */}
-            <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 24px' }}>
-              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 12px' }}>Assessment Settings</h2>
+              {/* — Assessment Settings — */}
+              <div role="presentation" style={{ borderTop: '1px solid #F3F4F6', margin: '20px 0' }} />
+              <h3 style={{ fontSize: 13, fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>Assessment Settings</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #F3F4F6' }}>
                   <span style={{ fontSize: 13, fontWeight: 500, color: '#111827', flex: 1 }}>Add Quiz</span>
@@ -825,6 +816,7 @@ export function AICreateCoursePage() {
                         <p style={{ fontSize: 12, fontWeight: 700, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 4px' }}>Choose a Template</p>
                         <p style={{ fontSize: 12, color: '#4B5563', margin: '0 0 12px' }}>Hover a template and select Preview to see every slide layout.</p>
                         <TemplateGallery
+                          columns={4}
                           selectedId={!aiTemplate && selectedPredefined !== 'blank' ? selectedPredefined : null}
                           onSelect={id => { applyTemplate(id); setSelectedPredefined(id); }}
                         >

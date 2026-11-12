@@ -95,7 +95,7 @@ export interface TemplateGalleryProps {
   className?: string;
 }
 
-const cols = { 2: 'grid-cols-2', 3: 'grid-cols-2 sm:grid-cols-3', 4: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4' };
+const cols = { 2: 'grid-cols-2', 3: 'grid-cols-2 sm:grid-cols-3', 4: 'grid-cols-2 md:grid-cols-3 xl:grid-cols-4' };
 
 /** Grid of template cards + the Preview popup. */
 export function TemplateGallery({ selectedId, onSelect, templates = COURSE_TEMPLATES, columns = 3, children, className }: TemplateGalleryProps) {
