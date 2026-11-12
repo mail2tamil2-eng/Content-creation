@@ -56,9 +56,11 @@ function TitleBullets({ topic }: { topic: CourseTopic }) {
     if (style === 'number') marker = <span style={{ fontWeight: 700, color: 'var(--slide-primary)', minWidth: '1.4em', display: 'inline-block' }}>{i + 1}.</span>;
     if (style === 'arrow')  marker = <span style={{ color: 'var(--slide-primary)' }}>→</span>;
     if (style === 'check')  marker = <span style={{ color: 'var(--slide-primary)' }}>✓</span>;
+    if (style === 'square') marker = <span style={{ display: 'inline-block', width: '0.4em', height: '0.4em', background: 'currentColor', verticalAlign: '0.15em' }} />;
+    if (style === 'none')   marker = null;
     return (
       <li key={i} style={{ display: 'flex', gap: 'clamp(6px,1cqw,10px)', alignItems: 'flex-start', listStyle: 'none' }}>
-        <span style={{ fontSize: fs.md, flexShrink: 0, marginTop: 2 }}>{marker}</span>
+        {marker !== null && <span aria-hidden={style === 'number' ? undefined : true} style={{ fontSize: fs.md, flexShrink: 0, marginTop: 2 }}>{marker}</span>}
         <span style={{ fontSize: fs.md, lineHeight: 1.65 }}>{b}</span>
       </li>
     );

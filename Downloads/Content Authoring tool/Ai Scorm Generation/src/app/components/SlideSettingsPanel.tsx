@@ -6,6 +6,7 @@ import {
   Check, AlertCircle, PanelRightClose, AlignLeft, AlignCenter, AlignRight,
 } from 'lucide-react';
 import type { CSTopic } from './CourseSidebar';
+import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -591,7 +592,7 @@ function BulletedListFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {items.map((item, i) => (
             <div key={item.id} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#9CA3AF', flexShrink: 0 }} />
+              <BulletMarker style={style} index={i} className="!text-[#6B7280]" />
               <input value={item.text} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, text: e.target.value } : x); sync(n); }} placeholder={`Bullet ${i + 1}…`} style={inlineInput} />
               <RemoveBtn onClick={() => sync(items.filter((_, j) => j !== i))} />
             </div>
@@ -599,7 +600,7 @@ function BulletedListFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => 
           <AddBtn label="Add bullet" onClick={() => sync([...items, { id: uid(), text: '' }])} />
         </div>
       </div>
-      <div><FieldLabel>Style</FieldLabel><SSelect value={style} onChange={v => { setStyle(v); u({ bulletStyle: v }); }} options={[{value:'disc',label:'Disc'},{value:'number',label:'Numbered'},{value:'arrow',label:'Arrow'},{value:'check',label:'Checkmark'}]} /></div>
+      <div><FieldLabel>Bullet style</FieldLabel><BulletStyleSelect value={style} onChange={v => { setStyle(v); u({ bulletStyle: v }); }} /></div>
     </>
   );
 }

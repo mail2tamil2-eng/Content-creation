@@ -131,7 +131,7 @@ export function AICreateCoursePage() {
   const [logoPreview, setLogoPreview] = useState('');
 
   // Template Selection
-  const [templateOpen, setTemplateOpen]   = useState(false);
+  const [templateOpen, setTemplateOpen]   = useState(true);
   const [aiTemplate, setAiTemplate]       = useState(true);
   const [selectedPredefined, setSelectedPredefined] = useState<string | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
