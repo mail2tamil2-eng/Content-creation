@@ -23,6 +23,7 @@ import { EditorTopToolbar } from '../components/EditorTopToolbar';
 import { type ThemeSettings, THEME_OPTIONS } from '../components/ThemePopover';
 import { CourseSidebar, type CSSection } from '../components/CourseSidebar';
 import { SlideSettingsPanel } from '../components/SlideSettingsPanel';
+import { focusSlideField } from '../components/slideFieldFocus';
 import { SlideLibraryModal } from '../components/SlideLibraryModal';
 import { TemplateGallery } from '../components/templates/TemplateGallery';
 import { COURSE_TEMPLATES, DEFAULT_TEMPLATE_ID, getTemplate } from '../components/templates/courseTemplates';
@@ -279,6 +280,20 @@ export function AICreateCoursePage() {
   const currentTopic = sections[selSection]?.topics[selTopic];
   const currentSection = sections[selSection];
   const globalIdx = allSlides.findIndex(s => s.si === selSection && s.ti === selTopic);
+
+  // ── Click-to-edit on the slide preview ──
+  const [selectedField, setSelectedField] = useState<string | null>(null);
+  const [panelRev, setPanelRev] = useState(0); // remounts the panel so its fields pick up inline edits
+  useEffect(() => { setSelectedField(null); setPanelRev(0); }, [currentTopic?.id]);
+  const focusTimer = useRef<number | undefined>(undefined);
+  const selectSlideField = (key: string | null, focus = true) => {
+    setSelectedField(key);
+    window.clearTimeout(focusTimer.current); // a double-click (inline edit) cancels the pending panel focus
+    if (!key) return;
+    setRightOpen(true);
+    // Short delay so the second click of a double-click can claim focus for inline editing
+    focusTimer.current = window.setTimeout(() => focusSlideField(key, focus), focus ? 220 : 0);
+  };
 
   const previewTopic: CourseTopic = {
     id: 'preview', title: title || 'Your Course Title',
@@ -1200,6 +1215,13 @@ export function AICreateCoursePage() {
                         index={globalIdx}
                         total={allSlides.length}
                         settings={presentationSettings}
+                        editable
+                        selectedField={selectedField}
+                        onSelectField={selectSlideField}
+                        onInlineChange={updates => {
+                          handleTopicUpdate(updates as Partial<CSSection['topics'][number]>);
+                          setPanelRev(r => r + 1);
+                        }}
                       />
                     </div>
 
@@ -1248,8 +1270,8 @@ export function AICreateCoursePage() {
             <div style={{ width: 320, display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
               {currentTopic ? (
                 <div
-                  key={currentTopic.id}
-                  className="slide-panel-enter"
+                  key={`${currentTopic.id}-${panelRev}`}
+                  className={panelRev ? undefined : 'slide-panel-enter'}
                   style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}
                 >
                   <SlideSettingsPanel

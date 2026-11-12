@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { CourseTopic } from '../courseContent';
+import { EditableText, useSlideEdit } from './slideEdit';
 
 // ── Type helpers ──────────────────────────────────────────────────────────────
 
@@ -38,39 +39,43 @@ const fs = {
 function TitleText({ topic }: { topic: CourseTopic }) {
   const body  = g<string>(topic, 'content') || topic.content;
   const align = (g<string>(topic, 'alignment') || 'left') as React.CSSProperties['textAlign'];
-  return (
-    <p style={{ margin: 0, fontSize: fs.md, lineHeight: 1.7, textAlign: align, whiteSpace: 'pre-wrap', color: 'var(--slide-text)' }}>
-      {empty(body) ? <Dim>Add body text in Slide Settings</Dim> : body}
-    </p>
-  );
+  const edit  = useSlideEdit();
+  const pStyle: React.CSSProperties = { margin: 0, fontSize: fs.md, lineHeight: 1.7, textAlign: align, whiteSpace: 'pre-wrap', color: 'var(--slide-text)' };
+  if (edit?.editable) return <EditableText as="p" k="content" label="Body text" multiline value={body || ''} placeholder="Add body text" style={pStyle} />;
+  return <p style={pStyle}>{empty(body) ? <Dim>Add body text in Slide Settings</Dim> : body}</p>;
 }
 
 function TitleBullets({ topic }: { topic: CourseTopic }) {
-  const intro   = g<string>(topic, 'introText');
-  const bullets = g<string[]>(topic, 'bullets') || topic.bullets || [];
-  const style   = g<string>(topic, 'bulletStyle') || 'disc';
-  const active  = bullets.filter(Boolean);
+  const intro    = g<string>(topic, 'introText');
+  const bullets  = g<string[]>(topic, 'bullets') || topic.bullets || [];
+  const style    = g<string>(topic, 'bulletStyle') || 'disc';
+  const editable = !!useSlideEdit()?.editable;
+  // In the editor every bullet shows (empty ones as placeholders) so indexes match the panel
+  const shown = editable
+    ? (bullets.length ? bullets : ['']).map((text, i) => ({ text, i }))
+    : bullets.map((text, i) => ({ text, i })).filter(b => b.text);
 
-  const bullet = (b: string, i: number) => {
+  const bullet = ({ text, i }: { text: string; i: number }, n: number) => {
+    const brand = { color: 'var(--slide-primary-text, var(--slide-primary))' };
     let marker: React.ReactNode = '•';
-    if (style === 'number') marker = <span style={{ fontWeight: 700, color: 'var(--slide-primary)', minWidth: '1.4em', display: 'inline-block' }}>{i + 1}.</span>;
-    if (style === 'arrow')  marker = <span style={{ color: 'var(--slide-primary)' }}>→</span>;
-    if (style === 'check')  marker = <span style={{ color: 'var(--slide-primary)' }}>✓</span>;
+    if (style === 'number') marker = <span style={{ ...brand, fontWeight: 700, minWidth: '1.4em', display: 'inline-block' }}>{n + 1}.</span>;
+    if (style === 'arrow')  marker = <span style={brand}>→</span>;
+    if (style === 'check')  marker = <span style={brand}>✓</span>;
     if (style === 'square') marker = <span style={{ display: 'inline-block', width: '0.4em', height: '0.4em', background: 'currentColor', verticalAlign: '0.15em' }} />;
     if (style === 'none')   marker = null;
     return (
       <li key={i} style={{ display: 'flex', gap: 'clamp(6px,1cqw,10px)', alignItems: 'flex-start', listStyle: 'none' }}>
         {marker !== null && <span aria-hidden={style === 'number' ? undefined : true} style={{ fontSize: fs.md, flexShrink: 0, marginTop: 2 }}>{marker}</span>}
-        <span style={{ fontSize: fs.md, lineHeight: 1.65 }}>{b}</span>
+        <EditableText k={`bullet:${i}`} label={`Bullet ${i + 1}`} value={text} placeholder={`Bullet ${i + 1}`} style={{ fontSize: fs.md, lineHeight: 1.65, flex: 1, minWidth: 0 }} />
       </li>
     );
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(6px,1cqw,10px)' }}>
-      {intro && <p style={{ margin: 0, fontSize: fs.md, opacity: 0.8, lineHeight: 1.6 }}>{intro}</p>}
-      {active.length
-        ? <ul style={{ margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 'clamp(4px,0.7cqw,8px)' }}>{active.map(bullet)}</ul>
+      {intro && <EditableText as="p" k="introText" label="Intro text" value={intro} style={{ margin: 0, fontSize: fs.md, opacity: 0.85, lineHeight: 1.6 }} />}
+      {shown.length
+        ? <ul style={{ margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 'clamp(4px,0.7cqw,8px)' }}>{shown.map(bullet)}</ul>
         : <p style={{ margin: 0, fontSize: fs.md }}><Dim>Add bullet items in Slide Settings</Dim></p>}
     </div>
   );
@@ -97,7 +102,7 @@ function Series({ topic, dir }: { topic: CourseTopic; dir: 'h' | 'v' }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(6px,0.9cqw,10px)' }}>
       {items.map((item, i) => (
         <div key={item.id || i} style={{ display: 'flex', alignItems: 'flex-start', gap: 'clamp(8px,1.2cqw,14px)', padding: 'clamp(8px,1.2cqw,12px)', background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', border: '1px solid', borderColor: 'color-mix(in srgb,var(--slide-text) 15%,transparent)' }}>
-          <span style={{ fontSize: fs.lg, fontWeight: 800, color: 'var(--slide-primary)', flexShrink: 0, minWidth: '1.6em', textAlign: 'center' }}>{i + 1}</span>
+          <span style={{ fontSize: fs.lg, fontWeight: 800, color: 'var(--slide-primary-text, var(--slide-primary))', flexShrink: 0, minWidth: '1.6em', textAlign: 'center' }}>{i + 1}</span>
           <div>
             <p style={{ margin: '0 0 2px', fontSize: fs.md, fontWeight: 600 }}>{item.label || <Dim>{`Step ${i + 1}`}</Dim>}</p>
             <p style={{ margin: 0, fontSize: fs.sm, opacity: 0.75, lineHeight: 1.55 }}>{item.description || <Dim>Description</Dim>}</p>
@@ -128,7 +133,7 @@ function ExpandableList({ topic }: { topic: CourseTopic }) {
               <span style={{ fontSize: fs.md, fontWeight: 600, flex: 1 }}>
                 {empty(item.heading) ? <Dim>{`Item ${i + 1} heading`}</Dim> : item.heading}
               </span>
-              <span style={{ fontSize: fs.md, color: 'var(--slide-primary)', flexShrink: 0, display: 'inline-block', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.18s' }}>▾</span>
+              <span style={{ fontSize: fs.md, color: 'var(--slide-primary-text, var(--slide-primary))', flexShrink: 0, display: 'inline-block', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.18s' }}>▾</span>
             </button>
             {isOpen && (
               <div style={{ padding: 'clamp(4px,0.7cqw,8px) clamp(10px,1.5cqw,15px) clamp(8px,1.1cqw,11px)', borderTop: '1px solid', borderColor: 'color-mix(in srgb,var(--slide-text) 12%,transparent)' }}>
@@ -231,7 +236,7 @@ function Spokesperson({ topic }: { topic: CourseTopic }) {
     <div style={{ display: 'flex', gap: 'clamp(10px,1.5cqw,16px)', alignItems: 'flex-start' }}>
       <div style={{ flexShrink: 0, width: 'clamp(36px,7cqw,70px)', height: 'clamp(36px,7cqw,70px)', borderRadius: '50%', background: 'var(--slide-panel)', border: '2px solid var(--slide-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'clamp(14px,3cqw,28px)' }}>👤</div>
       <div>
-        <p style={{ margin: '0 0 clamp(3px,0.5cqw,6px)', fontSize: fs.sm, fontWeight: 700, color: 'var(--slide-primary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Presenter · {g<string>(topic, 'avatar') || 'Maya'}</p>
+        <p style={{ margin: '0 0 clamp(3px,0.5cqw,6px)', fontSize: fs.sm, fontWeight: 700, color: 'var(--slide-primary-text, var(--slide-primary))', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Presenter · {g<string>(topic, 'avatar') || 'Maya'}</p>
         <p style={{ margin: 0, fontSize: fs.md, lineHeight: 1.65 }}>{empty(script) ? <Dim>Enter script in Slide Settings</Dim> : script}</p>
       </div>
     </div>

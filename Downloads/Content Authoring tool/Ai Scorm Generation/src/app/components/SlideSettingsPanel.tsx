@@ -110,13 +110,14 @@ const inputBase: React.CSSProperties = {
   outline: 'none', boxSizing: 'border-box', fontFamily: font, transition: 'border-color 0.12s',
 };
 
-function SInput({ value, onChange, placeholder, rows }: { value: string; onChange: (v: string) => void; placeholder?: string; rows?: number }) {
+function SInput({ value, onChange, placeholder, rows, field, label }: { value: string; onChange: (v: string) => void; placeholder?: string; rows?: number; /** Slide field key (data-field) for click-to-edit. */ field?: string; label?: string }) {
   const handlers = {
     onFocus: (e: React.FocusEvent<HTMLElement>) => Object.assign((e.currentTarget as HTMLElement).style, focusStyle),
     onBlur:  (e: React.FocusEvent<HTMLElement>) => Object.assign((e.currentTarget as HTMLElement).style, blurStyle),
   };
-  if (rows) return <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows} style={{ ...inputBase, resize: 'vertical', lineHeight: 1.6 }} {...handlers} />;
-  return <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={inputBase} {...handlers} />;
+  const a11y = { 'data-field': field, 'aria-label': label };
+  if (rows) return <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows} style={{ ...inputBase, resize: 'vertical', lineHeight: 1.6 }} {...a11y} {...handlers} />;
+  return <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={inputBase} {...a11y} {...handlers} />;
 }
 
 function SSelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
@@ -142,13 +143,13 @@ function Toggle({ value, onChange, label }: { value: boolean; onChange: (v: bool
 function FieldGroup({ title, children, open: defaultOpen = true }: { title: string; children: React.ReactNode; open?: boolean }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <div style={{ borderBottom: `1px solid ${BORDER}` }}>
-      <button onClick={() => setIsOpen(v => !v)}
+    <div style={{ borderBottom: `1px solid ${BORDER}` }} data-group={title}>
+      <button type="button" aria-expanded={isOpen} data-group-toggle={title} onClick={() => setIsOpen(v => !v)}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 16px', minHeight: 40, background: 'none', border: 'none', cursor: 'pointer' }}>
         <span style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>{title}</span>
         {isOpen ? <ChevronUp size={14} color="#9CA3AF" /> : <Plus size={14} color="#9CA3AF" />}
       </button>
-      {isOpen && <div style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>{children}</div>}
+      {isOpen && <div data-group-body={title} style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>{children}</div>}
     </div>
   );
 }
@@ -546,7 +547,7 @@ function TitleTextFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => voi
   const [align, setAlign] = useState((t.alignment as string) || 'left');
   return (
     <>
-      <div><FieldLabel>Body</FieldLabel><SInput rows={5} value={body} placeholder="Enter body text…" onChange={v => { setBody(v); u({ content: v }); }} /></div>
+      <div><FieldLabel>Body</FieldLabel><SInput rows={5} field="content" label="Body" value={body} placeholder="Enter body text…" onChange={v => { setBody(v); u({ content: v }); }} /></div>
       <div>
         <FieldLabel>Alignment</FieldLabel>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -586,14 +587,14 @@ function BulletedListFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => 
   const sync = (next: typeof items) => { setItems(next); u({ bullets: next.map(i => i.text) }); };
   return (
     <>
-      <div><FieldLabel note="optional">Intro text</FieldLabel><SInput value={intro} placeholder="Optional intro…" onChange={v => { setIntro(v); u({ introText: v }); }} /></div>
+      <div><FieldLabel note="optional">Intro text</FieldLabel><SInput field="introText" label="Intro text" value={intro} placeholder="Optional intro…" onChange={v => { setIntro(v); u({ introText: v }); }} /></div>
       <div>
         <FieldLabel>Bullet items</FieldLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {items.map((item, i) => (
             <div key={item.id} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <BulletMarker style={style} index={i} className="!text-[#6B7280]" />
-              <input value={item.text} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, text: e.target.value } : x); sync(n); }} placeholder={`Bullet ${i + 1}…`} style={inlineInput} />
+              <input data-field={`bullet:${i}`} aria-label={`Bullet ${i + 1}`} value={item.text} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, text: e.target.value } : x); sync(n); }} placeholder={`Bullet ${i + 1}…`} style={inlineInput} />
               <RemoveBtn onClick={() => sync(items.filter((_, j) => j !== i))} />
             </div>
           ))}
@@ -1223,7 +1224,7 @@ export function SlideSettingsPanel({
   const showNarration = isTextBased && !isQuiz && !isMedia;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, fontFamily: font }}>
+    <div data-slide-settings="" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, fontFamily: font }}>
 
       {/* Header */}
       <div style={{ padding: '12px 16px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -1265,7 +1266,7 @@ export function SlideSettingsPanel({
         <FieldGroup title="Content">
           <div>
             <FieldLabel>Topic title</FieldLabel>
-            <SInput value={topicTitle} placeholder="Enter topic title…" onChange={v => { setTopicTitle(v); onUpdate({ title: v }); }} />
+            <SInput field="title" label="Topic title" value={topicTitle} placeholder="Enter topic title…" onChange={v => { setTopicTitle(v); onUpdate({ title: v }); }} />
           </div>
         </FieldGroup>
 
