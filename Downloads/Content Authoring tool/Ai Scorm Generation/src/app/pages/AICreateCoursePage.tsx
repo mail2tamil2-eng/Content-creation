@@ -547,8 +547,8 @@ export function AICreateCoursePage() {
         {/* 24px gap below the fixed app header */}
         <div aria-hidden="true" style={{ height: 24 }} />
 
-        {/* ---- Centered content area ---- */}
-        <div style={{ width: 'min(1120px, calc(100% - 64px))', margin: '0 auto', paddingBottom: 32 }}>
+        {/* ---- Full-width content area (32px side gutters) ---- */}
+        <div style={{ width: 'calc(100% - 64px)', margin: '0 auto', paddingBottom: 32 }}>
 
           {/* Page heading */}
           <div>
@@ -576,7 +576,7 @@ export function AICreateCoursePage() {
           </div>
 
           {/* ---- 2-column body (28px below breadcrumb) ---- */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 760px) 320px', gap: 24, alignItems: 'start', paddingTop: 28 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) clamp(320px, 28vw, 440px)', gap: 24, alignItems: 'start', paddingTop: 28 }}>
 
           {/* ==== LEFT: Form ==== */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
