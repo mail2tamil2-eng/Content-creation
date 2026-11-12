@@ -853,51 +853,54 @@ export function AICreateCoursePage() {
                       {!aiTemplate && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                           <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>Colours &amp; Style</p>
+                          {/* Two lines: colours + font on line 1, background + button style on line 2 */}
+                          <div className="@container"><div className="grid grid-cols-1 gap-2.5 @2xl:grid-cols-6">
                           {([
                             { label: 'Primary colour',   value: customPrimary,   set: setCustomPrimary },
                             { label: 'Secondary colour', value: customSecondary, set: setCustomSecondary },
                           ] as const).map(row => (
-                            <div key={row.label} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8 }}>
+                            <div key={row.label} className="@2xl:col-span-2" style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, minHeight: 46, gap: 8 }}>
                               <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>{row.label}</span>
-                              <span style={{ fontSize: 12, color: '#6B7280', marginRight: 8, fontFamily: 'monospace' }}>{row.value.toUpperCase()}</span>
+                              <span style={{ fontSize: 12, color: '#4B5563', fontFamily: 'monospace' }}>{row.value.toUpperCase()}</span>
                               <label style={{ width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', position: 'relative', display: 'block', flexShrink: 0 }}>
                                 <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: row.value, border: '2px solid rgba(0,0,0,0.12)' }} />
-                                <input type="color" value={row.value} onChange={e => row.set(e.target.value)} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none', padding: 0 }} />
+                                <input type="color" aria-label={row.label} value={row.value} onChange={e => row.set(e.target.value)} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', border: 'none', padding: 0 }} />
                               </label>
                             </div>
                           ))}
-                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
-                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font</span>
+                          <div className="@2xl:col-span-2" style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10, minHeight: 46 }}>
+                            <span id="style-font" style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font</span>
                             <div style={{ position: 'relative' }}>
-                              <select value={customFont} onChange={e => setCustomFont(e.target.value)}
+                              <select aria-labelledby="style-font" value={customFont} onChange={e => setCustomFont(e.target.value)}
                                 style={{ border: '1px solid #E5E7EB', borderRadius: 7, padding: '5px 28px 5px 10px', fontSize: 13, color: '#111827', background: '#fff', appearance: 'none', cursor: 'pointer', outline: 'none' }}>
                                 {THEME_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                               </select>
                               <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
                             </div>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
-                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Background</span>
-                            <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
+                          <div className="@2xl:col-span-3" style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10, minHeight: 46 }}>
+                            <span id="style-background" style={{ fontSize: 13, color: '#374151', flex: 1 }}>Background</span>
+                            <div role="group" aria-labelledby="style-background" style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
                               {(['light', 'warm', 'dark'] as const).map(opt => (
-                                <button key={opt} type="button" onClick={() => setCustomBgStyle(opt)}
-                                  style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customBgStyle === opt ? 600 : 400, background: customBgStyle === opt ? '#1E293B' : 'transparent', color: customBgStyle === opt ? '#fff' : '#6B7280', transition: 'all 0.13s', textTransform: 'capitalize' }}>
+                                <button key={opt} type="button" aria-pressed={customBgStyle === opt} onClick={() => setCustomBgStyle(opt)}
+                                  style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customBgStyle === opt ? 600 : 400, background: customBgStyle === opt ? '#1E293B' : 'transparent', color: customBgStyle === opt ? '#fff' : '#4B5563', transition: 'all 0.13s', textTransform: 'capitalize' }}>
                                   {opt.charAt(0).toUpperCase() + opt.slice(1)}
                                 </button>
                               ))}
                             </div>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10 }}>
-                            <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>Button Style</span>
-                            <div style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
+                          <div className="@2xl:col-span-3" style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10, minHeight: 46 }}>
+                            <span id="style-button-style" style={{ fontSize: 13, color: '#374151', flex: 1 }}>Button Style</span>
+                            <div role="group" aria-labelledby="style-button-style" style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
                               {(['rounded', 'pill', 'square'] as const).map(opt => (
-                                <button key={opt} type="button" onClick={() => setCustomButtonStyle(opt)}
-                                  style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customButtonStyle === opt ? 600 : 400, background: customButtonStyle === opt ? '#1E293B' : 'transparent', color: customButtonStyle === opt ? '#fff' : '#6B7280', transition: 'all 0.13s', textTransform: 'capitalize' }}>
+                                <button key={opt} type="button" aria-pressed={customButtonStyle === opt} onClick={() => setCustomButtonStyle(opt)}
+                                  style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customButtonStyle === opt ? 600 : 400, background: customButtonStyle === opt ? '#1E293B' : 'transparent', color: customButtonStyle === opt ? '#fff' : '#4B5563', transition: 'all 0.13s', textTransform: 'capitalize' }}>
                                   {opt.charAt(0).toUpperCase() + opt.slice(1)}
                                 </button>
                               ))}
                             </div>
                           </div>
+                          </div></div>
                         </div>
                       )}
                       {/* Logo & Layout */}
@@ -912,6 +915,8 @@ export function AICreateCoursePage() {
                             {customLogoPreview ? <><img src={customLogoPreview} alt="logo" style={{ height: 28, objectFit: 'contain', maxWidth: 80 }} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Logo uploaded</span><button type="button" onClick={e => { e.preventDefault(); setCustomLogoPreview(''); }} style={{ marginLeft: 'auto', fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button></> : <><Upload size={15} color="#6B7280" /><span style={{ fontSize: 13, color: '#6B7280' }}>Upload logo</span></>}
                           </label>
                         </div>
+                        {/* Header and Footer side by side (stack on narrow screens) */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'stretch' }}>
                         {[
                           { label: 'Header', enabled: headerEnabled, toggle: () => setHeaderEnabled(v => !v), items: [
                             { label: 'Organization Logo', value: headerIncludeLogo, set: setHeaderIncludeLogo },
@@ -924,7 +929,7 @@ export function AICreateCoursePage() {
                             { label: 'Watermark', value: footerIncludeWatermark, set: setFooterIncludeWatermark },
                           ] },
                         ].map(section => (
-                          <div key={section.label} style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
+                          <div key={section.label} style={{ flex: '1 1 320px', minWidth: 0, border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F9FAFB' }}>
                               <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{section.label}</span>
                               <button type="button" role="switch" aria-checked={section.enabled} aria-label={`Show ${section.label.toLowerCase()}`} onClick={section.toggle} style={{ width: 36, height: 20, borderRadius: 10, background: section.enabled ? P : '#D1D5DB', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
@@ -952,6 +957,7 @@ export function AICreateCoursePage() {
                             )}
                           </div>
                         ))}
+                        </div>
                       </div>
                     </div>
                   </motion.div>
