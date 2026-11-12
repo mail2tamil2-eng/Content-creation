@@ -4,7 +4,9 @@ import React, { createContext, useContext, useLayoutEffect, useRef } from 'react
  * Click-to-edit on the slide preview (Step 2 editor).
  *
  * Field keys shared by the slide and the Slide Settings panel:
- *   'title' · 'content' (Title + Text body) · 'introText' · 'bullet:<i>' · 'slide-content' (whole content area)
+ *   'title' · 'content' · 'introText' · 'bullet:<i>' · 'slide-content' (whole content area)
+ *   any other topic field as a dot path: 'instructions', 'seriesItems.2.label', 'tableRows.1.0',
+ *   'questions.0.options.2.text' … (array index or object key per segment)
  * Panel inputs carry `data-field="<key>"` so the editor can focus the matching field.
  *
  * Interaction:
@@ -21,7 +23,7 @@ export interface SlideEditApi {
   hintId: string;
   select: (key: string | null) => void;
   startEdit: (key: string) => void;
-  commit: (key: string, value: string, opts?: { next?: boolean }) => void;
+  commit: (key: string, value: string, opts?: { next?: boolean; source?: unknown }) => void;
   cancel: () => void;
 }
 
@@ -42,11 +44,14 @@ export interface EditableTextProps {
   multiline?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  /** Current value of the key's root field when the slide shows a fallback (e.g. default table headers). */
+  source?: unknown;
 }
 
-const placeholderStyle: React.CSSProperties = { opacity: 0.45, fontStyle: 'italic' };
+// Placeholder stays readable (≥4.5:1) even inside a parent with opacity .85
+const placeholderStyle: React.CSSProperties = { opacity: 0.75, fontStyle: 'italic' };
 
-export function EditableText({ k, label, value, placeholder, as = 'span', multiline = false, className, style }: EditableTextProps) {
+export function EditableText({ k, label, value, placeholder, as = 'span', multiline = false, className, style, source }: EditableTextProps) {
   const ctx = useSlideEdit();
   const Tag = as as React.ElementType;
   const editRef = useRef<HTMLElement>(null);
@@ -81,7 +86,7 @@ export function EditableText({ k, label, value, placeholder, as = 'span', multil
     if (done.current) return;
     done.current = true;
     const text = (editRef.current?.innerText ?? '').replace(/ /g, ' ').replace(/\n+$/, '');
-    if (save) ctx.commit(k, multiline ? text.trim() : text.replace(/\s*\n\s*/g, ' ').trim(), opts);
+    if (save) ctx.commit(k, multiline ? text.trim() : text.replace(/\s*\n\s*/g, ' ').trim(), { ...opts, source });
     else if (k.startsWith('bullet:') && !value) ctx.commit(k, ''); // Esc on a new empty bullet removes it
     else ctx.cancel();
   };

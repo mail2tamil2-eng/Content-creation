@@ -15,7 +15,8 @@
 .course-slide [data-testid="generated-slide-content"] label:hover { background:var(--slide-panel); }
 .course-slide [data-testid="generated-slide-content"] [role="status"] { background:#fff; color:#17492c; border-radius:8px; padding:10px; }
 .course-slide input { accent-color:var(--slide-accent); }
-.course-slide-footer { border-top:1px solid color-mix(in srgb,var(--slide-text) 15%,transparent); opacity:.8; }
+.course-slide-footer { border-top:1px solid color-mix(in srgb,var(--slide-text) 15%,transparent); }
+.course-slide-footer > span:first-child { opacity:.9; }
 .course-slide-decoration { position:absolute; z-index:-1; width:45%; height:80%; right:-20%; top:18%; transform:rotate(25deg); background:var(--slide-accent); opacity:.12; }
 .course-slide--lavender-delight .course-slide-decoration,.course-slide--health-harmony .course-slide-decoration { border-radius:50%; right:-12%; top:-25%; }
 .course-slide--rustic-minimalist .course-slide-decoration,.course-slide--elevate-white .course-slide-decoration { width:1%; right:3%; top:10%; transform:none; opacity:.65; }
@@ -26,7 +27,7 @@
 .course-slide > .tm { z-index:-1; }
 
 /* ── Click-to-edit (Step 2 editor) — see slideEdit.tsx ───────────────────── */
-.is-editable .se-editable { position:relative; cursor:text; border-radius:4px; outline:1.5px dashed transparent; outline-offset:4px; transition:outline-color .12s; }
+.is-editable .se-editable { min-height:24px; position:relative; cursor:text; border-radius:4px; outline:1.5px dashed transparent; outline-offset:4px; transition:outline-color .12s; }
 .is-editable .se-editable:hover { outline-color:var(--se-ring); }
 .is-editable .se-editable:focus-visible,
 .is-editable .se-editable.se-selected { outline:2px solid var(--se-ring); }

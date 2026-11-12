@@ -281,7 +281,7 @@ function ImageManagement({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => voi
       </div>
       <div>
         <FieldLabel note="optional">Caption</FieldLabel>
-        <SInput value={caption} placeholder="Caption shown below image…" onChange={v => { setCaption(v); u({ caption: v }); }} />
+        <SInput field="caption" label="Caption" value={caption} placeholder="Caption shown below image…" onChange={v => { setCaption(v); u({ caption: v }); }} />
       </div>
     </>
   );
@@ -392,7 +392,7 @@ function VideoFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
 
       <div>
         <FieldLabel note="optional">Caption</FieldLabel>
-        <SInput value={caption} placeholder="Caption shown below video…" onChange={v => { setCaption(v); u({ caption: v }); }} />
+        <SInput field="caption" label="Caption" value={caption} placeholder="Caption shown below video…" onChange={v => { setCaption(v); u({ caption: v }); }} />
       </div>
       <Toggle value={subtitles} label="Enable subtitles / captions" onChange={v => { setSubtitles(v); u({ subtitles: v }); }} />
       <Toggle value={autoplay}  label="Autoplay"                    onChange={v => { setAutoplay(v);  u({ autoplay: v });  }} />
@@ -489,7 +489,7 @@ function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
 function AudioFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [audioUrl, setAudioUrl]     = useState((t.audioUrl as string) || '');
-  const [transcript, setTranscript] = useState((t.transcript as string) || '');
+  const [transcript, setTranscript] = useState((t.transcript as string) || (t.audioScript as string) || '');
   return (
     <>
       {audioUrl ? (
@@ -516,7 +516,7 @@ function AudioFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
         onChange={e => { const f = e.target.files?.[0]; if (f) { const url = URL.createObjectURL(f); setAudioUrl(url); u({ audioUrl: url }); } }} />
       <div>
         <FieldLabel>Transcript</FieldLabel>
-        <SInput rows={4} value={transcript} placeholder="Paste or type transcript…" onChange={v => { setTranscript(v); u({ transcript: v }); }} />
+        <SInput rows={4} field="transcript" label="Transcript" value={transcript} placeholder="Paste or type transcript…" onChange={v => { setTranscript(v); u({ transcript: v }); }} />
       </div>
     </>
   );
@@ -531,7 +531,7 @@ function SpokespersonFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => 
   const [tone, setTone]     = useState((t.tone as string) || 'professional');
   return (
     <>
-      <div><FieldLabel>Script</FieldLabel><SInput rows={5} value={script} placeholder="What the spokesperson will say…" onChange={v => { setScript(v); u({ script: v }); }} /></div>
+      <div><FieldLabel>Script</FieldLabel><SInput rows={5} field="script" label="Script" value={script} placeholder="What the spokesperson will say…" onChange={v => { setScript(v); u({ script: v }); }} /></div>
       <div><FieldLabel>Avatar</FieldLabel><SSelect value={avatar} onChange={v => { setAvatar(v); u({ avatar: v }); }} options={[{value:'default',label:'Default'},{value:'formal',label:'Formal'},{value:'casual',label:'Casual'},{value:'custom',label:'Custom'}]} /></div>
       <div><FieldLabel>Voice</FieldLabel><SSelect value={voice} onChange={v => { setVoice(v); u({ voice: v }); }} options={NARRATION_VOICES} /></div>
       <div><FieldLabel>Tone</FieldLabel><SSelect value={tone} onChange={v => { setTone(v); u({ tone: v }); }} options={NARRATION_TONES} /></div>
@@ -618,8 +618,8 @@ function SeriesFields({ t, u, dir }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {items.map((item, i) => (
             <ItemCard key={item.id} label={`Item ${i + 1}`} onRemove={() => sync(items.filter((_, j) => j !== i))}>
-              <input value={item.label} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, label: e.target.value } : x); sync(n); }} placeholder="Label…" style={inlineInput} />
-              <textarea value={item.description} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, description: e.target.value } : x); sync(n); }} placeholder="Description…" rows={2} style={inlineTA} />
+              <input data-field={`seriesItems.${i}.label`} aria-label={`Item ${i + 1} label`} value={item.label} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, label: e.target.value } : x); sync(n); }} placeholder="Label…" style={inlineInput} />
+              <textarea data-field={`seriesItems.${i}.description`} aria-label={`Item ${i + 1} description`} value={item.description} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, description: e.target.value } : x); sync(n); }} placeholder="Description…" rows={2} style={inlineTA} />
             </ItemCard>
           ))}
           <AddBtn label="Add item" onClick={() => sync([...items, { id: uid(), label: '', description: '' }])} />
@@ -642,8 +642,8 @@ function ExpandableListFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) =
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {items.map((item, i) => (
             <ItemCard key={item.id} label={`Item ${i + 1}`} onRemove={() => sync(items.filter((_, j) => j !== i))}>
-              <input value={item.heading} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, heading: e.target.value } : x); sync(n); }} placeholder="Heading…" style={inlineInput} />
-              <textarea value={item.body} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, body: e.target.value } : x); sync(n); }} placeholder="Body text…" rows={2} style={inlineTA} />
+              <input data-field={`accordionItems.${i}.heading`} aria-label={`Item ${i + 1} heading`} value={item.heading} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, heading: e.target.value } : x); sync(n); }} placeholder="Heading…" style={inlineInput} />
+              <textarea data-field={`accordionItems.${i}.body`} aria-label={`Item ${i + 1} body`} value={item.body} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, body: e.target.value } : x); sync(n); }} placeholder="Body text…" rows={2} style={inlineTA} />
             </ItemCard>
           ))}
           <AddBtn label="Add item" onClick={() => sync([...items, { id: uid(), heading: '', body: '' }])} />
@@ -671,7 +671,7 @@ function TableFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {headers.map((h, i) => (
             <div key={i} style={{ display: 'flex', gap: 5 }}>
-              <input value={h} onChange={e => { const n = [...headers]; n[i] = e.target.value; uH(n); }} placeholder={`Col ${i+1}`} style={inlineInput} />
+              <input data-field={`tableHeaders.${i}`} aria-label={`Column ${i + 1} heading`} value={h} onChange={e => { const n = [...headers]; n[i] = e.target.value; uH(n); }} placeholder={`Col ${i+1}`} style={inlineInput} />
               {headers.length > 1 && <RemoveBtn onClick={() => uH(headers.filter((_,j) => j !== i))} />}
             </div>
           ))}
@@ -684,7 +684,7 @@ function TableFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
           {rows.map((row, ri) => (
             <div key={ri} style={{ display: 'flex', gap: 3 }}>
               {row.map((cell, ci) => (
-                <input key={ci} value={cell} onChange={e => { const n = rows.map((r,i) => i===ri ? r.map((c,j) => j===ci ? e.target.value : c) : r); uR(n); }} placeholder={headers[ci]||''} style={{ flex:1, minWidth:0, padding:'5px 6px', border:`1px solid ${BORDER}`, borderRadius:5, fontSize:11, outline:'none', background:'#FAFAFA' }} />
+                <input key={ci} data-field={`tableRows.${ri}.${ci}`} aria-label={`Row ${ri + 1} column ${ci + 1}`} value={cell} onChange={e => { const n = rows.map((r,i) => i===ri ? r.map((c,j) => j===ci ? e.target.value : c) : r); uR(n); }} placeholder={headers[ci]||''} style={{ flex:1, minWidth:0, padding:'5px 6px', border:`1px solid ${BORDER}`, borderRadius:5, fontSize:11, outline:'none', background:'#FAFAFA' }} />
               ))}
               <RemoveBtn onClick={() => uR(rows.filter((_,i) => i !== ri))} />
             </div>
@@ -713,8 +713,8 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#D1D5DB'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#E5E7EB'; }}
               ><ImageIcon size={13} /> Click to upload image</div>
-              <input value={card.heading} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,heading:e.target.value} : x); sync(n); }} placeholder="Heading…" style={inlineInput} />
-              <textarea value={card.description} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,description:e.target.value} : x); sync(n); }} placeholder="Description…" rows={2} style={inlineTA} />
+              <input data-field={`imageCards.${i}.heading`} aria-label={`Item ${i + 1} heading`} value={card.heading} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,heading:e.target.value} : x); sync(n); }} placeholder="Heading…" style={inlineInput} />
+              <textarea data-field={`imageCards.${i}.description`} aria-label={`Item ${i + 1} description`} value={card.description} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,description:e.target.value} : x); sync(n); }} placeholder="Description…" rows={2} style={inlineTA} />
             </ItemCard>
           ))}
           <AddBtn label="Add card" onClick={() => sync([...cards, { id: uid(), heading: '', description: '' }])} />
@@ -739,8 +739,8 @@ function HotspotFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {spots.map((spot, i) => (
             <ItemCard key={spot.id} label={`Hotspot ${i+1}`} onRemove={() => sync(spots.filter((_,j) => j !== i))}>
-              <input value={spot.title} onChange={e => { const n = spots.map((x,j) => j===i ? {...x,title:e.target.value} : x); sync(n); }} placeholder="Label…" style={inlineInput} />
-              <textarea value={spot.content} onChange={e => { const n = spots.map((x,j) => j===i ? {...x,content:e.target.value} : x); sync(n); }} placeholder="Content on click…" rows={2} style={inlineTA} />
+              <input data-field={`hotspots.${i}.title`} aria-label={`Item ${i + 1} title`} value={spot.title} onChange={e => { const n = spots.map((x,j) => j===i ? {...x,title:e.target.value} : x); sync(n); }} placeholder="Label…" style={inlineInput} />
+              <textarea data-field={`hotspots.${i}.content`} aria-label={`Item ${i + 1} content`} value={spot.content} onChange={e => { const n = spots.map((x,j) => j===i ? {...x,content:e.target.value} : x); sync(n); }} placeholder="Content on click…" rows={2} style={inlineTA} />
             </ItemCard>
           ))}
           <AddBtn label="Add hotspot" onClick={() => sync([...spots, { id: uid(), title: '', content: '' }])} />
@@ -760,8 +760,8 @@ function ClickRevealFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {cards.map((card, i) => (
           <ItemCard key={card.id} label={`Card ${i+1}`} onRemove={() => sync(cards.filter((_,j) => j !== i))}>
-            <input value={card.front} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,front:e.target.value} : x); sync(n); }} placeholder="Front (before click)…" style={inlineInput} />
-            <textarea value={card.back} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,back:e.target.value} : x); sync(n); }} placeholder="Revealed content…" rows={2} style={inlineTA} />
+            <input data-field={`revealCards.${i}.front`} aria-label={`Item ${i + 1} front`} value={card.front} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,front:e.target.value} : x); sync(n); }} placeholder="Front (before click)…" style={inlineInput} />
+            <textarea data-field={`revealCards.${i}.back`} aria-label={`Item ${i + 1} back`} value={card.back} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,back:e.target.value} : x); sync(n); }} placeholder="Revealed content…" rows={2} style={inlineTA} />
           </ItemCard>
         ))}
         <AddBtn label="Add card" onClick={() => sync([...cards, { id: uid(), front: '', back: '' }])} />
@@ -787,8 +787,8 @@ function SliderFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }
         ))}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-        <div><FieldLabel>Before label</FieldLabel><SInput value={beforeLabel} onChange={v => { setBeforeLabel(v); u({ beforeLabel: v }); }} /></div>
-        <div><FieldLabel>After label</FieldLabel><SInput value={afterLabel}   onChange={v => { setAfterLabel(v);  u({ afterLabel:  v }); }} /></div>
+        <div><FieldLabel>Before label</FieldLabel><SInput field="beforeLabel" label="Before label" value={beforeLabel} onChange={v => { setBeforeLabel(v); u({ beforeLabel: v }); }} /></div>
+        <div><FieldLabel>After label</FieldLabel><SInput field="afterLabel" label="After label" value={afterLabel}   onChange={v => { setAfterLabel(v);  u({ afterLabel:  v }); }} /></div>
       </div>
     </>
   );
@@ -804,13 +804,13 @@ function DragDropFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
   const syncZ = (n: DZone[]) => { setZones(n); u({ dropZones: n }); };
   return (
     <>
-      <div><FieldLabel>Instructions</FieldLabel><SInput value={instr} placeholder="Drag each item to its zone…" onChange={v => { setInstr(v); u({ instructions: v }); }} /></div>
+      <div><FieldLabel>Instructions</FieldLabel><SInput field="instructions" label="Instructions" value={instr} placeholder="Drag each item to its zone…" onChange={v => { setInstr(v); u({ instructions: v }); }} /></div>
       <div>
         <FieldLabel>Drag items</FieldLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {items.map((item, i) => (
             <div key={item.id} style={{ display: 'flex', gap: 4 }}>
-              <input value={item.label} onChange={e => syncI(items.map((x,j) => j===i ? {...x,label:e.target.value} : x))} placeholder={`Item ${i+1}`} style={{ ...inlineInput, flex: 2 }} />
+              <input data-field={`dragItems.${i}.label`} aria-label={`Item ${i + 1} label`} value={item.label} onChange={e => syncI(items.map((x,j) => j===i ? {...x,label:e.target.value} : x))} placeholder={`Item ${i+1}`} style={{ ...inlineInput, flex: 2 }} />
               <select value={item.zone} onChange={e => syncI(items.map((x,j) => j===i ? {...x,zone:e.target.value} : x))} style={{ flex:1, padding:'6px 4px', border:`1px solid ${BORDER}`, borderRadius:6, fontSize:11, outline:'none', background:'#FAFAFA' }}>
                 {zones.map(z => <option key={z.id} value={z.id}>{z.label || '(zone)'}</option>)}
               </select>
@@ -825,7 +825,7 @@ function DragDropFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {zones.map((zone, i) => (
             <div key={zone.id} style={{ display: 'flex', gap: 4 }}>
-              <input value={zone.label} onChange={e => syncZ(zones.map((x,j) => j===i ? {...x,label:e.target.value} : x))} placeholder={`Zone ${i+1}`} style={inlineInput} />
+              <input data-field={`dropZones.${i}.label`} aria-label={`Item ${i + 1} label`} value={zone.label} onChange={e => syncZ(zones.map((x,j) => j===i ? {...x,label:e.target.value} : x))} placeholder={`Zone ${i+1}`} style={inlineInput} />
               <RemoveBtn onClick={() => syncZ(zones.filter((_,j) => j !== i))} />
             </div>
           ))}
@@ -843,15 +843,15 @@ function MatchingFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
   const sync = (n: Pair[]) => { setPairs(n); u({ matchPairs: n }); };
   return (
     <>
-      <div><FieldLabel>Instructions</FieldLabel><SInput value={instr} placeholder="Match each item on the left…" onChange={v => { setInstr(v); u({ instructions: v }); }} /></div>
+      <div><FieldLabel>Instructions</FieldLabel><SInput field="instructions" label="Instructions" value={instr} placeholder="Match each item on the left…" onChange={v => { setInstr(v); u({ instructions: v }); }} /></div>
       <div>
         <FieldLabel>Pairs</FieldLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {pairs.map((pair, i) => (
             <div key={pair.id} style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-              <input value={pair.left}  onChange={e => sync(pairs.map((x,j) => j===i ? {...x,left:e.target.value} : x))} placeholder="Left…"  style={inlineInput} />
+              <input data-field={`matchPairs.${i}.left`} aria-label={`Item ${i + 1} left`} value={pair.left}  onChange={e => sync(pairs.map((x,j) => j===i ? {...x,left:e.target.value} : x))} placeholder="Left…"  style={inlineInput} />
               <span style={{ color:'#9CA3AF', fontSize:12, flexShrink:0 }}>↔</span>
-              <input value={pair.right} onChange={e => sync(pairs.map((x,j) => j===i ? {...x,right:e.target.value} : x))} placeholder="Right…" style={inlineInput} />
+              <input data-field={`matchPairs.${i}.right`} aria-label={`Item ${i + 1} right`} value={pair.right} onChange={e => sync(pairs.map((x,j) => j===i ? {...x,right:e.target.value} : x))} placeholder="Right…" style={inlineInput} />
               <RemoveBtn onClick={() => sync(pairs.filter((_,j) => j !== i))} />
             </div>
           ))}
@@ -869,14 +869,14 @@ function SequencingFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => vo
   const sync = (n: Step[]) => { setSteps(n); u({ steps: n }); };
   return (
     <>
-      <div><FieldLabel>Instructions</FieldLabel><SInput value={instr} placeholder="Arrange the steps in order…" onChange={v => { setInstr(v); u({ instructions: v }); }} /></div>
+      <div><FieldLabel>Instructions</FieldLabel><SInput field="instructions" label="Instructions" value={instr} placeholder="Arrange the steps in order…" onChange={v => { setInstr(v); u({ instructions: v }); }} /></div>
       <div>
         <FieldLabel>Steps (correct order)</FieldLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {steps.map((step, i) => (
             <div key={step.id} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <span style={{ width:18, height:18, borderRadius:'50%', background:'#E5E7EB', fontSize:10, fontWeight:700, color:'#6B7280', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>{i+1}</span>
-              <input value={step.text} onChange={e => sync(steps.map((x,j) => j===i ? {...x,text:e.target.value} : x))} placeholder={`Step ${i+1}…`} style={inlineInput} />
+              <input data-field={`steps.${i}.text`} aria-label={`Item ${i + 1} text`} value={step.text} onChange={e => sync(steps.map((x,j) => j===i ? {...x,text:e.target.value} : x))} placeholder={`Step ${i+1}…`} style={inlineInput} />
               <RemoveBtn onClick={() => sync(steps.filter((_,j) => j !== i))} />
             </div>
           ))}
@@ -898,9 +898,9 @@ function FlashCardFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => voi
         {cards.map((card, i) => (
           <ItemCard key={card.id} label={`Card ${i+1}`} onRemove={() => sync(cards.filter((_,j) => j !== i))}>
             <span style={{ fontSize:10, fontWeight:600, color:'#6B7280', textTransform:'uppercase', letterSpacing:'0.05em' }}>Front</span>
-            <input value={card.front} onChange={e => sync(cards.map((x,j) => j===i ? {...x,front:e.target.value} : x))} placeholder="Front of card…" style={inlineInput} />
+            <input data-field={`flashCards.${i}.front`} aria-label={`Item ${i + 1} front`} value={card.front} onChange={e => sync(cards.map((x,j) => j===i ? {...x,front:e.target.value} : x))} placeholder="Front of card…" style={inlineInput} />
             <span style={{ fontSize:10, fontWeight:600, color:'#6B7280', textTransform:'uppercase', letterSpacing:'0.05em' }}>Back</span>
-            <textarea value={card.back} onChange={e => sync(cards.map((x,j) => j===i ? {...x,back:e.target.value} : x))} placeholder="Back of card…" rows={2} style={inlineTA} />
+            <textarea data-field={`flashCards.${i}.back`} aria-label={`Item ${i + 1} back`} value={card.back} onChange={e => sync(cards.map((x,j) => j===i ? {...x,back:e.target.value} : x))} placeholder="Back of card…" rows={2} style={inlineTA} />
           </ItemCard>
         ))}
         <AddBtn label="Add card" onClick={() => sync([...cards, { id: uid(), front: '', back: '' }])} />
@@ -916,14 +916,14 @@ function BranchingFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => voi
   const sync = (n: Choice[]) => { setChoices(n); u({ choices: n }); };
   return (
     <>
-      <div><FieldLabel>Scenario</FieldLabel><SInput rows={3} value={scenario} placeholder="Describe the situation…" onChange={v => { setScenario(v); u({ scenarioText: v }); }} /></div>
+      <div><FieldLabel>Scenario</FieldLabel><SInput rows={3} field="scenarioText" label="Scenario" value={scenario} placeholder="Describe the situation…" onChange={v => { setScenario(v); u({ scenarioText: v }); }} /></div>
       <div>
         <FieldLabel>Choices</FieldLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {choices.map((choice, i) => (
             <ItemCard key={choice.id} label={`Choice ${i+1}`} onRemove={() => sync(choices.filter((_,j) => j !== i))}>
-              <input value={choice.text}    onChange={e => sync(choices.map((x,j) => j===i ? {...x,text:e.target.value} : x))} placeholder="Choice text…" style={inlineInput} />
-              <input value={choice.outcome} onChange={e => sync(choices.map((x,j) => j===i ? {...x,outcome:e.target.value} : x))} placeholder="Outcome / consequence…" style={inlineInput} />
+              <input data-field={`choices.${i}.text`} aria-label={`Item ${i + 1} text`} value={choice.text}    onChange={e => sync(choices.map((x,j) => j===i ? {...x,text:e.target.value} : x))} placeholder="Choice text…" style={inlineInput} />
+              <input data-field={`choices.${i}.outcome`} aria-label={`Item ${i + 1} outcome`} value={choice.outcome} onChange={e => sync(choices.map((x,j) => j===i ? {...x,outcome:e.target.value} : x))} placeholder="Outcome / consequence…" style={inlineInput} />
             </ItemCard>
           ))}
           <AddBtn label="Add choice" onClick={() => sync([...choices, { id: uid(), text: '', outcome: '' }])} />
@@ -940,14 +940,14 @@ function SimulationFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => vo
   const sync = (n: SStep[]) => { setSteps(n); u({ simSteps: n }); };
   return (
     <>
-      <div><FieldLabel>Instructions</FieldLabel><SInput rows={2} value={instr} placeholder="What must the learner do?" onChange={v => { setInstr(v); u({ instructions: v }); }} /></div>
+      <div><FieldLabel>Instructions</FieldLabel><SInput rows={2} field="instructions" label="Instructions" value={instr} placeholder="What must the learner do?" onChange={v => { setInstr(v); u({ instructions: v }); }} /></div>
       <div>
         <FieldLabel>Steps</FieldLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {steps.map((step, i) => (
             <ItemCard key={step.id} label={`Step ${i+1}`} onRemove={() => sync(steps.filter((_,j) => j !== i))}>
-              <input value={step.action}   onChange={e => sync(steps.map((x,j) => j===i ? {...x,action:e.target.value} : x))} placeholder="User action…" style={inlineInput} />
-              <input value={step.expected} onChange={e => sync(steps.map((x,j) => j===i ? {...x,expected:e.target.value} : x))} placeholder="Expected outcome…" style={inlineInput} />
+              <input data-field={`simSteps.${i}.action`} aria-label={`Item ${i + 1} action`} value={step.action}   onChange={e => sync(steps.map((x,j) => j===i ? {...x,action:e.target.value} : x))} placeholder="User action…" style={inlineInput} />
+              <input data-field={`simSteps.${i}.expected`} aria-label={`Item ${i + 1} expected`} value={step.expected} onChange={e => sync(steps.map((x,j) => j===i ? {...x,expected:e.target.value} : x))} placeholder="Expected outcome…" style={inlineInput} />
             </ItemCard>
           ))}
           <AddBtn label="Add step" onClick={() => sync([...steps, { id: uid(), action: '', expected: '' }])} />
@@ -1021,7 +1021,7 @@ function QuestionCard({
         <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div>
             <FieldLabel>{isTF ? 'Statement' : 'Question'}</FieldLabel>
-            <SInput rows={2} value={q.question} placeholder={isTF ? 'Enter a true/false statement…' : 'Enter question…'} onChange={v => onUpdate({ question: v })} />
+            <SInput rows={2} field={`questions.${index}.question`} label={`Question ${index + 1}`} value={q.question} placeholder={isTF ? 'Enter a true/false statement…' : 'Enter question…'} onChange={v => onUpdate({ question: v })} />
           </div>
 
           {!isTF ? (
@@ -1034,7 +1034,7 @@ function QuestionCard({
                       style={{ width: 16, height: 16, borderRadius: isMulti ? 3 : '50%', border: `2px solid ${opt.correct ? '#059669' : BORDER}`, background: opt.correct ? '#059669' : '#fff', cursor: 'pointer', flexShrink: 0, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {opt.correct && <Check size={9} color="#fff" strokeWidth={3} />}
                     </button>
-                    <input value={opt.text} onChange={e => onUpdate({ options: q.options.map((o,j) => j===i ? {...o,text:e.target.value} : o) })}
+                    <input data-field={`questions.${index}.options.${i}.text`} aria-label={`Option ${i + 1}`} value={opt.text} onChange={e => onUpdate({ options: q.options.map((o,j) => j===i ? {...o,text:e.target.value} : o) })}
                       placeholder={`Option ${i+1}…`}
                       style={{ ...inlineInput, background: opt.correct ? '#F0FDF4' : '#FAFAFA', borderColor: opt.correct ? '#D1FAE5' : BORDER }} />
                     {q.options.length > 2 && <RemoveBtn onClick={() => onUpdate({ options: q.options.filter((_,j) => j !== i) })} />}
@@ -1059,7 +1059,7 @@ function QuestionCard({
 
           <div>
             <FieldLabel note="optional">Feedback</FieldLabel>
-            <SInput value={q.feedback} placeholder="Feedback after answer…" onChange={v => onUpdate({ feedback: v })} />
+            <SInput field={`questions.${index}.feedback`} label={`Question ${index + 1} feedback`} value={q.feedback} placeholder="Feedback after answer…" onChange={v => onUpdate({ feedback: v })} />
           </div>
 
           {isGraded && (
@@ -1082,8 +1082,16 @@ function QuizEditor({ t, u, templateId }: { t: CSTopic; u: (x: Partial<CSTopic>)
   const [generating, setGenerating] = useState(false);
 
   const initQuestions = (): Question[] => {
-    const ex = t.questions as Question[];
-    if (ex?.length) return ex;
+    type Raw = Partial<Question> & { text?: string; points?: number; type?: string };
+    const ex = t.questions as Raw[] | undefined;
+    if (ex?.length) return ex.map((q, i) => ({
+      id: q.id || uid(),
+      type: q.type === 'True/False' ? 'true-false' : q.type === 'mcq-multi' || q.type === 'true-false' ? q.type : 'mcq-single',
+      question: q.question ?? q.text ?? '',
+      options: (q.options ?? []).map(o => ({ id: (o as QOpt).id || uid(), text: o.text, correct: o.correct })),
+      feedback: q.feedback ?? '',
+      marks: q.marks ?? q.points ?? 1,
+    }));
     return [{ id: uid(), type: 'mcq-single', question: '', options: defaultOptions('mcq-single'), feedback: '', marks: 1 }];
   };
   const [questions, setQuestions] = useState<Question[]>(initQuestions);
