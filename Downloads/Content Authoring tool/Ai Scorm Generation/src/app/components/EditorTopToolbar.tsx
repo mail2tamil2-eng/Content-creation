@@ -32,7 +32,7 @@ export function EditorTopToolbar({
   onPreview,
   onSaveDraft,
   onApplyTheme,
-  currentDesignId = 'corporate',
+  currentDesignId = 'tpl-corporate-navy',
   onApplyTemplate,
 }: EditorTopToolbarProps) {
   const [isDesignOpen, setIsDesignOpen] = useState(false);

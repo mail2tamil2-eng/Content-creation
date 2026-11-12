@@ -2,10 +2,14 @@ import type { CSSProperties } from 'react';
 import type { CourseTopic } from '../courseContent';
 import CourseSlideContent from './CourseSlideContent';
 import './CoursePresentation.css';
+import { getTemplate } from './templates/courseTemplates';
+import { TemplateMotifLayer } from './templates/TemplateSlide';
 
 export interface PresentationSettings {
   template: string; primary: string; accent: string;
   background: string; font: string; buttonStyle: string; layout: string; logo?: string; foreground?: string;
+  /** Heading font from the course template (falls back to `font`). */
+  headingFont?: string;
   showHeader?: boolean;
   headerShowLogo?: boolean;
   headerShowCourseName?: boolean;
@@ -32,8 +36,11 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
     '--slide-primary': settings.primary,
     '--slide-panel': dark ? '#ffffff12' : '#ffffffb3',
     '--slide-radius': settings.buttonStyle === 'pill' ? '24px' : settings.buttonStyle === 'square' ? '0px' : '10px',
+    '--slide-heading-font': `"${settings.headingFont || settings.font}", Arial, sans-serif`,
+    '--t-primary': settings.primary, '--t-accent': settings.accent, '--t-text': foreground,
     fontFamily: settings.font + ', Arial, sans-serif',
   } as CSSProperties;
+  const tpl = getTemplate(settings.template);
   const showHeader  = settings.showHeader  !== false;
   const showFooter  = settings.showFooter  !== false;
   const hLogo       = settings.headerShowLogo       !== false;
@@ -43,7 +50,7 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
 
   return <article className="course-presentation" style={style} data-testid="course-presentation" data-view="combined" data-template={settings.template} aria-label={'Slide preview: ' + topic.title}>
     <div className={'course-slide course-slide--' + settings.template} data-layout={settings.layout}>
-      <div className="course-slide-decoration" aria-hidden="true" />
+      {tpl ? <TemplateMotifLayer motif={tpl.motif} /> : <div className="course-slide-decoration" aria-hidden="true" />}
       {showHeader && (
         <header className="course-slide-header">
           {hLogo && settings.logo && <img src={settings.logo} alt="Course logo" />}

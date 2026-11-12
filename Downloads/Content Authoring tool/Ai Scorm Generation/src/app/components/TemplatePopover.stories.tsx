@@ -2,17 +2,17 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useRef, useState } from 'react';
 import { fn } from 'storybook/test';
 import { Button } from './ui/button';
-import { TemplatePopover } from './TemplatePopover';
+import { DESIGN_OPTIONS, TemplatePopover } from './TemplatePopover';
 
 const meta = {
   title: 'Editor/TemplatePopover',
   component: TemplatePopover,
   tags: ['autodocs'],
   parameters: { layout: 'fullscreen' },
-  args: { isOpen: true, onClose: fn(), anchorEl: null, currentDesignId: 'corporate', onApply: fn() },
+  args: { isOpen: true, onClose: fn(), anchorEl: null, currentDesignId: 'tpl-corporate-navy', onApply: fn() },
   argTypes: {
     anchorEl: { control: false },
-    currentDesignId: { control: 'select', options: ['corporate', 'modern', 'minimal', 'bold', 'natural', 'warm', 'ocean', 'elegant'] },
+    currentDesignId: { control: 'select', options: DESIGN_OPTIONS.map(d => d.id) },
   },
   render: function Render(args) {
     const ref = useRef<HTMLButtonElement>(null);

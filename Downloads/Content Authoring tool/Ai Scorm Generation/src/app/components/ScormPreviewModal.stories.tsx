@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { DESIGN_OPTIONS } from './TemplatePopover';
 import { useState } from 'react';
 import { fn } from 'storybook/test';
 import { COURSE_TITLE, SECTIONS, presentationFor } from '../../stories/fixtures';
@@ -12,10 +13,10 @@ const meta = {
   tags: ['autodocs'],
   parameters: { layout: 'fullscreen' },
   argTypes: {
-    design: { control: 'select', options: ['corporate', 'modern', 'minimal', 'bold', 'natural', 'warm', 'ocean', 'elegant'] },
+    design: { control: 'select', options: DESIGN_OPTIONS.map(d => d.id) },
     panel: { control: 'select', options: ['none', 'menu', 'help', 'transcript'] },
   },
-  args: { design: 'corporate', slide: 0, panel: 'none' },
+  args: { design: 'tpl-corporate-navy', slide: 0, panel: 'none' },
   render: function Render(args) {
     const [playing, setPlaying] = useState(false);
     const [panel, setPanel] = useState<Panel>(args.panel);

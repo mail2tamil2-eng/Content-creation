@@ -14,7 +14,7 @@ const meta = {
     rightPanelOpen: true,
     showMoreMenu: false,
     isSidebarCollapsed: true,
-    currentDesignId: 'corporate',
+    currentDesignId: 'tpl-corporate-navy',
     onToggleRightPanel: fn(),
     onToggleMoreMenu: fn(),
     onOpenCourseSettings: fn(),

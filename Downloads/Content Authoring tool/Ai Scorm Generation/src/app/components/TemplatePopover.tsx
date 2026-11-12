@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Check } from 'lucide-react';
+import { X, Check, Eye } from 'lucide-react';
+import { COURSE_TEMPLATES, getTemplate } from './templates/courseTemplates';
+import { TemplateSlide } from './templates/TemplateSlide';
+import { TemplatePreviewModal } from './templates/TemplatePreviewModal';
 
 export interface DesignOption {
   id: string;
@@ -12,16 +15,11 @@ export interface DesignOption {
   dark: boolean;
 }
 
-export const DESIGN_OPTIONS: DesignOption[] = [
-  { id: 'corporate', name: 'Corporate',  description: 'Clear and professional',  primary: '#134780', accent: '#F48120', bg: '#FFFFFF', dark: false },
-  { id: 'modern',    name: 'Modern',     description: 'Confident dark styling',   primary: '#6D28D9', accent: '#10B981', bg: '#111827', dark: true  },
-  { id: 'minimal',   name: 'Minimal',    description: 'Simple and focused',       primary: '#111827', accent: '#3B82F6', bg: '#FFFFFF', dark: false },
-  { id: 'bold',      name: 'Bold',       description: 'Bright and expressive',    primary: '#7C3AED', accent: '#F97316', bg: '#FFFFFF', dark: false },
-  { id: 'natural',   name: 'Natural',    description: 'Fresh green accents',      primary: '#166534', accent: '#CA8A04', bg: '#FFFFFF', dark: false },
-  { id: 'warm',      name: 'Warm',       description: 'Soft and welcoming',       primary: '#92400E', accent: '#D97706', bg: '#FEF9EE', dark: false },
-  { id: 'ocean',     name: 'Ocean',      description: 'Calm blue tones',          primary: '#0369A1', accent: '#06B6D4', bg: '#FFFFFF', dark: false },
-  { id: 'elegant',   name: 'Elegant',    description: 'Rich and refined',         primary: '#3B1C6A', accent: '#D4A843', bg: '#111827', dark: true  },
-];
+/** Editor list of designs = the 10 course templates. */
+export const DESIGN_OPTIONS: DesignOption[] = COURSE_TEMPLATES.map(t => ({
+  id: t.id, name: t.name, description: t.description,
+  primary: t.colors.primary, accent: t.colors.accent, bg: t.colors.bg, dark: t.mode === 'dark',
+}));
 
 interface TemplatePopoverProps {
   isOpen: boolean;
@@ -34,6 +32,8 @@ interface TemplatePopoverProps {
 export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, onApply }: TemplatePopoverProps) {
   const [pos, setPos] = useState({ top: 60, right: 16 });
   const popoverRef = useRef<HTMLDivElement>(null);
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const previewTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (isOpen && anchorEl) {
@@ -44,19 +44,19 @@ export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, on
 
   useEffect(() => {
     if (!isOpen) return;
-    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape' && !previewId) onClose(); };
     document.addEventListener('keydown', fn);
     return () => document.removeEventListener('keydown', fn);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, previewId]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || previewId) return;
     const fn = (e: MouseEvent) => {
       if (!popoverRef.current?.contains(e.target as Node) && !anchorEl?.contains(e.target as Node)) onClose();
     };
     const t = setTimeout(() => document.addEventListener('mousedown', fn), 0);
     return () => { clearTimeout(t); document.removeEventListener('mousedown', fn); };
-  }, [isOpen, onClose, anchorEl]);
+  }, [isOpen, onClose, anchorEl, previewId]);
 
   if (!isOpen) return null;
 
@@ -70,7 +70,7 @@ export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, on
         position: 'fixed',
         top: pos.top,
         right: pos.right,
-        width: 320,
+        width: 360,
         maxWidth: 'calc(100vw - 32px)',
         background: '#fff',
         border: '1px solid #E5E7EB',
@@ -101,59 +101,50 @@ export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, on
 
       {/* Design list */}
       <div style={{ maxHeight: 'calc(100vh - 220px)', overflowY: 'auto', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 8px' }}>Choose a Design</p>
-        {DESIGN_OPTIONS.map(design => {
-          const isSel = currentDesignId === design.id;
+        <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 8px' }}>Choose a Template</p>
+        <p style={{ fontSize: 12, color: '#4B5563', margin: '-4px 0 6px' }}>Select a template, or use the eye icon to preview all slide layouts.</p>
+        {COURSE_TEMPLATES.map(t => {
+          const isSel = currentDesignId === t.id;
           return (
-            <button
-              key={design.id}
-              onClick={() => { onApply(design.id); }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 12px',
-                background: '#fff',
-                border: isSel ? `1.5px solid ${design.primary}` : '1px solid #E5E7EB',
-                borderRadius: 10, cursor: 'pointer', width: '100%', textAlign: 'left',
-                transition: 'border-color 0.15s',
-              }}
-              onMouseEnter={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; }}
-              onMouseLeave={e => { if (!isSel) (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
+            <div
+              key={t.id}
+              className={`group relative flex items-center gap-3 rounded-[10px] border p-2 transition-colors ${isSel ? 'border-[#1565F0] bg-[#EBF3FF]' : 'border-[#E5E7EB] bg-white hover:border-[#6B7280]'}`}
             >
-              {/* Check / spacer */}
-              <div style={{ width: 20, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-                {isSel && <Check size={16} color={design.primary} />}
-              </div>
-
-              {/* Name + description */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 14, fontWeight: isSel ? 600 : 500, color: '#111827', margin: 0 }}>{design.name}</p>
-                <p style={{ fontSize: 12, color: '#6B7280', margin: '2px 0 0' }}>{design.description}</p>
-              </div>
-
-              {/* Mini preview */}
-              <div style={{
-                width: 62, height: 38, borderRadius: 6,
-                background: design.bg,
-                border: '1px solid #E5E7EB',
-                padding: '5px 7px',
-                flexShrink: 0,
-                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                boxSizing: 'border-box',
-              }}>
-                <div>
-                  <div style={{ height: 3, background: design.primary, borderRadius: 2, width: '65%', marginBottom: 3 }} />
-                  <div style={{ height: 2, background: design.dark ? 'rgba(255,255,255,0.2)' : '#E2E8F0', borderRadius: 2, width: '100%' }} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <span style={{ fontSize: 7, fontWeight: 700, color: '#fff', background: design.accent, borderRadius: 2, padding: '1px 4px' }}>
-                    Next
-                  </span>
-                </div>
-              </div>
-            </button>
+              <button
+                type="button"
+                onClick={() => onApply(t.id)}
+                aria-pressed={isSel}
+                className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]"
+              >
+                <span className="block w-[104px] shrink-0 overflow-hidden rounded-md border border-black/10">
+                  <TemplateSlide template={t} kind="cover" label="" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className={`block truncate text-[14px] ${isSel ? 'font-bold text-[#1254C7]' : 'font-semibold text-[#111827]'}`}>{t.name}</span>
+                  <span className="block truncate text-xs text-[#4B5563]">{t.description}</span>
+                </span>
+                {isSel && <Check size={16} color="#1565F0" aria-hidden="true" style={{ flexShrink: 0 }} />}
+              </button>
+              <button
+                type="button"
+                onClick={e => { previewTriggerRef.current = e.currentTarget; setPreviewId(t.id); }}
+                aria-label={`Preview ${t.name} template`}
+                title="Preview all slides"
+                className="flex size-8 shrink-0 items-center justify-center rounded-lg text-[#4B5563] hover:bg-[#F3F4F6] hover:text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]"
+              >
+                <Eye size={16} />
+              </button>
+            </div>
           );
         })}
       </div>
+      <TemplatePreviewModal
+        template={getTemplate(previewId) ?? null}
+        selectedId={currentDesignId}
+        onOpenChange={open => { if (!open) setPreviewId(null); }}
+        onUse={id => { setPreviewId(null); onApply(id); }}
+        returnFocusTo={previewTriggerRef}
+      />
     </div>,
     document.body,
   );

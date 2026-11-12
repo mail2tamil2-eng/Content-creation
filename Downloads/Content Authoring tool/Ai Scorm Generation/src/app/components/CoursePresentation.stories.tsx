@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { DESIGN_OPTIONS } from './TemplatePopover';
 import { generateSlideContent } from '../courseContent';
 import { COURSE_TITLE, presentationFor } from '../../stories/fixtures';
 import CoursePresentation from './CoursePresentation';
@@ -8,7 +9,7 @@ const SLIDE_TYPES = [
   'image-horizontal', 'media-collection', 'video', 'audio', 'spokesperson', 'hotspot', 'click-reveal', 'slider',
   'drag-drop', 'matching', 'scenario', 'flash-card', 'branching-scenario', 'simulation', 'knowledge-check', 'quiz',
 ];
-const DESIGNS = ['corporate', 'modern', 'minimal', 'bold', 'natural', 'warm', 'ocean', 'elegant'];
+const DESIGNS = DESIGN_OPTIONS.map(d => d.id);
 
 type Args = { slideType: string; design: string; title: string };
 
@@ -19,7 +20,7 @@ const meta = {
     slideType: { control: 'select', options: SLIDE_TYPES },
     design: { control: 'select', options: DESIGNS },
   },
-  args: { slideType: 'title-bullets', design: 'corporate', title: 'Key security principles' },
+  args: { slideType: 'title-bullets', design: 'tpl-corporate-navy', title: 'Key security principles' },
   render: ({ slideType, design, title }) => (
     <div style={{ width: 960 }}>
       <CoursePresentation

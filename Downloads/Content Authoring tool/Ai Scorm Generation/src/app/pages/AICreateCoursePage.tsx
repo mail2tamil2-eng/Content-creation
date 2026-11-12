@@ -25,49 +25,26 @@ import { CourseSidebar, type CSSection } from '../components/CourseSidebar';
 import { SlideSettingsPanel } from '../components/SlideSettingsPanel';
 import { SlideLibraryModal } from '../components/SlideLibraryModal';
 import { SelectInput } from '../components/saas';
+import { TemplateGallery } from '../components/templates/TemplateGallery';
+import { COURSE_TEMPLATES, DEFAULT_TEMPLATE_ID, getTemplate } from '../components/templates/courseTemplates';
 
 // -- Types --
 type Complexity = 'basic' | 'intermediate' | 'advanced';
 type NavigationMode = 'free' | 'linear';
 type SeekBarControl = 'enable' | 'hide';
-type ThemeBackground = 'light' | 'warm' | 'dark';
-type ButtonStyle = 'rounded' | 'pill' | 'square';
 
-interface ThemePreset {
-  id: string; name: string; primaryColor: string; secondaryColor: string;
-  fontFamily: string; background: ThemeBackground; buttonStyle: ButtonStyle;
-  playerStyle: string; tags: string[];
-}
 interface Topic extends CourseTopic {}
 interface Section {
   id: string; title: string; description: string; topics: Topic[]; expanded: boolean;
 }
 
 // -- Constants --
-const THEME_PRESETS: ThemePreset[] = [
-  { id: 'corporate-blue',  name: 'Corporate Blue',  primaryColor: '#134780', secondaryColor: '#F48120', fontFamily: 'Inter',            background: 'light', buttonStyle: 'rounded', playerStyle: 'Standard', tags: ['Professional', 'Corporate'] },
-  { id: 'modern-dark',     name: 'Modern Dark',     primaryColor: '#6D28D9', secondaryColor: '#10B981', fontFamily: 'Roboto',           background: 'dark',  buttonStyle: 'pill',    playerStyle: 'Minimal',  tags: ['Dark', 'Modern'] },
-  { id: 'warm-earthy',     name: 'Warm Earthy',     primaryColor: '#92400E', secondaryColor: '#D97706', fontFamily: 'Merriweather',     background: 'warm',  buttonStyle: 'rounded', playerStyle: 'Standard', tags: ['Warm', 'Natural'] },
-  { id: 'clean-minimal',   name: 'Clean Minimal',   primaryColor: '#111827', secondaryColor: '#3B82F6', fontFamily: 'Open Sans',        background: 'light', buttonStyle: 'square',  playerStyle: 'Minimal',  tags: ['Minimal', 'Clean'] },
-  { id: 'vibrant-purple',  name: 'Vibrant Purple',  primaryColor: '#7C3AED', secondaryColor: '#F97316', fontFamily: 'Montserrat',       background: 'light', buttonStyle: 'pill',    playerStyle: 'Full',     tags: ['Vibrant', 'Creative'] },
-  { id: 'nature-green',    name: 'Nature Green',    primaryColor: '#166534', secondaryColor: '#CA8A04', fontFamily: 'Lato',             background: 'light', buttonStyle: 'rounded', playerStyle: 'Standard', tags: ['Fresh', 'Nature'] },
-  { id: 'ocean-blue',      name: 'Ocean Blue',      primaryColor: '#0369A1', secondaryColor: '#06B6D4', fontFamily: 'IBM Plex Sans',    background: 'light', buttonStyle: 'rounded', playerStyle: 'Minimal',  tags: ['Calm', 'Professional'] },
-  { id: 'elegant-dark',    name: 'Elegant Dark',    primaryColor: '#3B1C6A', secondaryColor: '#D4A843', fontFamily: 'Playfair Display', background: 'dark',  buttonStyle: 'square',  playerStyle: 'Full',     tags: ['Elegant', 'Premium'] },
-];
 
-const COURSE_DESIGNS = [
-  { id: 'corporate', name: 'Corporate',  template: 'vivid-blue',       theme: 'corporate-blue',  description: 'Clear and professional' },
-  { id: 'modern',    name: 'Modern',     template: 'rustic-minimalist', theme: 'modern-dark',     description: 'Confident dark styling' },
-  { id: 'minimal',   name: 'Minimal',    template: 'elevate-white',    theme: 'clean-minimal',   description: 'Simple and focused' },
-  { id: 'bold',      name: 'Bold',       template: 'royal-purple',     theme: 'vibrant-purple',  description: 'Bright and expressive' },
-  { id: 'natural',   name: 'Natural',    template: 'green-matrix',     theme: 'nature-green',    description: 'Fresh green accents' },
-  { id: 'warm',      name: 'Warm',       template: 'roselle-glow',     theme: 'warm-earthy',     description: 'Soft and welcoming' },
-  { id: 'ocean',     name: 'Ocean',      template: 'lavender-delight', theme: 'ocean-blue',      description: 'Calm blue tones' },
-  { id: 'elegant',   name: 'Elegant',    template: 'health-harmony',   theme: 'elegant-dark',    description: 'Rich and refined' },
-];
+// Course designs = the 10 slide templates (see components/templates/courseTemplates.ts)
+const COURSE_DESIGNS = COURSE_TEMPLATES.map(t => ({ id: t.id, name: t.name, template: t.id, description: t.description }));
 
 const LANGUAGES   = ['English', 'Spanish', 'French', 'German', 'Hindi', 'Arabic', 'Portuguese'];
-const THEME_FONTS = ['Inter', 'Roboto', 'Open Sans', 'Montserrat', 'Lato', 'Playfair Display', 'Merriweather'];
+const THEME_FONTS = ['Inter', 'Roboto', 'Open Sans', 'Montserrat', 'Lato', 'Poppins', 'Space Grotesk', 'Playfair Display', 'Merriweather'];
 
 interface SlideTypeConfig {
   id: string; label: string; description: string;
@@ -151,7 +128,7 @@ export function AICreateCoursePage() {
   const [knowledgeCheckQuestions, setKnowledgeCheckQuestions] = useState(5);
 
   // Theme
-  const [designId, setDesignId] = useState('corporate');
+  const [designId, setDesignId] = useState(DEFAULT_TEMPLATE_ID);
   const [logoPreview, setLogoPreview] = useState('');
 
   // Template Selection
@@ -241,15 +218,34 @@ export function AICreateCoursePage() {
   const cfg = COMPLEXITY_CONFIG[complexity];
   const allowedSlideTypes = SLIDE_TYPES.filter(s => cfg.slideIds.includes(s.id));
   const design = COURSE_DESIGNS.find(d => d.id === designId) || COURSE_DESIGNS[0];
-  const preset = THEME_PRESETS.find(p => p.id === design.theme) || THEME_PRESETS[0];
-  const isDark = preset.background === 'dark';
+  const tpl = getTemplate(design.template);
+  // The template's own background is used until the user picks a different Background style
+  const tplBgStyle = tpl?.mode === 'dark' ? 'dark' : 'light';
+  const useTplColours = !!tpl && customBgStyle === tplBgStyle;
   const themeBgColor      = customBgStyle === 'dark' ? '#111827' : customBgStyle === 'warm' ? '#FEF9EE' : '#FFFFFF';
   const autoFontColor     = customBgStyle === 'dark' ? '#FFFFFF' : '#172033';
   const baseSettings: PresentationSettings = aiTemplate
     ? { template: 'vivid-blue', primary: '#134780', accent: '#F48120', background: '#111C2D', foreground: '#FFFFFF', font: 'Inter', buttonStyle: 'rounded', layout: 'single', logo: logoPreview || undefined }
     : selectedPredefined === 'blank'
     ? { template: 'elevate-white', primary: '#111827', accent: '#3B82F6', background: '#FFFFFF', foreground: '#172033', font: customFont, buttonStyle: customButtonStyle, layout: 'single', logo: logoPreview || undefined }
-    : { template: design.template, primary: customPrimary, accent: customSecondary, background: themeBgColor, foreground: autoFontColor, font: customFont, buttonStyle: customButtonStyle, layout: 'single', logo: logoPreview || undefined };
+    : { template: design.template, primary: customPrimary, accent: customSecondary,
+        background: useTplColours ? tpl!.colors.bg : themeBgColor, foreground: useTplColours ? tpl!.colors.text : autoFontColor,
+        font: customFont, headingFont: tpl && customFont === tpl.fonts.body ? tpl.fonts.heading : undefined,
+        buttonStyle: customButtonStyle, layout: 'single', logo: logoPreview || undefined };
+
+  /** Apply one of the 10 templates: colours, fonts, background and button style. */
+  const applyTemplate = (id: string) => {
+    const t = getTemplate(id);
+    if (!t) return;
+    setDesignId(id);
+    setAiTemplate(false);
+    setCustomPrimary(t.colors.primary);
+    setCustomSecondary(t.colors.accent);
+    setCustomFont(t.fonts.body);
+    setCustomBgStyle(t.mode === 'dark' ? 'dark' : 'light');
+    setCustomButtonStyle(t.buttonStyle);
+    setThemeOverride(null);
+  };
 
   const customTemplateOverrides: Partial<PresentationSettings> = {
     showHeader: headerEnabled,
@@ -824,42 +820,27 @@ export function AICreateCoursePage() {
                         </div>
                         <ToggleSwitch enabled={aiTemplate} onChange={setAiTemplate} />
                       </div>
-                      {/* Design grid */}
+                      {/* Design grid — real template thumbnails, hover to preview */}
                       <div>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 12px' }}>Choose a Design</p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-                          {COURSE_DESIGNS.map(d => {
-                            const dPreset = THEME_PRESETS.find(tp => tp.id === d.theme)!;
-                            const dk = dPreset.background === 'dark';
-                            const bg = dk ? '#111827' : dPreset.background === 'warm' ? '#FEF9EE' : '#FFFFFF';
-                            const isSelected = selectedPredefined === d.id;
-                            return (
-                              <button key={d.id} type="button" onClick={() => { setSelectedPredefined(d.id); setDesignId(d.id); setCustomPrimary(dPreset.primaryColor); setCustomSecondary(dPreset.secondaryColor); setCustomBgStyle(dPreset.background); setAiTemplate(false); }}
-                                style={{ position: 'relative', borderRadius: 10, border: `2px solid ${isSelected ? P : '#E5E7EB'}`, background: isSelected ? PL : '#fff', padding: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}>
-                                <span style={{ width: '100%', height: 44, borderRadius: 6, border: '1px solid rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '0 8px', background: bg, flexShrink: 0 }}>
-                                  <span style={{ height: 6, width: 22, borderRadius: 3, background: dPreset.primaryColor }} />
-                                  <span style={{ height: 3, width: 12, borderRadius: 3, opacity: 0.4, background: dk ? '#fff' : '#64748B' }} />
-                                  <span style={{ height: 8, width: 8, borderRadius: 2, background: dPreset.secondaryColor }} />
-                                </span>
-                                <span style={{ fontSize: 13, fontWeight: 500, color: isSelected ? P : '#374151', textAlign: 'center', lineHeight: 1.2 }}>{d.name}</span>
-                                {isSelected && <Check size={11} color={P} style={{ position: 'absolute', top: 5, right: 6 }} />}
-                              </button>
-                            );
-                          })}
-                          {(() => {
-                            const isBlankSel = selectedPredefined === 'blank';
-                            return (
-                              <button type="button" onClick={() => { setSelectedPredefined('blank'); setAiTemplate(false); setCustomBgStyle('light'); }}
-                                style={{ position: 'relative', borderRadius: 10, border: `2px solid ${isBlankSel ? P : '#E5E7EB'}`, background: isBlankSel ? PL : '#fff', padding: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer', outline: 'none', transition: 'all 0.13s' }}>
-                                <span style={{ width: '100%', height: 44, borderRadius: 6, border: '1px dashed #D1D5DB', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA', flexShrink: 0 }}>
-                                  <FileText size={18} color="#9CA3AF" />
-                                </span>
-                                <span style={{ fontSize: 13, fontWeight: 500, color: isBlankSel ? P : '#374151', textAlign: 'center', lineHeight: 1.2 }}>Blank</span>
-                                {isBlankSel && <Check size={11} color={P} style={{ position: 'absolute', top: 5, right: 6 }} />}
-                              </button>
-                            );
-                          })()}
-                        </div>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 4px' }}>Choose a Template</p>
+                        <p style={{ fontSize: 12, color: '#4B5563', margin: '0 0 12px' }}>Hover a template and select Preview to see every slide layout.</p>
+                        <TemplateGallery
+                          selectedId={!aiTemplate && selectedPredefined !== 'blank' ? selectedPredefined : null}
+                          onSelect={id => { applyTemplate(id); setSelectedPredefined(id); }}
+                        >
+                          <button
+                            type="button"
+                            aria-pressed={selectedPredefined === 'blank'}
+                            onClick={() => { setSelectedPredefined('blank'); setAiTemplate(false); setCustomBgStyle('light'); }}
+                            className={`group flex flex-col rounded-xl border-2 bg-white text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-2 ${selectedPredefined === 'blank' ? 'border-[#1565F0] shadow-[0_0_0_3px_#EBF3FF]' : 'border-[#E5E7EB] hover:border-[#6B7280]'}`}
+                          >
+                            <span className="flex aspect-video w-full flex-col items-center justify-center gap-1 rounded-t-[10px] border-b border-dashed border-[#D1D5DB] bg-[#FAFAFA] text-[#4B5563]">
+                              <FileText size={20} aria-hidden="true" />
+                              <span className="text-xs">Start from scratch</span>
+                            </span>
+                            <span className={`px-3 py-2 text-[13px] font-semibold ${selectedPredefined === 'blank' ? 'text-[#1254C7]' : 'text-[#111827]'}`}>Blank</span>
+                          </button>
+                        </TemplateGallery>
                       </div>
                       {/* Colour & style */}
                       {!aiTemplate && (
@@ -1154,17 +1135,7 @@ export function AICreateCoursePage() {
             onSaveDraft={() => { toast.success('Draft saved', { description: `"${title}" saved.` }); }}
             onApplyTheme={handleApplyTheme}
             currentDesignId={designId}
-            onApplyTemplate={id => {
-              const d = COURSE_DESIGNS.find(x => x.id === id);
-              const p = THEME_PRESETS.find(x => x.id === d?.theme);
-              if (!d || !p) return;
-              setDesignId(id);
-              setAiTemplate(false);
-              setCustomPrimary(p.primaryColor);
-              setCustomSecondary(p.secondaryColor);
-              setCustomBgStyle(p.background);
-              setThemeOverride(null);
-            }}
+            onApplyTemplate={id => { applyTemplate(id); setSelectedPredefined(id); }}
           />
 
           {/* Canvas */}

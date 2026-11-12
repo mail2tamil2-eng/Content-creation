@@ -2,6 +2,7 @@ import type { CourseTopic } from '../app/courseContent';
 import { generateSlideContent } from '../app/courseContent';
 import type { PresentationSettings } from '../app/components/CoursePresentation';
 import { DESIGN_OPTIONS } from '../app/components/TemplatePopover';
+import { getTemplate } from '../app/components/templates/courseTemplates';
 
 export const COURSE_TITLE = 'Information Security Essentials';
 
@@ -34,14 +35,17 @@ export const SECTIONS = [
 ];
 
 /** Builds PresentationSettings from one of the editor's design options. */
-export function presentationFor(designId = 'corporate'): PresentationSettings {
+export function presentationFor(designId = 'tpl-corporate-navy'): PresentationSettings {
   const d = DESIGN_OPTIONS.find((o) => o.id === designId) ?? DESIGN_OPTIONS[0];
+  const t = getTemplate(d.id);
   return {
     template: d.id,
     primary: d.primary,
     accent: d.accent,
     background: d.bg,
-    font: 'Nunito Sans',
+    foreground: t?.colors.text,
+    font: t?.fonts.body ?? 'Nunito Sans',
+    headingFont: t?.fonts.heading,
     buttonStyle: 'rounded',
     layout: 'default',
   };
