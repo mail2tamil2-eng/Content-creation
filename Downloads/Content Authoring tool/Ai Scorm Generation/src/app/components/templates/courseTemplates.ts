@@ -1,3 +1,22 @@
+import corporateCover from '../../../assets/templates/corporate-cover.webp';
+import corporateFeature from '../../../assets/templates/corporate-feature.webp';
+import executiveFeature from '../../../assets/templates/executive-feature.webp';
+import mintCover from '../../../assets/templates/mint-cover.webp';
+import mintFeature from '../../../assets/templates/mint-feature.webp';
+import coralCover from '../../../assets/templates/coral-cover.webp';
+import coralFeature from '../../../assets/templates/coral-feature.webp';
+import oceanCover from '../../../assets/templates/ocean-cover.webp';
+import oceanFeature from '../../../assets/templates/ocean-feature.webp';
+import plumCover from '../../../assets/templates/plum-cover.webp';
+import plumFeature from '../../../assets/templates/plum-feature.webp';
+import forestCover from '../../../assets/templates/forest-cover.webp';
+import forestFeature from '../../../assets/templates/forest-feature.webp';
+import monoFeature from '../../../assets/templates/mono-feature.webp';
+import techCover from '../../../assets/templates/tech-cover.webp';
+import techFeature from '../../../assets/templates/tech-feature.webp';
+import sandCover from '../../../assets/templates/sand-cover.webp';
+import sandFeature from '../../../assets/templates/sand-feature.webp';
+
 /**
  * Course slide templates.
  *
@@ -62,6 +81,12 @@ export interface CourseTemplate {
   motif: TemplateMotif;
   /** Title-slide composition and the shape used for images in this template. */
   cover: { layout: CoverLayout; imageShape: ImageShape };
+  /**
+   * Sample photos (Unsplash licence, see docs/templates/PHOTO_CREDITS.md).
+   * `cover` is used on the title slide, `feature` on Image + Text slides.
+   * `focus` is the CSS object-position for the cover crop.
+   */
+  photos: { cover?: string; feature: string; focus?: string };
 }
 
 export const COURSE_TEMPLATES: CourseTemplate[] = [
@@ -71,6 +96,7 @@ export const COURSE_TEMPLATES: CourseTemplate[] = [
     colors: { bg: '#FFFFFF', surface: '#F1F5F9', primary: '#154880', onPrimary: '#FFFFFF', accent: '#F48120', text: '#0F172A', muted: '#475569' },
     fonts: { heading: 'Montserrat', body: 'Inter' }, radius: 10, buttonStyle: 'rounded', motif: 'side-band',
     cover: { layout: 'image-right', imageShape: 'rect' },
+    photos: { cover: corporateCover, feature: corporateFeature },
   },
   {
     id: 'tpl-executive-gold', name: 'Executive Gold', description: 'Dark, premium and refined',
@@ -78,6 +104,7 @@ export const COURSE_TEMPLATES: CourseTemplate[] = [
     colors: { bg: '#0F172A', surface: '#1E293B', primary: '#D4A843', onPrimary: '#0F172A', accent: '#D4A843', text: '#F8FAFC', muted: '#CBD5E1' },
     fonts: { heading: 'Playfair Display', body: 'Inter' }, radius: 4, buttonStyle: 'square', motif: 'gold-frame',
     cover: { layout: 'centered', imageShape: 'rect' },
+    photos: { feature: executiveFeature, focus: 'center 30%' },
   },
   {
     id: 'tpl-fresh-mint', name: 'Fresh Mint', description: 'Light, friendly and modern',
@@ -85,6 +112,7 @@ export const COURSE_TEMPLATES: CourseTemplate[] = [
     colors: { bg: '#FFFFFF', surface: '#F0FDFA', primary: '#0F766E', onPrimary: '#FFFFFF', accent: '#5EEAD4', text: '#134E4A', muted: '#3F5F5B' },
     fonts: { heading: 'Poppins', body: 'Poppins' }, radius: 18, buttonStyle: 'pill', motif: 'soft-blobs',
     cover: { layout: 'image-left', imageShape: 'arch' },
+    photos: { cover: mintCover, feature: mintFeature },
   },
   {
     id: 'tpl-sunrise-coral', name: 'Sunrise Coral', description: 'Warm, energetic and bold',
@@ -92,6 +120,7 @@ export const COURSE_TEMPLATES: CourseTemplate[] = [
     colors: { bg: '#FFF7ED', surface: '#FFFFFF', primary: '#C2410C', onPrimary: '#FFFFFF', accent: '#FB923C', text: '#431407', muted: '#7C2D12' },
     fonts: { heading: 'Montserrat', body: 'Lato' }, radius: 12, buttonStyle: 'rounded', motif: 'diagonal',
     cover: { layout: 'split', imageShape: 'rect' },
+    photos: { cover: coralCover, feature: coralFeature },
   },
   {
     id: 'tpl-ocean-breeze', name: 'Ocean Breeze', description: 'Calm blue, airy and clean',
@@ -99,6 +128,7 @@ export const COURSE_TEMPLATES: CourseTemplate[] = [
     colors: { bg: '#F0F7FF', surface: '#FFFFFF', primary: '#1D4ED8', onPrimary: '#FFFFFF', accent: '#38BDF8', text: '#0C1E3E', muted: '#334E7A' },
     fonts: { heading: 'Inter', body: 'Inter' }, radius: 14, buttonStyle: 'rounded', motif: 'circles',
     cover: { layout: 'image-right', imageShape: 'circle' },
+    photos: { cover: oceanCover, feature: oceanFeature, focus: 'center 40%' },
   },
   {
     id: 'tpl-royal-plum', name: 'Royal Plum', description: 'Rich purple with pink highlights',
@@ -106,6 +136,7 @@ export const COURSE_TEMPLATES: CourseTemplate[] = [
     colors: { bg: '#2E1065', surface: '#3B1C78', primary: '#F472B6', onPrimary: '#2E1065', accent: '#F472B6', text: '#FFFFFF', muted: '#DDD6FE' },
     fonts: { heading: 'Montserrat', body: 'Lato' }, radius: 16, buttonStyle: 'pill', motif: 'arc',
     cover: { layout: 'full-bleed', imageShape: 'rect' },
+    photos: { cover: plumCover, feature: plumFeature, focus: '70% center' },
   },
   {
     id: 'tpl-forest-hexa', name: 'Forest Hexa', description: 'Deep green with lime hexagons',
@@ -113,6 +144,7 @@ export const COURSE_TEMPLATES: CourseTemplate[] = [
     colors: { bg: '#052E16', surface: '#14532D', primary: '#A3E635', onPrimary: '#052E16', accent: '#A3E635', text: '#F0FDF4', muted: '#BBF7D0' },
     fonts: { heading: 'Poppins', body: 'Inter' }, radius: 10, buttonStyle: 'rounded', motif: 'hexagons',
     cover: { layout: 'image-left', imageShape: 'hex' },
+    photos: { cover: forestCover, feature: forestFeature },
   },
   {
     id: 'tpl-minimal-mono', name: 'Minimal Mono', description: 'White space, black type, red accent',
@@ -120,6 +152,7 @@ export const COURSE_TEMPLATES: CourseTemplate[] = [
     colors: { bg: '#FFFFFF', surface: '#F5F5F5', primary: '#111827', onPrimary: '#FFFFFF', accent: '#E11D48', text: '#111827', muted: '#4B5563' },
     fonts: { heading: 'Inter', body: 'Inter' }, radius: 0, buttonStyle: 'square', motif: 'red-rule',
     cover: { layout: 'type-only', imageShape: 'rect' },
+    photos: { feature: monoFeature },
   },
   {
     id: 'tpl-tech-grid', name: 'Tech Grid', description: 'Dark slate with cyan glow',
@@ -127,6 +160,7 @@ export const COURSE_TEMPLATES: CourseTemplate[] = [
     colors: { bg: '#0B1120', surface: '#111C33', primary: '#22D3EE', onPrimary: '#0B1120', accent: '#22D3EE', text: '#E2E8F0', muted: '#A5B4C8' },
     fonts: { heading: 'Space Grotesk', body: 'Inter' }, radius: 8, buttonStyle: 'rounded', motif: 'dot-grid',
     cover: { layout: 'image-left', imageShape: 'rect' },
+    photos: { cover: techCover, feature: techFeature },
   },
   {
     id: 'tpl-warm-sand', name: 'Warm Sand', description: 'Soft paper tones, classic serif',
@@ -134,6 +168,7 @@ export const COURSE_TEMPLATES: CourseTemplate[] = [
     colors: { bg: '#F5EFE6', surface: '#FFFFFF', primary: '#7C4A2D', onPrimary: '#FFFFFF', accent: '#C2410C', text: '#2B1A10', muted: '#5C4033' },
     fonts: { heading: 'Merriweather', body: 'Lato' }, radius: 6, buttonStyle: 'rounded', motif: 'paper',
     cover: { layout: 'image-right', imageShape: 'arch' },
+    photos: { cover: sandCover, feature: sandFeature },
   },
 ];
 

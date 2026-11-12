@@ -24,11 +24,9 @@
 .ts-btn { display: inline-flex; align-items: center; margin-top: 2.6cqw; padding: 1cqw 2.2cqw; background: var(--t-primary); color: var(--t-on-primary); font-weight: 700; font-size: 1.35cqw; border-radius: var(--t-btn-radius); width: fit-content; }
 .ts-chip { display: inline-block; margin-top: 2cqw; padding: .6cqw 1.4cqw; border-radius: 999px; background: var(--t-surface); color: var(--t-text); font-size: 1.2cqw; font-weight: 600; border: .1cqw solid color-mix(in srgb, var(--t-text) 15%, transparent); }
 
-/* Image placeholder */
-.ts-image { position: relative; overflow: hidden; border-radius: var(--t-radius);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--t-primary) 85%, #000) 0%, color-mix(in srgb, var(--t-accent) 75%, var(--t-primary)) 100%); }
-.ts-image svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.ts-image-label { position: absolute; left: 1.4cqw; bottom: 1.4cqw; padding: .4cqw 1cqw; border-radius: 999px; background: rgba(255,255,255,.9); color: #111827; font-size: 1cqw; font-weight: 700; }
+/* Photos */
+.ts-image { position: relative; overflow: hidden; border-radius: var(--t-radius); background: var(--t-surface); }
+.ts-image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* Cover — one composition per template (template.cover.layout) */
 .ts-cover { display: grid; grid-template-columns: 1.25fr 1fr; gap: 4cqw; align-items: center; height: 100%; }
@@ -49,12 +47,11 @@
 .ts-cover--full-bleed { grid-template-columns: 1fr; }
 .ts-cover-bleed { position: absolute !important; inset: 0; border-radius: 0 !important; z-index: -1; }
 .ts-cover--full-bleed .ts-cover-text { background: var(--t-bg); padding: 3.4cqw 3.6cqw; max-width: 56%; border-radius: var(--t-radius); box-shadow: 0 1.4cqw 3cqw rgba(0,0,0,.25); }
-.ts-cover--full-bleed .ts-image-label { left: auto; right: 1.4cqw; }
 /* Image shapes */
 .ts-shape--circle { aspect-ratio: 1; height: auto !important; min-height: 0 !important; border-radius: 50% !important; justify-self: center; width: 92%; }
 .ts-shape--arch { border-radius: 50cqw 50cqw var(--t-radius) var(--t-radius) !important; }
 .ts-shape--hex { border-radius: 0 !important; clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%); aspect-ratio: 1.1; height: auto !important; min-height: 0 !important; }
-.ts-shape--circle .ts-image-label, .ts-shape--hex .ts-image-label { left: 50%; transform: translateX(-50%); bottom: 12%; }
+
 /* Section */
 .ts-section { display: flex; align-items: center; gap: 4cqw; }
 .ts-section-num { font-family: var(--t-heading); font-size: 13cqw; font-weight: 800; line-height: 1; color: var(--t-primary); }

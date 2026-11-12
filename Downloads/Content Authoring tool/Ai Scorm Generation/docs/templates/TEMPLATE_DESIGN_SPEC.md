@@ -109,7 +109,26 @@ Same order in the Preview popup. Measurements in cqw (px @1280).
 | `type-only` | Minimal Mono | Left aligned, H1 **7cqw**, letter-spacing −0.035em, max 80% width. No image. |
 
 **Image shapes**: `rect` (template radius) · `circle` (1:1, 50%) · `arch` (top corners 50cqw, bottom = template radius) · `hex` (clip-path hexagon, 1.1:1).
-In the prototype images are gradient placeholders labelled "Your image". Production: use real photography; minimum 1600px on the long side; the placeholder shows the crop.
+
+### Photos
+
+Each template ships with two sample photos: `cover` (Title slide) and `feature` (Image + Text slide). Executive Gold and Minimal Mono have no cover photo by design.
+Files: `src/assets/templates/<template>-cover.webp` / `-feature.webp` (WebP, 1000–1400px wide, q 55–70). Sources and licence: [PHOTO_CREDITS.md](./PHOTO_CREDITS.md).
+
+| Template | Cover photo | Feature photo |
+|---|---|---|
+| Corporate Navy | Boardroom meeting | Team planning with sticky notes |
+| Executive Gold | — | Executive portrait (crop 30% from top) |
+| Fresh Mint | Smiling colleagues | Bright, plant-filled office |
+| Sunrise Coral | Colleagues high-five | Smiling professional |
+| Ocean Breeze | Doctor using phone (crop 40% from top) | Team around a laptop |
+| Royal Plum | Creative studio meeting (full-bleed, focus 70% x) | Smiling woman portrait |
+| Forest Hexa | Forest path | Green hills at sunrise |
+| Minimal Mono | — | Skyscrapers from below |
+| Tech Grid | Glowing circuit board | Analytics dashboard |
+| Warm Sand | Hands on a laptop, warm tones | Loft office |
+
+Rules: `object-fit: cover`; `alt=""` (the whole sample slide has one accessible name); photos never carry text. Courses replace these with their own images; recommended minimum 1600px on the long side.
 
 ---
 

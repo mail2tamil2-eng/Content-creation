@@ -36,16 +36,11 @@ export function TemplateMotifLayer({ motif, strong = false }: { motif: TemplateM
   );
 }
 
-/** Placeholder artwork that stands in for a photo in sample slides. */
-function ImageArt({ className, label = 'Your image' }: { className?: string; label?: string }) {
+/** Photo in a sample slide (decorative: the whole slide has one accessible name). */
+function SlidePhoto({ src, className, focus }: { src: string; className?: string; focus?: string }) {
   return (
     <div className={cn('ts-image', className)}>
-      <svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        <circle cx="118" cy="30" r="13" fill="#fff" opacity=".55" />
-        <path d="M0 100 L46 48 L78 80 L104 58 L160 100 Z" fill="#fff" opacity=".35" />
-        <path d="M0 100 L30 70 L64 100 Z" fill="#fff" opacity=".25" />
-      </svg>
-      <span className="ts-image-label">{label}</span>
+      <img src={src} alt="" loading="lazy" decoding="async" draggable={false} style={focus ? { objectPosition: focus } : undefined} />
     </div>
   );
 }
@@ -57,17 +52,17 @@ function SlideBody({ kind, template }: { kind: SampleSlideKind; template: Course
   switch (kind) {
     case 'cover': {
       const { layout } = template.cover;
-      const hasImage = layout !== 'centered' && layout !== 'type-only';
+      const hasImage = layout !== 'centered' && layout !== 'type-only' && !!template.photos.cover;
       return (
         <div className={cn('ts-cover', `ts-cover--${layout}`)}>
-          {layout === 'full-bleed' && <ImageArt className="ts-cover-bleed" label="Your background image" />}
+          {layout === 'full-bleed' && template.photos.cover && <SlidePhoto src={template.photos.cover} focus={template.photos.focus} className="ts-cover-bleed" />}
           <div className="ts-cover-text">
             <p className="ts-eyebrow">Course · 25 min</p>
             <p className="ts-h1">{COURSE}</p>
             <p className="ts-lead">Practical tools to guide your team with confidence.</p>
             <span className="ts-btn">Start course ›</span>
           </div>
-          {hasImage && layout !== 'full-bleed' && <ImageArt className={cn('ts-cover-image', shape)} />}
+          {hasImage && layout !== 'full-bleed' && <SlidePhoto src={template.photos.cover!} focus={template.photos.focus} className={cn('ts-cover-image', shape)} />}
         </div>
       );
     }
@@ -109,7 +104,7 @@ function SlideBody({ kind, template }: { kind: SampleSlideKind; template: Course
     case 'image-text':
       return (
         <div className="ts-split">
-          <ImageArt className={cn('ts-split-image', shape)} />
+          <SlidePhoto src={template.photos.feature} className={cn('ts-split-image', shape)} />
           <div>
             <p className="ts-eyebrow">Case study</p>
             <p className="ts-h2">Priya’s first 90 days</p>
