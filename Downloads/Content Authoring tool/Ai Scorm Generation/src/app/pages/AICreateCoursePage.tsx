@@ -149,12 +149,9 @@ export function AICreateCoursePage() {
   const [headerIncludeLogo, setHeaderIncludeLogo] = useState(true);
   const [headerIncludeCourseName, setHeaderIncludeCourseName] = useState(true);
   const [footerEnabled, setFooterEnabled] = useState(false);
-  const [footerIncludeOrgName, setFooterIncludeOrgName] = useState(false);
   const [footerIncludeCourseName, setFooterIncludeCourseName] = useState(false);
-  const [footerIncludeCopyright, setFooterIncludeCopyright] = useState(false);
   const [copyrightText, setCopyrightText] = useState('');
   const [footerIncludePageNum, setFooterIncludePageNum] = useState(false);
-  const [footerIncludeWatermark, setFooterIncludeWatermark] = useState(false);
   const [watermarkText, setWatermarkText] = useState('');
 
   // Global Settings
@@ -255,8 +252,8 @@ export function AICreateCoursePage() {
     showFooter: footerEnabled,
     footerShowCourseName: footerIncludeCourseName,
     footerShowPageNum: footerIncludePageNum,
-    footerCopyright: footerIncludeCopyright ? copyrightText : undefined,
-    footerWatermark: footerIncludeWatermark ? watermarkText : undefined,
+    footerCopyright: copyrightText.trim() || undefined,
+    footerWatermark: watermarkText.trim() || undefined,
   };
 
   const presentationSettings: PresentationSettings = {
@@ -584,6 +581,8 @@ export function AICreateCoursePage() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
               <button
+                type="button"
+                aria-label="Back"
                 onClick={() => navigate(-1)}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 7, border: '1px solid #E5E7EB', background: '#fff', cursor: 'pointer', color: '#6B7280', flexShrink: 0, transition: 'all 0.12s' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.color = P; }}
@@ -786,8 +785,6 @@ export function AICreateCoursePage() {
                 })}
               </div>
 
-              {/* — divider before Assessment — */}
-              <div role="presentation" style={{ borderTop: '1px solid #F3F4F6', margin: '20px 0' }} />
               {/* — Assessment Settings — */}
               <div role="presentation" style={{ borderTop: '1px solid #F3F4F6', margin: '20px 0' }} />
               <h3 style={{ fontSize: 13, fontWeight: 700, color: '#111827', margin: '0 0 10px' }}>Assessment Settings</h3>
@@ -854,9 +851,9 @@ export function AICreateCoursePage() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 10, border: `1px solid ${aiTemplate ? '#93C5FD' : '#E5E7EB'}`, background: aiTemplate ? PL : '#F9FAFB', transition: 'all 0.15s' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <Sparkles size={15} style={{ color: aiTemplate ? P : '#6B7280', flexShrink: 0 }} />
-                          <span style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>Let AI choose the best design &amp; colours</span>
+                          <span id="ai-design-label" style={{ fontSize: 13, fontWeight: 500, color: '#111827' }}>Let AI choose the best design &amp; colours</span>
                         </div>
-                        <ToggleSwitch enabled={aiTemplate} onChange={setAiTemplate} />
+                        <ToggleSwitch enabled={aiTemplate} onChange={setAiTemplate} labelledBy="ai-design-label" />
                       </div>
                       {/* Design grid — real template thumbnails, hover to preview */}
                       <div>
@@ -881,17 +878,20 @@ export function AICreateCoursePage() {
                           </button>
                         </TemplateGallery>
                       </div>
-                      {/* Colour & style */}
+                      {/* Colour & style: a chosen template keeps its own colours (only the font can change);
+                          Blank shows all colour settings */}
                       {!aiTemplate && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                          <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>Colours &amp; Style</p>
-                          {/* Two lines: colours + font on line 1, background + button style on line 2 */}
-                          <div className="@container"><div className="grid grid-cols-1 gap-2.5 @2xl:grid-cols-6">
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>{selectedPredefined === 'blank' ? <>Colours &amp; Style</> : 'Font'}</p>
+                          {selectedPredefined === 'blank' ? (
+                            <div className="@container"><div className="grid grid-cols-1 gap-2.5 @xl:grid-cols-2">
+                              {/* Column 1: colours */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                           {([
                             { label: 'Primary colour',   value: customPrimary,   set: setCustomPrimary },
                             { label: 'Secondary colour', value: customSecondary, set: setCustomSecondary },
                           ] as const).map(row => (
-                            <div key={row.label} className="@2xl:col-span-2" style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, minHeight: 46, gap: 8 }}>
+                            <div key={row.label} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, minHeight: 46, gap: 8 }}>
                               <span style={{ fontSize: 13, color: '#374151', flex: 1 }}>{row.label}</span>
                               <span style={{ fontSize: 12, color: '#4B5563', fontFamily: 'monospace' }}>{row.value.toUpperCase()}</span>
                               <label style={{ width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', position: 'relative', display: 'block', flexShrink: 0 }}>
@@ -900,7 +900,10 @@ export function AICreateCoursePage() {
                               </label>
                             </div>
                           ))}
-                          <div className="@2xl:col-span-2" style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10, minHeight: 46 }}>
+                              </div>
+                              {/* Column 2: font + background */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10, minHeight: 46 }}>
                             <span id="style-font" style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font</span>
                             <div style={{ position: 'relative' }}>
                               <select aria-labelledby="style-font" value={customFont} onChange={e => setCustomFont(e.target.value)}
@@ -910,7 +913,7 @@ export function AICreateCoursePage() {
                               <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
                             </div>
                           </div>
-                          <div className="@2xl:col-span-3" style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10, minHeight: 46 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10, minHeight: 46 }}>
                             <span id="style-background" style={{ fontSize: 13, color: '#374151', flex: 1 }}>Background</span>
                             <div role="group" aria-labelledby="style-background" style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
                               {(['light', 'warm', 'dark'] as const).map(opt => (
@@ -921,74 +924,48 @@ export function AICreateCoursePage() {
                               ))}
                             </div>
                           </div>
-                          <div className="@2xl:col-span-3" style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10, minHeight: 46 }}>
-                            <span id="style-button-style" style={{ fontSize: 13, color: '#374151', flex: 1 }}>Button Style</span>
-                            <div role="group" aria-labelledby="style-button-style" style={{ display: 'flex', background: '#F3F4F6', borderRadius: 7, padding: 2, gap: 2 }}>
-                              {(['rounded', 'pill', 'square'] as const).map(opt => (
-                                <button key={opt} type="button" aria-pressed={customButtonStyle === opt} onClick={() => setCustomButtonStyle(opt)}
-                                  style={{ padding: '4px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: customButtonStyle === opt ? 600 : 400, background: customButtonStyle === opt ? '#1E293B' : 'transparent', color: customButtonStyle === opt ? '#fff' : '#4B5563', transition: 'all 0.13s', textTransform: 'capitalize' }}>
-                                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                                </button>
-                              ))}
+                              </div>
+                            </div></div>
+                          ) : (
+                            <div style={{ maxWidth: 420 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', background: '#F9FAFB', borderRadius: 8, gap: 10, minHeight: 46 }}>
+                            <span id="style-font" style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font</span>
+                            <div style={{ position: 'relative' }}>
+                              <select aria-labelledby="style-font" value={customFont} onChange={e => setCustomFont(e.target.value)}
+                                style={{ border: '1px solid #E5E7EB', borderRadius: 7, padding: '5px 28px 5px 10px', fontSize: 13, color: '#111827', background: '#fff', appearance: 'none', cursor: 'pointer', outline: 'none' }}>
+                                {THEME_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
+                              </select>
+                              <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
                             </div>
                           </div>
-                          </div></div>
+                            </div>
+                          )}
                         </div>
                       )}
                       {/* Logo & Layout */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>Logo &amp; Layout</p>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>Logo, Copyright &amp; Watermark</p>
                         <div>
                           <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Organization Logo</label>
                           <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', border: `2px dashed ${customLogoPreview ? P : '#D1D5DB'}`, borderRadius: 8, cursor: 'pointer', background: customLogoPreview ? PL : '#FAFAFA', transition: 'all 0.13s' }}
                             onMouseEnter={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.background = PL; } }}
                             onMouseLeave={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; } }}>
                             <input type="file" accept=".png,.jpg,.jpeg,.svg" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f && f.size <= 5 * 1024 * 1024) setCustomLogoPreview(URL.createObjectURL(f)); }} />
-                            {customLogoPreview ? <><img src={customLogoPreview} alt="logo" style={{ height: 28, objectFit: 'contain', maxWidth: 80 }} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Logo uploaded</span><button type="button" onClick={e => { e.preventDefault(); setCustomLogoPreview(''); }} style={{ marginLeft: 'auto', fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button></> : <><Upload size={15} color="#6B7280" /><span style={{ fontSize: 13, color: '#6B7280' }}>Upload logo</span></>}
+                            {customLogoPreview ? <><img src={customLogoPreview} alt="logo" style={{ height: 28, objectFit: 'contain', maxWidth: 80 }} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Logo uploaded</span><button type="button" onClick={e => { e.preventDefault(); setCustomLogoPreview(''); }} style={{ marginLeft: 'auto', fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button></> : <><Upload size={15} color="#6B7280" /><span style={{ fontSize: 13, color: '#4B5563' }}>Upload logo</span></>}
                           </label>
                         </div>
-                        {/* Header and Footer side by side (stack on narrow screens) */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'stretch' }}>
-                        {[
-                          { label: 'Header', enabled: headerEnabled, toggle: () => setHeaderEnabled(v => !v), items: [
-                            { label: 'Organization Logo', value: headerIncludeLogo, set: setHeaderIncludeLogo },
-                            { label: 'Course Name', value: headerIncludeCourseName, set: setHeaderIncludeCourseName },
-                          ] },
-                          { label: 'Footer', enabled: footerEnabled, toggle: () => setFooterEnabled(v => !v), items: [
-                            { label: 'Course Name', value: footerIncludeCourseName, set: setFooterIncludeCourseName },
-                            { label: 'Page / Slide Number', value: footerIncludePageNum, set: setFooterIncludePageNum },
-                            { label: 'Copyright Information', value: footerIncludeCopyright, set: setFooterIncludeCopyright },
-                            { label: 'Watermark', value: footerIncludeWatermark, set: setFooterIncludeWatermark },
-                          ] },
-                        ].map(section => (
-                          <div key={section.label} style={{ flex: '1 1 320px', minWidth: 0, border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F9FAFB' }}>
-                              <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{section.label}</span>
-                              <button type="button" role="switch" aria-checked={section.enabled} aria-label={`Show ${section.label.toLowerCase()}`} onClick={section.toggle} style={{ width: 36, height: 20, borderRadius: 10, background: section.enabled ? P : '#D1D5DB', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
-                                <span style={{ position: 'absolute', top: 2, left: section.enabled ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
-                              </button>
-                            </div>
-                            {section.enabled && (
-                              <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                {/* All options on one line (wraps on narrow screens) */}
-                                <div role="group" aria-label={`${section.label} content`} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: 24, rowGap: 8 }}>
-                                  {section.items.map(({ label, value, set }) => (
-                                    <label key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                      <input type="checkbox" checked={value} onChange={e => set(e.target.checked)} style={{ width: 15, height: 15, accentColor: P, cursor: 'pointer', margin: 0 }} />
-                                      <span style={{ fontSize: 13, color: '#374151' }}>{label}</span>
-                                    </label>
-                                  ))}
-                                </div>
-                                {section.label === 'Footer' && (footerIncludeCopyright || footerIncludeWatermark) && (
-                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-                                    {footerIncludeCopyright && <input aria-label="Copyright text" value={copyrightText} onChange={e => setCopyrightText(e.target.value)} placeholder="Copyright, e.g. 2025 Acme Corp." style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', flex: '1 1 220px', minWidth: 0 }} onFocus={e => { e.currentTarget.style.borderColor = P; }} onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />}
-                                    {footerIncludeWatermark && <input aria-label="Watermark text" value={watermarkText} onChange={e => setWatermarkText(e.target.value)} placeholder="Watermark, e.g. CONFIDENTIAL" style={{ border: '1px solid #D1D5DB', borderRadius: 6, padding: '7px 10px', fontSize: 13, outline: 'none', fontFamily: 'inherit', flex: '1 1 220px', minWidth: 0 }} onFocus={e => { e.currentTarget.style.borderColor = P; }} onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />}
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                        {/* Copyright (bottom-left of every slide) and Watermark (large faint text across the slide) */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                          <div>
+                            <label htmlFor="brand-copyright" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Copyright Information</label>
+                            <input id="brand-copyright" style={fieldStyle} value={copyrightText} onChange={e => setCopyrightText(e.target.value)} placeholder="e.g. © 2026 Acme Corp." aria-describedby="brand-copyright-hint" onFocus={focusField} onBlur={blurField} />
+                            <p id="brand-copyright-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Shown in the bottom-left corner of each slide</p>
                           </div>
-                        ))}
+                          <div>
+                            <label htmlFor="brand-watermark" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Watermark</label>
+                            <input id="brand-watermark" style={fieldStyle} value={watermarkText} onChange={e => setWatermarkText(e.target.value)} placeholder="e.g. CONFIDENTIAL" aria-describedby="brand-watermark-hint" onFocus={focusField} onBlur={blurField} />
+                            <p id="brand-watermark-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Large faint text across each slide, like PowerPoint</p>
+                          </div>
                         </div>
                       </div>
                     </div>

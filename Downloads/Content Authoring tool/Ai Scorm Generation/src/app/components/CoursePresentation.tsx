@@ -146,12 +146,19 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
         </div>
         {editable && <span id={hintId} hidden>Press Enter to edit in Slide Settings, or F2 to edit on the slide.</span>}
       </main>
+      {/* Watermark: large faint diagonal text behind the content (decorative, like PowerPoint) */}
+      {settings.footerWatermark && (
+        <svg className="course-slide-watermark" aria-hidden="true" viewBox="0 0 1000 562" preserveAspectRatio="xMidYMid meet">
+          <text x="500" y="281" textAnchor="middle" dominantBaseline="middle" transform="rotate(-28 500 281)"
+            textLength={Math.min(900, settings.footerWatermark.length * 70)} lengthAdjust="spacingAndGlyphs">{settings.footerWatermark}</text>
+        </svg>
+      )}
+      {/* Copyright: bottom-left corner of every slide */}
+      {settings.footerCopyright && <p className="course-slide-copyright">{settings.footerCopyright}</p>}
       {showFooter && (
         <footer className="course-slide-footer">
           <span style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             {fCourseName && <span>{courseTitle || 'Untitled Course'}</span>}
-            {settings.footerCopyright && <span style={{ opacity: 0.7 }}>{settings.footerCopyright}</span>}
-            {settings.footerWatermark && <span style={{ opacity: 0.45, fontWeight: 700, letterSpacing: '0.06em' }}>{settings.footerWatermark}</span>}
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '1.5cqw' }}>
             {fPageNum && <span>{index + 1} / {total}</span>}
