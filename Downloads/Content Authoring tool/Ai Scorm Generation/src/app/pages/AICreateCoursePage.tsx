@@ -380,16 +380,13 @@ export function AICreateCoursePage() {
         },
       ];
 
-      // Knowledge checks: N one-question checks at the end of EVERY section (N = "Knowledge Check per Topic" count).
-      // Final Assessment quiz goes at the end of the last section.
-      const kcCount = knowledgeCheck && ids.includes('knowledge-check') ? Math.max(1, knowledgeCheckQuestions) : 0;
+      // Knowledge check: ONE slide at the end of every section holding N questions
+      // (N = "Knowledge Check per Topic" count). Final Assessment quiz goes at the end of the last section.
+      const hasKC = knowledgeCheck && ids.includes('knowledge-check');
       const processedSections = rawSections.map(sec => {
-        const extra: typeof sec.topics = Array.from({ length: kcCount }, (_, k) => ({
-          id: `${sec.id}-kc-${k + 1}`,
-          title: kcCount > 1 ? `Knowledge Check ${k + 1}` : 'Knowledge Check',
-          slideType: 'knowledge-check',
-          kcSection: sec.title, kcIndex: k,
-        }));
+        const extra: typeof sec.topics = hasKC
+          ? [{ id: `${sec.id}-kc`, title: 'Knowledge Check', slideType: 'knowledge-check', kcSection: sec.title }]
+          : [];
         if (sec.id === 's4' && addQuiz && ids.includes('quiz')) {
           extra.push({ id: 's4-quiz', title: 'Final Assessment', slideType: 'quiz' });
         }
@@ -399,13 +396,14 @@ export function AICreateCoursePage() {
       const generated = processedSections.map(sec => ({
         ...sec,
         topics: sec.topics.map(t => {
-          const qCount = t.slideType === 'quiz' ? addQuizQuestions : 1;
+          const qCount = t.slideType === 'quiz' ? addQuizQuestions
+            : t.slideType === 'knowledge-check' ? Math.max(1, knowledgeCheckQuestions) : 1;
           const slide = generateSlideContent(t as CourseTopic, title, qCount);
-          // Knowledge checks ask about their own section
-          const kc = t as { kcSection?: string; kcIndex?: number };
-          if (t.slideType === 'knowledge-check' && kc.kcSection && slide.questions?.[0]) {
-            const prompts = ['Which action best applies', 'What is the most important idea in', 'Which example shows good practice in'];
-            slide.questions[0] = { ...slide.questions[0], text: `${prompts[(kc.kcIndex ?? 0) % prompts.length]} ${kc.kcSection.toLowerCase()}?` };
+          // Knowledge check questions ask about their own section
+          const kc = t as { kcSection?: string };
+          if (t.slideType === 'knowledge-check' && kc.kcSection && slide.questions) {
+            const prompts = ['Which action best applies', 'What is the most important idea in', 'Which example shows good practice in', 'What should you avoid in', 'Which outcome shows success in'];
+            slide.questions = slide.questions.map((q, k) => ({ ...q, text: `${prompts[k % prompts.length]} ${kc.kcSection!.toLowerCase()}?` }));
           }
           return slide;
         }),

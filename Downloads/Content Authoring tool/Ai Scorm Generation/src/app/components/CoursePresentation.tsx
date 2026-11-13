@@ -135,7 +135,8 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
       )}
       <main className={'course-slide-main' + (titleInContent ? ' course-slide-main--split' : '')}>
         <p className="course-slide-eyebrow">{sectionTitle || 'Course content'}</p>
-        {!titleInContent && heading}
+        {/* Quiz / knowledge-check cards carry the title in their own header */}
+        {!titleInContent && !(topic.slideType === 'quiz' || topic.slideType === 'knowledge-check') && heading}
         <div
           className="course-slide-body"
           onClick={editable ? e => { if (!(e.target as Element).closest('[data-edit],.se-editing')) onSelectField?.('slide-content', false); } : undefined}

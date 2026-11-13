@@ -549,46 +549,84 @@ function Simulation({ topic }: { topic: CourseTopic }) {
 }
 
 function Quiz({ topic }: { topic: CourseTopic }) {
-  // The Slide Settings quiz editor stores `questions[]` ({ question | text, options[{ text, correct }], feedback });
-  // older/simple data may use `question` / `quizOptions` / `feedback` on the topic.
-  type Q = { question?: string; text?: string; options?: { text: string; correct: boolean }[]; feedback?: string };
-  const q0 = (g<Q[]>(topic, 'questions') || [])[0];
-  const fromQuestions = !!q0;
-  const question = (q0 ? (q0.question ?? q0.text) : undefined) || g<string>(topic, 'question') || (fromQuestions ? '' : topic.content) || '';
-  const options  = (q0?.options?.map((o, i) => ({ id: String(i), text: o.text, correct: o.correct })) || g<QuizOption[]>(topic, 'quizOptions') || []);
-  const feedback = (q0 ? q0.feedback : g<string>(topic, 'feedback')) || '';
-  const [chosen, setChosen] = useState<number | null>(null);
+  // Questions live in `questions[]` (Slide Settings quiz editor / generator):
+  //   { question | text, options[{ text, correct, remark? }], feedback? }
+  // Older/simple data may use `question` / `quizOptions` / `feedback` on the topic (one question).
+  type Opt = { id?: string; text: string; correct: boolean; remark?: string };
+  type Q = { question?: string; text?: string; options?: Opt[]; feedback?: string };
+  const list = g<Q[]>(topic, 'questions') || [];
+  const fromQuestions = list.length > 0;
+  const total = fromQuestions ? list.length : 1;
+  const [index, setIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
   const editable = useEditable();
-  const qKey = fromQuestions ? 'questions.0.question' : 'question';
-  const optKey = (i: number) => fromQuestions ? `questions.0.options.${i}.text` : `quizOptions.${i}.text`;
-  const fbKey = fromQuestions ? 'questions.0.feedback' : 'feedback';
-  const row = (i: number, isChosen: boolean, correct: boolean): React.CSSProperties => ({ display: 'flex', alignItems: 'center', gap: 'clamp(6px,1cqw,10px)', padding: 'clamp(7px,1.1cqw,11px) clamp(10px,1.5cqw,15px)', background: isChosen ? (correct ? 'color-mix(in srgb,#059669 10%,var(--slide-panel))' : 'color-mix(in srgb,#DC2626 8%,var(--slide-panel))') : 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', border: '1px solid', borderColor: isChosen ? (correct ? '#059669' : '#DC2626') : 'color-mix(in srgb,var(--slide-text) 15%,transparent)', transition: 'all 0.12s' });
+  const idx = Math.min(index, total - 1);
+  const q = fromQuestions ? list[idx] : undefined;
+
+  const question = (q ? (q.question ?? q.text) : undefined) || g<string>(topic, 'question') || (fromQuestions ? '' : topic.content) || '';
+  const options: Opt[] = q?.options ?? g<QuizOption[]>(topic, 'quizOptions') ?? [];
+  const chosen = answers[idx];
+  const chosenOpt = chosen !== undefined ? options[chosen] : undefined;
+  const feedback = (q ? q.feedback : g<string>(topic, 'feedback')) || '';
+  const shownFeedback = chosenOpt?.remark || feedback;
+  const qKey = fromQuestions ? `questions.${idx}.question` : 'question';
+  const optKey = (i: number) => fromQuestions ? `questions.${idx}.options.${i}.text` : `quizOptions.${i}.text`;
+  const fbKey = fromQuestions ? `questions.${idx}.feedback` : 'feedback';
+  const label = topic.slideType === 'quiz' ? 'Quiz' : 'Knowledge check';
+  const brand = 'var(--slide-primary-text, var(--slide-primary))';
+
+  const row = (isChosen: boolean, correct: boolean): React.CSSProperties => ({ display: 'flex', alignItems: 'center', gap: 'clamp(6px,1cqw,10px)', padding: 'clamp(7px,1.1cqw,11px) clamp(10px,1.5cqw,15px)', background: isChosen ? (correct ? 'color-mix(in srgb,#059669 14%,var(--slide-panel))' : 'color-mix(in srgb,#DC2626 10%,var(--slide-panel))') : 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', border: '1px solid', borderColor: isChosen ? (correct ? '#059669' : '#DC2626') : 'color-mix(in srgb,var(--slide-text) 22%,transparent)', transition: 'all 0.12s' });
+  const navBtn: React.CSSProperties = { padding: 'clamp(6px,0.9cqw,9px) clamp(12px,1.8cqw,18px)', borderRadius: 'var(--slide-radius)', border: '1px solid color-mix(in srgb,var(--slide-text) 30%,transparent)', background: 'transparent', color: 'var(--slide-text)', fontSize: fs.sm, fontWeight: 600, cursor: 'pointer', minHeight: 32 };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(8px,1.2cqw,12px)' }}>
-      <E as="p" multiline k={qKey} label="Question" value={question} placeholder="Enter question" style={{ margin: 0, fontSize: fs.lg, fontWeight: 600, lineHeight: 1.55 }} />
+    <section aria-label={label} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(8px,1.2cqw,12px)', padding: 'clamp(10px,1.8cqw,18px)', borderRadius: 'calc(var(--slide-radius) + 4px)', border: '1px solid color-mix(in srgb,var(--slide-text) 14%,transparent)', background: 'color-mix(in srgb,var(--slide-panel) 60%,transparent)' }}>
+      {/* Header: label + "1 / N" */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span aria-hidden="true" style={{ width: 'clamp(22px,3cqw,30px)', height: 'clamp(22px,3cqw,30px)', borderRadius: 7, background: brand, color: 'var(--slide-bg)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: fs.sm, fontWeight: 800 }}>✓</span>
+        <E as="h2" k="title" label="Title" value={topic.title || label} placeholder={label}
+          style={{ margin: 0, fontSize: fs.sm, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: brand, fontFamily: 'inherit', lineHeight: 1.3 }} />
+        {total > 1 && <span style={{ marginLeft: 'auto', fontSize: fs.sm, opacity: 0.85 }} aria-live="polite">{idx + 1} / {total}</span>}
+      </div>
+      {total > 1 && (
+        <div role="progressbar" aria-label="Questions" aria-valuemin={1} aria-valuemax={total} aria-valuenow={idx + 1}
+          style={{ height: 'clamp(3px,0.45cqw,5px)', borderRadius: 3, background: 'color-mix(in srgb,var(--slide-text) 18%,transparent)', overflow: 'hidden' }}>
+          <div style={{ width: `${((idx + 1) / total) * 100}%`, height: '100%', background: brand, transition: 'width 0.2s' }} />
+        </div>
+      )}
+
+      <E as="p" multiline k={qKey} label={`Question ${idx + 1}`} value={question} placeholder="Enter question" style={{ margin: 0, fontSize: fs.lg, fontWeight: 600, lineHeight: 1.45 }} />
+
       {options.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(4px,0.6cqw,7px)' }}>
+        <div role={editable ? undefined : 'radiogroup'} aria-label={editable ? undefined : `Answers for question ${idx + 1}`} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(4px,0.6cqw,7px)' }}>
           {options.map((opt, i) => editable ? (
-            <div key={opt.id || i} style={row(i, false, false)}>
+            <div key={opt.id || i} style={row(false, false)}>
               <span aria-hidden="true" style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid color-mix(in srgb,var(--slide-text) 60%,transparent)', flexShrink: 0 }} />
               <E k={optKey(i)} label={`Option ${i + 1}`} value={opt.text} placeholder={`Option ${i + 1}`} style={{ fontSize: fs.md, flex: 1, minWidth: 0 }} />
             </div>
           ) : (
-            <label key={opt.id || i} style={{ ...row(i, chosen === i, opt.correct), cursor: 'pointer' }}>
-              <input type="radio" name={'q-' + topic.id} checked={chosen === i} onChange={() => setChosen(i)} style={{ accentColor: 'var(--slide-primary)', flexShrink: 0 }} />
+            <label key={`${idx}-${opt.id || i}`} style={{ ...row(chosen === i, opt.correct), cursor: 'pointer' }}>
+              <input type="radio" name={`q-${topic.id}-${idx}`} checked={chosen === i} onChange={() => setAnswers(a => ({ ...a, [idx]: i }))} style={{ accentColor: 'var(--slide-primary)', flexShrink: 0 }} />
               <span style={{ fontSize: fs.md }}>{opt.text || <Dim>{`Option ${i + 1}`}</Dim>}</span>
             </label>
           ))}
         </div>
       )}
-      {(editable || (chosen !== null && feedback)) && (
-        <div style={{ margin: 0, fontSize: fs.sm, padding: 'clamp(6px,1cqw,10px)', background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', lineHeight: 1.6 }}>
-          {editable && <span style={{ fontWeight: 700 }}>Feedback: </span>}
-          <E k={fbKey} multiline label="Feedback" value={feedback} placeholder="Add feedback shown after answering" />
+
+      {(editable || (chosen !== undefined && shownFeedback)) && (
+        <div role={editable ? undefined : 'status'} style={{ fontSize: fs.sm, padding: 'clamp(6px,1cqw,10px)', background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', lineHeight: 1.6 }}>
+          {editable
+            ? <><span style={{ fontWeight: 700 }}>Feedback: </span><E k={fbKey} multiline label={`Question ${idx + 1} feedback`} value={feedback} placeholder="Add feedback shown after answering" /></>
+            : <><span style={{ fontWeight: 700 }}>{chosenOpt?.correct ? 'Correct. ' : 'Not quite. '}</span>{shownFeedback}</>}
         </div>
       )}
-    </div>
+
+      {total > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, paddingTop: 2 }}>
+          <button type="button" style={{ ...navBtn, opacity: idx === 0 ? 0.5 : 1, cursor: idx === 0 ? 'not-allowed' : 'pointer' }} disabled={idx === 0} onClick={() => setIndex(idx - 1)}>Previous</button>
+          <button type="button" style={{ ...navBtn, opacity: idx === total - 1 ? 0.5 : 1, cursor: idx === total - 1 ? 'not-allowed' : 'pointer' }} disabled={idx === total - 1} onClick={() => setIndex(idx + 1)}>Next question</button>
+        </div>
+      )}
+    </section>
   );
 }
 
