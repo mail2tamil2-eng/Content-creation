@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import {
   X, Search, Check, Lock, Plus,
   AlignLeft, Image as ImageIcon, Video, Volume2, MousePointer, HelpCircle,
@@ -588,101 +588,34 @@ function SlideTemplateCard({
 export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: SlideLibraryModalProps) {
   const [activeCategory, setActiveCategory] = useState<SlideCategoryId>('text');
   const [search, setSearch]                 = useState('');
-  const [alive, setAlive]                   = useState(false);
-  const [visible, setVisible]               = useState(false);
   const [flashingCardId, setFlashingCardId] = useState<string | null>(null);
-
-  const searchRef    = useRef<HTMLInputElement>(null);
-  const dialogRef    = useRef<HTMLDivElement>(null);
-  const openerRef    = useRef<HTMLElement | null>(null);
-  const titleId      = React.useId();
-  const closingRef   = useRef(false);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchRef     = useRef<HTMLInputElement>(null);
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Element that opened the library; Radix only restores focus to a Dialog.Trigger, and this dialog is opened from elsewhere
+  const openerRef     = useRef<HTMLElement | null>(null);
 
-  // Stable refs so triggerClose never goes stale
-  const onInsertRef = useRef(onInsert);
-  const onCloseRef  = useRef(onClose);
-  onInsertRef.current = onInsert;
-  onCloseRef.current  = onClose;
+  const clearFlash = () => {
+    if (flashTimerRef.current) { clearTimeout(flashTimerRef.current); flashTimerRef.current = null; }
+    setFlashingCardId(null);
+  };
 
-  // Enter animation + reset state on open
+  // Reset when (re)opened; clear a pending insert if closed
   useEffect(() => {
-    if (isOpen) {
-      openerRef.current = document.activeElement as HTMLElement | null;
-      if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
-      if (flashTimerRef.current) { clearTimeout(flashTimerRef.current); flashTimerRef.current = null; }
-      closingRef.current = false;
-      setFlashingCardId(null);
-      setActiveCategory('text');
-      setSearch('');
-      setAlive(true);
-      setVisible(false);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setVisible(true);
-          setTimeout(() => searchRef.current?.focus(), 80);
-        });
-      });
-    }
+    if (isOpen) { openerRef.current = document.activeElement as HTMLElement | null; setActiveCategory('text'); setSearch(''); }
+    clearFlash();
   }, [isOpen]);
-
-  const triggerClose = useCallback((action?: { slideType: string; templateId: string }) => {
-    if (closingRef.current) return;
-    closingRef.current = true;
-
-    // Cancel any pending flash timer (e.g. Escape pressed during flash)
-    if (!action && flashTimerRef.current) {
-      clearTimeout(flashTimerRef.current);
-      flashTimerRef.current = null;
-      setFlashingCardId(null);
-    }
-
-    setVisible(false); // trigger CSS exit transition
-
-    // Insert topic immediately so sidebar row fades in during modal exit
-    if (action) {
-      onInsertRef.current(action.slideType, action.templateId);
-    }
-
-    closeTimerRef.current = setTimeout(() => {
-      setAlive(false);
-      closingRef.current = false;
-      closeTimerRef.current = null;
-      if (!action) onCloseRef.current();
-      // Return focus to whatever opened the library (if it is still on the page)
-      const opener = openerRef.current;
-      if (opener && document.contains(opener) && !action) opener.focus();
-    }, 260);
-  }, []);
-
-  // Escape key
-  useEffect(() => {
-    if (!alive) return;
-    const fn = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { triggerClose(); return; }
-      // Keep Tab inside the dialog
-      if (e.key === 'Tab' && dialogRef.current) {
-        const items = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('button, input, [tabindex="0"]')).filter(el => el.offsetParent !== null);
-        if (!items.length) return;
-        const first = items[0], last = items[items.length - 1];
-        const active = document.activeElement;
-        if (e.shiftKey && (active === first || !dialogRef.current.contains(active))) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && (active === last || !dialogRef.current.contains(active))) { e.preventDefault(); first.focus(); }
-      }
-    };
-    document.addEventListener('keydown', fn);
-    return () => document.removeEventListener('keydown', fn);
-  }, [alive, triggerClose]);
+  useEffect(() => () => { if (flashTimerRef.current) clearTimeout(flashTimerRef.current); }, []);
 
   const isAvail = (t: SlideTemplate) => COMPLEXITY_RANK[complexity] >= COMPLEXITY_RANK[t.minComplexity];
 
+  // Brief "selected" flash on the card, then insert (the parent closes the dialog)
   const handleCardClick = (template: SlideTemplate) => {
-    if (!isAvail(template) || flashingCardId || closingRef.current) return;
+    if (!isAvail(template) || flashingCardId) return;
     setFlashingCardId(template.id);
     flashTimerRef.current = setTimeout(() => {
       flashTimerRef.current = null;
-      triggerClose({ slideType: template.slideType, templateId: template.id });
+      setFlashingCardId(null);
+      onInsert(template.slideType, template.id);
     }, 150);
   };
 
@@ -696,152 +629,142 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
 
   const searchActive = search.trim().length > 0;
 
-  if (!alive) return null;
+  // Radix Dialog: focus trap, Esc, outside click, aria-modal + hides the page behind
+  // from screen readers, and returns focus to whatever opened it.
+  return (
+    <Dialog.Root open={isOpen} onOpenChange={open => { if (!open) { clearFlash(); onClose(); } }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-[9998] bg-black/45 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 motion-reduce:animate-none" />
+        <Dialog.Content
+          onOpenAutoFocus={e => { e.preventDefault(); searchRef.current?.focus(); }}
+          onCloseAutoFocus={e => {
+            const opener = openerRef.current;
+            if (opener && document.contains(opener)) { e.preventDefault(); opener.focus(); }
+          }}
+          className="fixed left-1/2 top-1/2 z-[9999] flex -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-white focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 motion-reduce:animate-none"
+          style={{
+            width: 1200, maxWidth: 'calc(100vw - 48px)', height: '88vh', maxHeight: 800,
+            boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
+            fontFamily: 'Nunito Sans, system-ui, sans-serif',
+          }}
+        >
 
-  return createPortal(
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9998,
-        background: 'rgba(0,0,0,0.45)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
-        opacity: visible ? 1 : 0,
-        transition: 'opacity 0.22s ease',
-        pointerEvents: visible ? 'auto' : 'none',
-      }}
-      onClick={e => { if (e.target === e.currentTarget) triggerClose(); }}
-    >
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        style={{
-          width: 1200, maxWidth: 'calc(100vw - 48px)', height: '88vh', maxHeight: 800,
-          background: '#fff', borderRadius: 16,
-          boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
-          display: 'flex', flexDirection: 'column', overflow: 'hidden',
-          fontFamily: 'Nunito Sans, system-ui, sans-serif',
-          transform: visible ? 'scale(1)' : 'scale(0.97)',
-          transition: 'transform 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
-        }}
-        onClick={e => e.stopPropagation()}
-      >
+          {/* ── Header ── */}
+          <div style={{ display:'flex', alignItems:'center', gap:16, padding:'18px 24px', borderBottom:`1px solid ${BORDER}`, flexShrink:0 }}>
+            <Dialog.Title style={{ margin:0, fontSize:18, fontWeight:700, color:'#111827', flex:1 }}>Slide library</Dialog.Title>
+            <Dialog.Description className="sr-only">Choose a slide layout. Locked layouts need a higher course complexity.</Dialog.Description>
 
-        {/* ── Header ── */}
-        <div style={{ display:'flex', alignItems:'center', gap:16, padding:'18px 24px', borderBottom:`1px solid ${BORDER}`, flexShrink:0 }}>
-          <h2 id={titleId} style={{ margin:0, fontSize:18, fontWeight:700, color:'#111827', flex:1 }}>Slide library</h2>
-
-          {/* Search */}
-          <div style={{ position:'relative', width:260 }}>
-            <Search size={15} color="#9CA3AF" style={{ position:'absolute', left:11, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }} />
-            <input
-              ref={searchRef}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search templates…"
-              aria-label="Search slide templates"
-              style={{ width:'100%', padding:'8px 10px 8px 34px', border:`1px solid ${BORDER}`, borderRadius:8, fontSize:13, color:'#111827', background:'#F9FAFB', outline:'none', boxSizing:'border-box', fontFamily:'inherit' }}
-              onFocus={e => { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.background = '#fff'; }}
-              onBlur={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
-            />
-            {search && (
-              <button type="button" aria-label="Clear search" onClick={() => { setSearch(''); searchRef.current?.focus(); }}
-                style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', border:'none', background:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#6B7280', padding:2 }}>
-                <X size={13} />
-              </button>
-            )}
-          </div>
-
-          {/* Close */}
-          <button
-            type="button"
-            aria-label="Close slide library"
-            onClick={() => triggerClose()}
-            style={{ width:32, height:32, borderRadius:8, border:`1px solid ${BORDER}`, background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#6B7280', flexShrink:0 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* ── Body: left nav + grid ── */}
-        <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
-
-          {/* Left navigation — flat category list */}
-          <nav aria-label="Slide categories" style={{ width:168, flexShrink:0, borderRight:`1px solid ${BORDER}`, background:'#FAFAFA', padding:'12px 8px', display:'flex', flexDirection:'column', gap:2, overflowY:'auto' }}>
-            {NAV_CATEGORIES.map(cat => {
-              const active = !searchActive && activeCategory === cat.id;
-              const count = SLIDE_TEMPLATES.filter(t => t.category === cat.id).length;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  aria-current={active ? 'true' : undefined}
-                  onClick={() => { setActiveCategory(cat.id); setSearch(''); }}
-                  style={{
-                    display:'flex', alignItems:'center', gap:10,
-                    padding:'10px 12px',
-                    borderRadius:8,
-                    border:'none',
-                    background: active ? PL : 'transparent',
-                    color: active ? '#1254C7' : '#4B5563',
-                    cursor:'pointer',
-                    textAlign:'left',
-                    fontSize:13,
-                    fontWeight: active ? 600 : 400,
-                    transition:'background 0.1s, color 0.1s',
-                    width:'100%',
-                  }}
-                  onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
-                  onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                >
-                  <span style={{ color: active ? P : '#6B7280', display:'flex', flexShrink:0, transition:'color 0.1s' }}>{cat.icon}</span>
-                  <span style={{ flex:1 }}>{cat.label}</span>
-                  <span style={{ fontSize:11, color: active ? '#1254C7' : '#6B7280', fontWeight:500 }} aria-label={`${count} templates`}>{count}</span>
+            {/* Search */}
+            <div style={{ position:'relative', width:260 }}>
+              <Search size={15} color="#9CA3AF" style={{ position:'absolute', left:11, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }} />
+              <input
+                ref={searchRef}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search templates…"
+                aria-label="Search slide templates"
+                style={{ width:'100%', padding:'8px 10px 8px 34px', border:`1px solid ${BORDER}`, borderRadius:8, fontSize:13, color:'#111827', background:'#F9FAFB', outline:'none', boxSizing:'border-box', fontFamily:'inherit' }}
+                onFocus={e => { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.background = '#fff'; }}
+                onBlur={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+              />
+              {search && (
+                <button type="button" aria-label="Clear search" onClick={() => { setSearch(''); searchRef.current?.focus(); }}
+                  style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', border:'none', background:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#6B7280', padding:2 }}>
+                  <X size={13} />
                 </button>
-              );
-            })}
-          </nav>
-
-          {/* Template grid */}
-          <div style={{ flex:1, overflowY:'auto', padding:'20px 24px', scrollbarWidth:'thin', scrollbarColor:`${BORDER} transparent` }}>
-
-            <div style={{ marginBottom:16 }}>
-              <h3 aria-live="polite" style={{ margin:0, fontSize:15, fontWeight:700, color:'#111827' }}>
-                {searchActive
-                  ? `Results for "${search}"`
-                  : NAV_CATEGORIES.find(c => c.id === activeCategory)?.label}
-              </h3>
-              {!searchActive && (
-                <p style={{ margin:'3px 0 0', fontSize:12, color:'#6B7280' }}>
-                  {visibleTemplates.length} template{visibleTemplates.length !== 1 ? 's' : ''}
-                </p>
               )}
             </div>
 
-            {visibleTemplates.length === 0 ? (
-              <div style={{ padding:'60px 0', textAlign:'center', color:'#6B7280', fontSize:14 }}>
-                No templates found.
-              </div>
-            ) : (
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(188px, 1fr))', gap:14 }}>
-                {visibleTemplates.map(template => (
-                  <SlideTemplateCard
-                    key={template.id}
-                    template={template}
-                    isFlashing={flashingCardId === template.id}
-                    isAvailable={isAvail(template)}
-                    onClick={() => handleCardClick(template)}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Close */}
+            <Dialog.Close asChild>
+            <button
+              type="button"
+              aria-label="Close slide library"
+              style={{ width:32, height:32, borderRadius:8, border:`1px solid ${BORDER}`, background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#6B7280', flexShrink:0 }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
+            >
+              <X size={16} />
+            </button>
+            </Dialog.Close>
           </div>
-        </div>
-        {/* Footer removed — card click is the final create action */}
-      </div>
-    </div>,
-    document.body,
+
+          {/* ── Body: left nav + grid ── */}
+          <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
+
+            {/* Left navigation — flat category list */}
+            <nav aria-label="Slide categories" style={{ width:168, flexShrink:0, borderRight:`1px solid ${BORDER}`, background:'#FAFAFA', padding:'12px 8px', display:'flex', flexDirection:'column', gap:2, overflowY:'auto' }}>
+              {NAV_CATEGORIES.map(cat => {
+                const active = !searchActive && activeCategory === cat.id;
+                const count = SLIDE_TEMPLATES.filter(t => t.category === cat.id).length;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    aria-current={active ? 'true' : undefined}
+                    onClick={() => { setActiveCategory(cat.id); setSearch(''); }}
+                    style={{
+                      display:'flex', alignItems:'center', gap:10,
+                      padding:'10px 12px',
+                      borderRadius:8,
+                      border:'none',
+                      background: active ? PL : 'transparent',
+                      color: active ? '#1254C7' : '#4B5563',
+                      cursor:'pointer',
+                      textAlign:'left',
+                      fontSize:13,
+                      fontWeight: active ? 600 : 400,
+                      transition:'background 0.1s, color 0.1s',
+                      width:'100%',
+                    }}
+                    onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
+                    onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                  >
+                    <span style={{ color: active ? P : '#6B7280', display:'flex', flexShrink:0, transition:'color 0.1s' }}>{cat.icon}</span>
+                    <span style={{ flex:1 }}>{cat.label}</span>
+                    <span style={{ fontSize:11, color: active ? '#1254C7' : '#6B7280', fontWeight:500 }} aria-label={`${count} templates`}>{count}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Template grid */}
+            <div style={{ flex:1, overflowY:'auto', padding:'20px 24px', scrollbarWidth:'thin', scrollbarColor:`${BORDER} transparent` }}>
+
+              <div style={{ marginBottom:16 }}>
+                <h3 aria-live="polite" style={{ margin:0, fontSize:15, fontWeight:700, color:'#111827' }}>
+                  {searchActive
+                    ? `Results for "${search}"`
+                    : NAV_CATEGORIES.find(c => c.id === activeCategory)?.label}
+                </h3>
+                {!searchActive && (
+                  <p style={{ margin:'3px 0 0', fontSize:12, color:'#6B7280' }}>
+                    {visibleTemplates.length} template{visibleTemplates.length !== 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
+
+              {visibleTemplates.length === 0 ? (
+                <div style={{ padding:'60px 0', textAlign:'center', color:'#6B7280', fontSize:14 }}>
+                  No templates found.
+                </div>
+              ) : (
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(188px, 1fr))', gap:14 }}>
+                  {visibleTemplates.map(template => (
+                    <SlideTemplateCard
+                      key={template.id}
+                      template={template}
+                      isFlashing={flashingCardId === template.id}
+                      isAvailable={isAvail(template)}
+                      onClick={() => handleCardClick(template)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
