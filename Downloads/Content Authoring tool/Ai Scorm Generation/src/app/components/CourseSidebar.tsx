@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   Plus, MoreHorizontal, FileText, List, Lock,
   GripVertical, Pencil, Trash2, Sparkles, RefreshCw, X,
-  PanelLeftClose, ChevronLeft,
+  PanelLeftClose, ChevronLeft, ArrowUp, ArrowDown,
 } from 'lucide-react';
 import { SlideLibraryModal, type SlideComplexity } from './SlideLibraryModal';
 import { sampleMedia } from '../courseContent';
@@ -92,18 +92,20 @@ function PortalMenu({
 
 // ── MenuItem ──────────────────────────────────────────────────────────────────
 function MenuItem({
-  icon, label, danger, divider, onClick,
-}: { icon: React.ReactNode; label: string; danger?: boolean; divider?: boolean; onClick: () => void }) {
+  icon, label, danger, divider, disabled, onClick,
+}: { icon: React.ReactNode; label: string; danger?: boolean; divider?: boolean; disabled?: boolean; onClick: () => void }) {
   return (
     <>
       {divider && <div style={{ height: 1, background: '#F3F4F6', margin: '3px 0' }} />}
       <button
         role="menuitem"
-        onClick={onClick}
+        disabled={disabled}
+        aria-disabled={disabled || undefined}
+        onClick={disabled ? undefined : onClick}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', gap: 10,
           padding: '9px 14px', background: 'none', border: 'none',
-          cursor: 'pointer', fontSize: 13, color: danger ? '#DC2626' : '#374151',
+          cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 13, color: danger ? '#DC2626' : disabled ? '#6B7280' : '#374151', opacity: disabled ? 0.6 : 1,
           textAlign: 'left', transition: 'background 0.1s',
         }}
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = danger ? '#FEF2F2' : '#F9FAFB'; }}
@@ -379,15 +381,19 @@ function AddSlideWithAIModal({
 
 // ── TopicMenu ─────────────────────────────────────────────────────────────────
 export function TopicMenu({
-  x, y, onClose, onEdit, onRegenerate, onDelete,
+  x, y, onClose, onEdit, onRegenerate, onDelete, onMoveUp, onMoveDown,
 }: {
   x: number; y: number; onClose: () => void;
   onEdit: () => void;
   onRegenerate: () => void; onDelete: () => void;
+  /** Omitted when the slide is already first / last in the course. */
+  onMoveUp?: () => void; onMoveDown?: () => void;
 }) {
   return (
     <PortalMenu x={x} y={y} onClose={onClose}>
       <MenuItem icon={<Pencil size={14} />} label="Edit slide" onClick={() => { onEdit(); onClose(); }} />
+      <MenuItem icon={<ArrowUp size={14} />} label="Move up" disabled={!onMoveUp} onClick={() => { onMoveUp?.(); onClose(); }} />
+      <MenuItem icon={<ArrowDown size={14} />} label="Move down" disabled={!onMoveDown} onClick={() => { onMoveDown?.(); onClose(); }} />
       <MenuItem icon={<RefreshCw size={14} />} label="Regenerate slide" onClick={() => { onRegenerate(); onClose(); }} />
       <MenuItem icon={<Trash2 size={14} />} label="Delete slide" danger divider onClick={() => { onDelete(); onClose(); }} />
     </PortalMenu>
@@ -424,10 +430,11 @@ function TopicInsertControl({
         className="cs-insert-btn"
         onClick={e => { e.stopPropagation(); onInsert(); }}
         title="Insert slide here"
+        aria-label="Insert slide here"
         style={{
           position: 'absolute', top: '50%', left: 48,
           transform: 'translate(-50%, -50%)',
-          width: 22, height: 22, borderRadius: '50%',
+          width: 24, height: 24, borderRadius: '50%',
           border: '1.5px solid #2D74FA',
           background: 'white', color: '#1565F0',
           cursor: 'pointer', padding: 0,
@@ -448,26 +455,51 @@ function TopicInsertControl({
 // ── TopicItem ─────────────────────────────────────────────────────────────────
 // subtleHighlight is driven by SectionItem's hoveredTi — no local hover state here.
 // Background starts at the number column (50px from section item left) via nested inner div.
+export interface TopicDnD {
+  /** Drop indicator for this row. */
+  over: 'before' | 'after' | null;
+  dragging: boolean;
+  onStart: () => void;
+  onOver: (after: boolean) => void;
+  onDrop: (after: boolean) => void;
+  onEnd: () => void;
+}
+
 export function TopicItem({
-  topic, ti, isSelected, subtleHighlight, isNew, onSelect, onMenu,
+  topic, ti, isSelected, subtleHighlight, isNew, onSelect, onMenu, dnd, onMove,
 }: {
   topic: CSTopic; ti: number; isSelected: boolean; subtleHighlight: boolean; isNew?: boolean;
   onSelect: () => void;
   onMenu: (x: number, y: number) => void;
+  dnd?: TopicDnD;
+  /** Alt+↑ / Alt+↓ */
+  onMove?: (dir: -1 | 1) => void;
 }) {
   const menuRef = useRef<HTMLButtonElement>(null);
+  const isAfter = (e: React.DragEvent) => { const r = e.currentTarget.getBoundingClientRect(); return e.clientY > r.top + r.height / 2; };
 
   return (
     <div
-      role="button"
-      tabIndex={0}
       onClick={onSelect}
-      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onSelect(); }}
+      draggable={!!dnd}
+      onDragStart={dnd ? e => { e.stopPropagation(); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', topic.id); dnd.onStart(); } : undefined}
+      onDragOver={dnd ? e => { e.preventDefault(); e.stopPropagation(); dnd.onOver(isAfter(e)); } : undefined}
+      onDrop={dnd ? e => { e.preventDefault(); e.stopPropagation(); dnd.onDrop(isAfter(e)); } : undefined}
+      onDragEnd={dnd ? e => { e.stopPropagation(); dnd.onEnd(); } : undefined}
       className={isNew ? 'cs-topic-new' : undefined}
-      style={{ display: 'flex', height: 34, cursor: 'pointer', outline: 'none', userSelect: 'none' }}
+      style={{
+        display: 'flex', height: 34, cursor: dnd ? 'grab' : 'pointer', userSelect: 'none', position: 'relative', borderRadius: 6,
+        opacity: dnd?.dragging ? 0.45 : 1,
+      }}
     >
-      {/* Left gutter — 48px wide, houses connector line. No background. */}
-      <div style={{ width: 48, flexShrink: 0 }} />
+      {/* Drop indicator */}
+      {dnd?.over && (
+        <span aria-hidden="true" style={{ position: 'absolute', left: 44, right: 4, height: 2, borderRadius: 2, background: P, top: dnd.over === 'before' ? -6 : undefined, bottom: dnd.over === 'after' ? -6 : undefined, zIndex: 3 }} />
+      )}
+      {/* Left gutter — 48px wide, houses connector line; drag grip shows on hover */}
+      <div style={{ width: 48, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 2 }}>
+        {dnd && <GripVertical size={13} aria-hidden="true" style={{ color: '#6B7280', opacity: subtleHighlight || isSelected ? 1 : 0, transition: 'opacity 0.12s' }} />}
+      </div>
 
       {/* Content row — background starts at 48px (= 18px right of connector at 30px).
           Left border acts as the selected-item accent; transparent when not selected
@@ -480,6 +512,20 @@ export function TopicItem({
         background: isSelected ? TOPIC_SELECTED_BG : subtleHighlight ? HOVER_BG : 'transparent',
         transition: 'background 0.12s ease, border-color 0.12s ease',
       }}>
+        <button
+          type="button"
+          aria-current={isSelected ? 'true' : undefined}
+          aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
+          aria-label={`Slide ${ti + 1}: ${topic.title}`}
+          aria-describedby="cs-reorder-hint"
+          data-slide-row=""
+          onClick={e => { e.stopPropagation(); onSelect(); }}
+          onKeyDown={e => {
+            if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { e.preventDefault(); onMove?.(e.key === 'ArrowUp' ? -1 : 1); }
+          }}
+          className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1565F0]"
+          style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'center', background: 'none', border: 'none', padding: 0, cursor: 'inherit', textAlign: 'left', font: 'inherit', borderRadius: 4 }}
+        >
         {/* Number */}
         <span style={{ width: 12, flexShrink: 0, fontSize: 13, fontWeight: 400, color: isSelected ? TOPIC_SELECTED_FG : '#6B7280', textAlign: 'right', lineHeight: 1, marginRight: 10 }}>
           {ti + 1}
@@ -498,6 +544,7 @@ export function TopicItem({
         }}>
           {topic.title}
         </span>
+        </button>
 
         {/* Three-dot menu — opacity-only, driven by subtleHighlight/isSelected */}
         <button
@@ -508,6 +555,7 @@ export function TopicItem({
             onMenu(r.left - 170, r.bottom + 4);
           }}
           title="Slide options"
+          aria-label={`Options for ${topic.title}`}
           style={{
             width: 24, height: 24, borderRadius: 6, border: 'none', background: 'none',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -530,7 +578,7 @@ export function TopicItem({
 export function SectionItem({
   section, si, isExpanded, selectedSection, selectedTopic,
   onToggle, onSelectTopic, onSectionMenu, onTopicMenu, onOpenSlideLibrary,
-  newTopicId, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd,
+  newTopicId, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd, topicDnd, onMoveTopic,
 }: {
   section: CSSection; si: number; isExpanded: boolean;
   selectedSection: number; selectedTopic: number;
@@ -545,6 +593,9 @@ export function SectionItem({
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   onDragEnd: () => void;
+  /** Drag-and-drop for the slides in this section. */
+  topicDnd?: (ti: number) => TopicDnD;
+  onMoveTopic?: (ti: number, dir: -1 | 1) => void;
 }) {
   const [rowHovered, setRowHovered] = useState(false);
   const [hoveredTi, setHoveredTi] = useState<number | null>(null);
@@ -567,10 +618,7 @@ export function SectionItem({
     >
       {/* ── Section header row ── */}
       <div
-        role="button"
-        tabIndex={0}
         onClick={onToggle}
-        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onToggle(); }}
         onMouseEnter={() => setRowHovered(true)}
         onMouseLeave={() => setRowHovered(false)}
         style={{
@@ -597,7 +645,14 @@ export function SectionItem({
         >
           <GripVertical size={14} />
         </span>
-        <FileText size={15} style={{ flexShrink: 0, color: isExpanded ? P : '#6B7280' }} />
+        <button
+          type="button"
+          aria-expanded={isExpanded}
+          onClick={e => { e.stopPropagation(); onToggle(); }}
+          className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1565F0]"
+          style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', padding: 0, cursor: 'inherit', textAlign: 'left', font: 'inherit', color: 'inherit', borderRadius: 4 }}
+        >
+        <FileText size={15} aria-hidden="true" style={{ flexShrink: 0, color: isExpanded ? P : '#6B7280' }} />
 
         <span style={{
           flex: 1,
@@ -612,6 +667,7 @@ export function SectionItem({
         }}>
           {section.title || 'Untitled section'}
         </span>
+        </button>
 
         <button
           ref={menuRef}
@@ -621,6 +677,7 @@ export function SectionItem({
             onSectionMenu(r.left - 170, r.bottom + 4);
           }}
           title="Section options"
+          aria-label={`Options for ${section.title || 'section'}`}
           style={{
             width: 28, height: 28, borderRadius: 8, border: 'none', background: 'none',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -667,6 +724,8 @@ export function SectionItem({
                   isNew={topic.id === newTopicId}
                   onSelect={() => onSelectTopic(ti)}
                   onMenu={(x, y) => onTopicMenu(ti, x, y)}
+                  dnd={topicDnd?.(ti)}
+                  onMove={dir => onMoveTopic?.(ti, dir)}
                 />
               </div>
 
@@ -728,6 +787,7 @@ export function CourseSidebar({
         :root { --topic-content-start: 68px; }
         .cs-insert-btn { transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease; }
         .cs-insert-btn:hover { background: #2D74FA !important; border-color: #2D74FA !important; color: white !important; }
+        .cs-insert-btn:focus-visible { opacity: 1 !important; pointer-events: auto !important; outline: 2px solid #1565F0; outline-offset: 2px; }
         .cs-insert-line { left: var(--topic-content-start); right: 12px; }
         .cs-tooltip { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.15s ease, visibility 0.15s ease; }
         .cs-tooltip-trigger:hover .cs-tooltip,
@@ -790,6 +850,47 @@ export function CourseSidebar({
     if (id) setExpandedId(prev => prev === id ? null : prev);
     onSectionsChange(prev => prev.filter((_, i) => i !== si));
   };
+
+  // ── Slide reordering (drag & drop, menu, Alt+↑/↓) ──
+  const [topicDrag, setTopicDrag] = useState<{ si: number; ti: number } | null>(null);
+  const [topicOver, setTopicOver] = useState<{ si: number; ti: number; after: boolean } | null>(null);
+  const [sectionDropSi, setSectionDropSi] = useState<number | null>(null);
+  const [moveMsg, setMoveMsg] = useState('');
+
+  /** Moves a slide to `index` (position before removal) in section `toSi`, then selects it. */
+  const doMoveTopic = (from: { si: number; ti: number }, toSi: number, index: number) => {
+    const moving = sections[from.si]?.topics[from.ti];
+    if (!moving) return;
+    let idx = index;
+    if (from.si === toSi && from.ti < idx) idx--;
+    if (from.si === toSi && idx === from.ti) return;
+    onSectionsChange(prev => {
+      const arr = prev.map(sec => ({ ...sec, topics: [...sec.topics] }));
+      const [item] = arr[from.si].topics.splice(from.ti, 1);
+      arr[toSi].topics.splice(idx, 0, item);
+      return arr;
+    });
+    setExpandedId(sections[toSi].id);
+    setTimeout(() => onSelectTopic(toSi, idx), 0);
+    setMoveMsg(`Moved “${moving.title}” to position ${idx + 1} in ${sections[toSi].title}.`);
+  };
+  /** One step up/down; at a section edge the slide moves into the neighbouring section. */
+  const moveTarget = (si: number, ti: number, dir: -1 | 1): [number, number] | null => {
+    if (dir === -1) return ti > 0 ? [si, ti - 1] : si > 0 ? [si - 1, sections[si - 1].topics.length] : null;
+    return ti < sections[si].topics.length - 1 ? [si, ti + 2] : si < sections.length - 1 ? [si + 1, 0] : null;
+  };
+  const moveTopicBy = (si: number, ti: number, dir: -1 | 1) => {
+    const t = moveTarget(si, ti, dir);
+    if (t) doMoveTopic({ si, ti }, t[0], t[1]);
+  };
+  const topicDndFor = (si: number) => (ti: number): TopicDnD => ({
+    over: topicOver && topicOver.si === si && topicOver.ti === ti ? (topicOver.after ? 'after' : 'before') : null,
+    dragging: !!topicDrag && topicDrag.si === si && topicDrag.ti === ti,
+    onStart: () => setTopicDrag({ si, ti }),
+    onOver: after => { if (topicDrag) setTopicOver({ si, ti, after }); },
+    onDrop: after => { if (topicDrag) doMoveTopic(topicDrag, si, ti + (after ? 1 : 0)); setTopicDrag(null); setTopicOver(null); },
+    onEnd: () => { setTopicDrag(null); setTopicOver(null); setSectionDropSi(null); },
+  });
 
   const doReorderSection = (from: number, to: number) => {
     onSectionsChange(prev => {
@@ -915,7 +1016,9 @@ export function CourseSidebar({
           {/* Back button */}
           <div className="cs-tooltip-trigger" style={{ position: 'relative', flexShrink: 0 }}>
             <button
+              type="button"
               onClick={onBack}
+              aria-label={backLabel}
               style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid #E5E7EB', background: '#fff', cursor: onBack ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', transition: 'background 0.12s', flexShrink: 0 }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
@@ -935,6 +1038,7 @@ export function CourseSidebar({
           <button
             onClick={onCollapse}
             title="Collapse sidebar"
+            aria-label="Collapse sidebar"
             style={{ width: 28, height: 28, borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', flexShrink: 0, transition: 'background 0.12s' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
@@ -947,7 +1051,7 @@ export function CourseSidebar({
 
       {/* ── Sub-toolbar: metadata + Add section ── */}
       <div style={{ display: 'flex', alignItems: 'center', padding: '10px 12px 12px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0, gap: 8 }}>
-        <span style={{ fontSize: 13, fontWeight: 500, color: '#6B7280', background: '#F3F4F6', borderRadius: 4, padding: '2px 7px', border: `1px solid ${BORDER}` }}>
+        <span style={{ fontSize: 13, fontWeight: 500, color: '#4B5563', background: '#F3F4F6', borderRadius: 4, padding: '2px 7px', border: `1px solid ${BORDER}` }}>
           Draft
         </span>
         <div style={{ width: 1, height: 12, background: BORDER, flexShrink: 0 }} />
@@ -980,6 +1084,10 @@ export function CourseSidebar({
         </button>
       </div>
 
+      {/* Screen-reader announcements for slide moves */}
+      <span className="sr-only" aria-live="polite">{moveMsg}</span>
+      <span id="cs-reorder-hint" className="sr-only">Drag to reorder, or press Alt plus Up or Down arrow to move this slide.</span>
+
       {/* ── Scrollable body ── */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 8px 8px', scrollbarWidth: 'thin', scrollbarColor: `${BORDER} transparent` }}>
         {sections.map((section, si) => (
@@ -996,15 +1104,19 @@ export function CourseSidebar({
             onTopicMenu={(ti, x, y) => setTopicMenu({ si, ti, x, y })}
             onOpenSlideLibrary={afterTi => setSlideLibrary({ si, afterTi })}
             newTopicId={newTopicId}
-            isDragOver={dragOver === si && dragFrom !== si}
+            isDragOver={(dragFrom !== null && dragOver === si && dragFrom !== si) || (!!topicDrag && sectionDropSi === si && topicDrag.si !== si)}
             onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; setDragFrom(si); }}
-            onDragOver={e => { e.preventDefault(); setDragOver(si); }}
+            onDragOver={e => { e.preventDefault(); if (topicDrag) setSectionDropSi(si); else setDragOver(si); }}
             onDrop={e => {
               e.preventDefault();
-              if (dragFrom !== null && dragFrom !== si) doReorderSection(dragFrom, si);
-              setDragFrom(null); setDragOver(null);
+              // A slide dropped on another section (e.g. its heading) goes to the end of that section
+              if (topicDrag) { if (topicDrag.si !== si) doMoveTopic(topicDrag, si, section.topics.length); }
+              else if (dragFrom !== null && dragFrom !== si) doReorderSection(dragFrom, si);
+              setDragFrom(null); setDragOver(null); setTopicDrag(null); setTopicOver(null); setSectionDropSi(null);
             }}
             onDragEnd={() => { setDragFrom(null); setDragOver(null); }}
+            topicDnd={topicDndFor(si)}
+            onMoveTopic={(ti, dir) => moveTopicBy(si, ti, dir)}
           />
         ))}
 
@@ -1057,6 +1169,8 @@ export function CourseSidebar({
           onEdit={() => setEditTopic({ si: topicMenu.si, ti: topicMenu.ti, title: sections[topicMenu.si]?.topics[topicMenu.ti]?.title ?? '' })}
           onRegenerate={() => setConfirmRegenTopic({ si: topicMenu.si, ti: topicMenu.ti })}
           onDelete={() => setConfirmDelTopic({ si: topicMenu.si, ti: topicMenu.ti })}
+          onMoveUp={moveTarget(topicMenu.si, topicMenu.ti, -1) ? () => moveTopicBy(topicMenu.si, topicMenu.ti, -1) : undefined}
+          onMoveDown={moveTarget(topicMenu.si, topicMenu.ti, 1) ? () => moveTopicBy(topicMenu.si, topicMenu.ti, 1) : undefined}
         />
       )}
 

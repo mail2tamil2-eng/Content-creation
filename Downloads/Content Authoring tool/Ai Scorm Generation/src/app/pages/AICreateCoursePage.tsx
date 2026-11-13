@@ -361,14 +361,15 @@ export function AICreateCoursePage() {
           topics: [
             { id: 's2-1', title: 'Fundamentals',    slideType: 'title-text' },
             { id: 's2-2', title: 'Key Principles',  slideType: 'title-bullets' },
-            { id: 's2-3', title: 'Visual Overview', slideType: pick('video', 'image-visual') },
+            // Basic courses get an Image + Text slide here; richer levels a video
+            { id: 's2-3', title: 'Visual Overview', slideType: pick('video', 'image-vertical') },
           ],
         },
         {
           id: 's3', title: 'Practice and Application',
           description: 'Apply what you have learned', expanded: true,
           topics: [
-            { id: 's3-1', title: 'Real-World Examples', slideType: pick('scenario', 'image-visual') },
+            { id: 's3-1', title: 'Real-World Examples', slideType: pick('scenario', 'image-horizontal') },
             { id: 's3-2', title: 'Best Practices',      slideType: 'title-bullets' },
             ...(ids.includes('audio') ? [{ id: 's3-3', title: 'Audio Narration', slideType: 'audio' }] : []),
           ],
@@ -382,14 +383,17 @@ export function AICreateCoursePage() {
         },
       ];
 
-      // Add knowledge check and/or quiz into the Summary and Assessment section (s4)
+      // Knowledge checks: N one-question checks at the end of EVERY section (N = "Knowledge Check per Topic" count).
+      // Final Assessment quiz goes at the end of the last section.
+      const kcCount = knowledgeCheck && ids.includes('knowledge-check') ? Math.max(1, knowledgeCheckQuestions) : 0;
       const processedSections = rawSections.map(sec => {
-        if (sec.id !== 's4') return sec;
-        const extra: typeof sec.topics = [];
-        if (knowledgeCheck && ids.includes('knowledge-check')) {
-          extra.push({ id: 's4-kc', title: 'Knowledge Check', slideType: 'knowledge-check' });
-        }
-        if (addQuiz && ids.includes('quiz')) {
+        const extra: typeof sec.topics = Array.from({ length: kcCount }, (_, k) => ({
+          id: `${sec.id}-kc-${k + 1}`,
+          title: kcCount > 1 ? `Knowledge Check ${k + 1}` : 'Knowledge Check',
+          slideType: 'knowledge-check',
+          kcSection: sec.title, kcIndex: k,
+        }));
+        if (sec.id === 's4' && addQuiz && ids.includes('quiz')) {
           extra.push({ id: 's4-quiz', title: 'Final Assessment', slideType: 'quiz' });
         }
         return { ...sec, topics: [...sec.topics, ...extra] };
@@ -398,10 +402,15 @@ export function AICreateCoursePage() {
       const generated = processedSections.map(sec => ({
         ...sec,
         topics: sec.topics.map(t => {
-          const qCount = t.slideType === 'quiz' ? addQuizQuestions
-            : t.slideType === 'knowledge-check' ? knowledgeCheckQuestions
-            : 1;
-          return generateSlideContent(t as CourseTopic, title, qCount);
+          const qCount = t.slideType === 'quiz' ? addQuizQuestions : 1;
+          const slide = generateSlideContent(t as CourseTopic, title, qCount);
+          // Knowledge checks ask about their own section
+          const kc = t as { kcSection?: string; kcIndex?: number };
+          if (t.slideType === 'knowledge-check' && kc.kcSection && slide.questions?.[0]) {
+            const prompts = ['Which action best applies', 'What is the most important idea in', 'Which example shows good practice in'];
+            slide.questions[0] = { ...slide.questions[0], text: `${prompts[(kc.kcIndex ?? 0) % prompts.length]} ${kc.kcSection.toLowerCase()}?` };
+          }
+          return slide;
         }),
       }));
 

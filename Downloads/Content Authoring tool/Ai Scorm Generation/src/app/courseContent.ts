@@ -60,7 +60,7 @@ export function sampleMedia(slideType: string | undefined, id: string, title: st
         .map(([label, description], i) => ({ id: `${id}-s-${i}`, label, description })),
     };
   }
-  if (slideType === 'image-vertical') {
+  if (slideType === 'image-vertical' || slideType === 'image-visual') {
     return { content: `Use this space to explain ${title.toLowerCase()}. Pair the picture with one clear idea and a short example.`, imagePosition: 'left', imageUrl: '', alt: '' };
   }
   if (slideType === 'hotspot') {

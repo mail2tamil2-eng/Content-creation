@@ -249,7 +249,7 @@ function ImageText({ topic, header }: { topic: CourseTopic; header?: React.React
   // Shapes with fixed proportions are sized by height so they fit the slide; rectangles/arches fill the column
   const fixed = shape === 'circle' || shape === 'square' || shape === 'hex';
   return (
-    <div style={{ display: 'flex', flexDirection: position === 'right' ? 'row-reverse' : 'row', gap: 'clamp(12px,2.4cqw,28px)', alignItems: 'stretch' }}>
+    <div style={{ display: 'flex', flexDirection: position === 'right' ? 'row-reverse' : 'row', gap: 'clamp(12px,2.4cqw,28px)', alignItems: 'center' }}>
       <figure style={{ margin: 0, flex: '0 0 46%', display: 'flex', flexDirection: 'column', gap: 6, alignItems: fixed ? 'center' : 'stretch', justifyContent: 'center' }}>
         <SlideImage k="imageUrl" label="Image" shape={shape} src={g<string>(topic, 'imageUrl')} alt={g<string>(topic, 'alt')}
           style={fixed ? { width: 'min(100%, 33cqw)' } : { flex: 1, minHeight: 'clamp(150px,33cqw,420px)', borderRadius: 'var(--slide-radius)' }} />
@@ -608,6 +608,7 @@ export default function CourseSlideContent({ topic, header }: { topic: CourseTop
     case 'table':               return <Table topic={topic} />;
     case 'image-horizontal':
     case 'media-collection':    return <ImageCards topic={topic} />;
+    case 'image-visual':        // older courses
     case 'image-vertical':      return <ImageText topic={topic} header={header} />;
     case 'video':               return <VideoSlide topic={topic} />;
     case 'audio':               return <AudioSlide topic={topic} />;

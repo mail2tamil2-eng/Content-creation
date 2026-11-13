@@ -114,7 +114,7 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
   } as CSSProperties;
   const tpl = getTemplate(settings.template);
   // Image + Text puts the title and rule in the text column, beside the picture
-  const titleInContent = topic.slideType === 'image-vertical';
+  const titleInContent = topic.slideType === 'image-vertical' || topic.slideType === 'image-visual';
   const heading = <>
     <EditableText as="h2" k="title" label="Title" value={topic.title} placeholder="Add a title" />
     <div className="course-slide-rule" />
@@ -128,14 +128,14 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
 
   return <SlideEditContext.Provider value={api}><SlideTemplateContext.Provider value={settings.template}><article className={'course-presentation' + (editable ? ' is-editable' : '')} style={style} data-testid="course-presentation" data-view="combined" data-template={settings.template} aria-label={'Slide preview: ' + topic.title}>
     <div className={'course-slide course-slide--' + settings.template} data-layout={settings.layout}>
-      {tpl ? <TemplateMotifLayer motif={tpl.motif} strong={topic.slideType === 'image-vertical'} /> : <div className="course-slide-decoration" aria-hidden="true" />}
+      {tpl ? <TemplateMotifLayer motif={tpl.motif} strong={titleInContent} /> : <div className="course-slide-decoration" aria-hidden="true" />}
       {showHeader && (
         <header className="course-slide-header">
           {hLogo && settings.logo && <img src={settings.logo} alt="Course logo" />}
           {hCourseName && <span>{courseTitle || 'Untitled Course'}</span>}
         </header>
       )}
-      <main className="course-slide-main">
+      <main className={'course-slide-main' + (titleInContent ? ' course-slide-main--split' : '')}>
         <p className="course-slide-eyebrow">{sectionTitle || 'Course content'}</p>
         {!titleInContent && heading}
         <div

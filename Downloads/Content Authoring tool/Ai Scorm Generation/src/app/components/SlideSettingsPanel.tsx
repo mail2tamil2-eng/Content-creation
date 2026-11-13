@@ -61,6 +61,7 @@ const TYPE_INFO: Record<string, TypeInfo> = {
   'table':              { name: 'Table',               category: 'TEXT',        color: '#2563EB', bg: '#EFF6FF' },
   'image-horizontal':   { name: 'Image Gallery',       category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
   'image-vertical':     { name: 'Image + Text',        category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
+  'image-visual':       { name: 'Image + Text',        category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
   'media-collection':   { name: 'Media Collection',    category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
   'video':              { name: 'Video',               category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
   'audio':              { name: 'Audio',               category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
@@ -1159,6 +1160,7 @@ function TypeFields({ topic, onUpdate }: { topic: CSTopic; onUpdate: (u: Partial
     case 'table':              return <TableFields t={topic} u={onUpdate} />;
     case 'image-horizontal':
     case 'media-collection':   return <ImageSeriesFields t={topic} u={onUpdate} />;
+    case 'image-visual':       // older courses
     case 'image-vertical':     return <ImageTextFields t={topic} u={onUpdate} />;
     case 'video':              return <VideoFields t={topic} u={onUpdate} />;
     case 'audio':              return <AudioFields t={topic} u={onUpdate} />;
