@@ -615,11 +615,16 @@ export function AICreateCoursePage() {
             <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: '20px 24px' }}>
               <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 16px' }}>Course Information</h2>
 
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-                  Course Title <span style={{ color: '#DC2626' }}>*</span>
+              {/* Required details on one row: Title | Duration | Language (stacks on narrow screens) */}
+              <div className="@container" style={{ marginBottom: 14 }}>
+              <div className="grid grid-cols-1 gap-4 @xl:grid-cols-[minmax(0,2.2fr)_minmax(130px,0.8fr)_minmax(150px,1fr)]" style={{ alignItems: 'start' }}>
+                <div>
+                <label htmlFor="course-title" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+                  Course Title <span aria-hidden="true" style={{ color: '#DC2626' }}>*</span>
                 </label>
                 <input
+                  id="course-title"
+                  required aria-required="true"
                   style={fieldStyle}
                   placeholder="e.g. Introduction to Machine Learning"
                   value={title}
@@ -628,6 +633,51 @@ export function AICreateCoursePage() {
                 />
               </div>
 
+                <div>
+                  <label htmlFor="course-duration" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Duration <span aria-hidden="true" style={{ color: '#DC2626' }}>*</span></label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      id="course-duration"
+                      type="number" min="10" max="60" step="1" placeholder="e.g. 30"
+                      required aria-required="true"
+                      inputMode="numeric" aria-describedby="course-duration-hint" aria-label="Duration in minutes"
+                      value={duration}
+                      onChange={e => {
+                        const raw = e.target.value.replace(/[^0-9]/g, '');
+                        // Typing can't go above 60; values under 10 are corrected on blur
+                        setDuration(raw !== '' && Number(raw) > 60 ? '60' : raw);
+                      }}
+                      style={{ ...fieldStyle, paddingRight: 44 }}
+                      onFocus={focusField}
+                      onBlur={e => {
+                        blurField(e);
+                        if (duration !== '' && Number(duration) < 10) setDuration('10');
+                      }}
+                    />
+                    {/* Unit shown inside the field */}
+                    <span aria-hidden="true" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13, fontWeight: 600, color: '#4B5563', pointerEvents: 'none' }}>min</span>
+                  </div>
+                  <p id="course-duration-hint" style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>10-60 min</p>
+                </div>
+                <div>
+                  <label htmlFor="course-language" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Language <span aria-hidden="true" style={{ color: '#DC2626' }}>*</span></label>
+                  <div style={{ position: 'relative' }}>
+                    <select
+                      id="course-language"
+                      required aria-required="true"
+                      value={language}
+                      onChange={e => setLanguage(e.target.value)}
+                      style={{ ...fieldStyle, appearance: 'none', WebkitAppearance: 'none', background: '#fff', color: '#111827', paddingRight: 34, cursor: 'pointer' }}
+                      onFocus={focusField as unknown as React.FocusEventHandler<HTMLSelectElement>}
+                      onBlur={blurField as unknown as React.FocusEventHandler<HTMLSelectElement>}
+                    >
+                      {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                    <ChevronDown size={15} aria-hidden="true" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
+                  </div>
+                </div>
+              </div>
+              </div>
               <div>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Course Objective</label>
                 <textarea
@@ -690,6 +740,19 @@ export function AICreateCoursePage() {
                 <Plus size={13} /> Add outcome
               </button>
 
+              {/* Target Audience (after Course Outcome) */}
+              <div style={{ marginTop: 16 }}>
+                <label htmlFor="course-audience" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Target Audience</label>
+                <input
+                  id="course-audience"
+                  style={fieldStyle}
+                  placeholder="e.g. Marketing professionals, entry-level managers"
+                  value={audience}
+                  onChange={e => setAudience(e.target.value)}
+                  onFocus={focusField} onBlur={blurField}
+                />
+              </div>
+
               {/* — Course Complexity — */}
               <div role="presentation" style={{ borderTop: '1px solid #F3F4F6', margin: '20px 0' }} />
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -711,7 +774,7 @@ export function AICreateCoursePage() {
                         <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{cc.label}</span>
                         {active && <Check size={12} style={{ marginLeft: 'auto', color: P }} />}
                       </div>
-                      <p style={{ fontSize: 12, color: '#6B7280', margin: '0 0 8px', lineHeight: 1.5 }}>{cc.tagline}</p>
+                      <p style={{ fontSize: 12, color: '#4B5563', margin: '0 0 8px', lineHeight: 1.5 }}>{cc.tagline}</p>
                       <div style={{ borderTop: '1px solid #F3F4F6', paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <span style={{ fontSize: 11, fontWeight: 600, color: active ? P : '#6B7280' }}>
                           Min. {cc.minTopics} topics
@@ -723,64 +786,8 @@ export function AICreateCoursePage() {
                 })}
               </div>
 
-              {/* — Duration, Language & Target Audience (one row) — */}
+              {/* — divider before Assessment — */}
               <div role="presentation" style={{ borderTop: '1px solid #F3F4F6', margin: '20px 0' }} />
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 1fr) minmax(160px, 1fr) minmax(220px, 2fr)', gap: 16, alignItems: 'start' }}>
-                <div>
-                  <label htmlFor="course-duration" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Duration <span aria-hidden="true" style={{ color: '#DC2626' }}>*</span></label>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <input
-                      id="course-duration"
-                      type="number" min="10" max="60" step="1" placeholder="e.g. 30"
-                      required aria-required="true"
-                      inputMode="numeric" aria-describedby="course-duration-hint"
-                      value={duration}
-                      onChange={e => {
-                        const raw = e.target.value.replace(/[^0-9]/g, '');
-                        // Typing can't go above 60; values under 10 are corrected on blur
-                        setDuration(raw !== '' && Number(raw) > 60 ? '60' : raw);
-                      }}
-                      style={{ ...fieldStyle, flex: 1, minWidth: 0 }}
-                      onFocus={focusField}
-                      onBlur={e => {
-                        blurField(e);
-                        if (duration !== '' && Number(duration) < 10) setDuration('10');
-                      }}
-                    />
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#6B7280', whiteSpace: 'nowrap' }}>min</span>
-                  </div>
-                  <p id="course-duration-hint" style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>10-60 min</p>
-                </div>
-                <div>
-                  <label htmlFor="course-language" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Language <span aria-hidden="true" style={{ color: '#DC2626' }}>*</span></label>
-                  <div style={{ position: 'relative' }}>
-                    <select
-                      id="course-language"
-                      required aria-required="true"
-                      value={language}
-                      onChange={e => setLanguage(e.target.value)}
-                      style={{ ...fieldStyle, appearance: 'none', WebkitAppearance: 'none', background: '#fff', color: '#111827', paddingRight: 34, cursor: 'pointer' }}
-                      onFocus={focusField as unknown as React.FocusEventHandler<HTMLSelectElement>}
-                      onBlur={blurField as unknown as React.FocusEventHandler<HTMLSelectElement>}
-                    >
-                      {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
-                    </select>
-                    <ChevronDown size={15} aria-hidden="true" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="course-audience" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Target Audience</label>
-                  <input
-                    id="course-audience"
-                    style={fieldStyle}
-                    placeholder="e.g. Marketing professionals, entry-level managers"
-                    value={audience}
-                    onChange={e => setAudience(e.target.value)}
-                    onFocus={focusField} onBlur={blurField}
-                  />
-                </div>
-              </div>
-
               {/* — Assessment Settings — */}
               <div role="presentation" style={{ borderTop: '1px solid #F3F4F6', margin: '20px 0' }} />
               <h3 style={{ fontSize: 13, fontWeight: 700, color: '#111827', margin: '0 0 10px' }}>Assessment Settings</h3>
