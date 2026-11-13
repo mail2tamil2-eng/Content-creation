@@ -18,3 +18,19 @@ export function samplePhoto(templateId: string | undefined, index: number): stri
 /** Template id of the slide being rendered (set by CoursePresentation). */
 export const SlideTemplateContext = createContext<string | undefined>(undefined);
 export const useSlideTemplate = () => useContext(SlideTemplateContext);
+
+/** Picture shapes for Image + Text. 'template' follows the course template's cover shape. */
+export type ImageStyle = 'template' | 'circle' | 'square' | 'rect';
+export type ResolvedShape = 'rect' | 'square' | 'circle' | 'arch' | 'hex';
+
+const SHAPE_NAMES: Record<ResolvedShape, string> = { rect: 'Rectangle', square: 'Square', circle: 'Circle', arch: 'Arch', hex: 'Hexagon' };
+
+/** The template's own picture shape (from its cover design). */
+export function templateShape(templateId: string | undefined): ResolvedShape {
+  return getTemplate(templateId ?? null)?.cover.imageShape ?? 'rect';
+}
+export function resolveImageShape(style: string | undefined, templateId: string | undefined): ResolvedShape {
+  if (style === 'circle' || style === 'square' || style === 'rect') return style;
+  return templateShape(templateId);
+}
+export const shapeName = (s: ResolvedShape) => SHAPE_NAMES[s];

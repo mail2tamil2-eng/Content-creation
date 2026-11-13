@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { CourseTopic } from '../courseContent';
 import { EditableText, EditableText as E, useSlideEdit } from './slideEdit';
 import { SlideImage } from './SlideImage';
+import { resolveImageShape, useSlideTemplate } from './slidePhotos';
 
 const useEditable = () => !!useSlideEdit()?.editable;
 /** In the editor an empty list shows one blank item so it can be typed into on the slide. */
@@ -244,10 +245,14 @@ function ImageText({ topic, header }: { topic: CourseTopic; header?: React.React
   const body = g<string>(topic, 'content') || topic.content || '';
   const caption = g<string>(topic, 'caption');
   const editable = useEditable();
+  const shape = resolveImageShape(g<string>(topic, 'imageStyle'), useSlideTemplate());
+  // Shapes with fixed proportions are sized by height so they fit the slide; rectangles/arches fill the column
+  const fixed = shape === 'circle' || shape === 'square' || shape === 'hex';
   return (
     <div style={{ display: 'flex', flexDirection: position === 'right' ? 'row-reverse' : 'row', gap: 'clamp(12px,2.4cqw,28px)', alignItems: 'stretch' }}>
-      <figure style={{ margin: 0, flex: '0 0 46%', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <SlideImage k="imageUrl" label="Image" src={g<string>(topic, 'imageUrl')} alt={g<string>(topic, 'alt')} style={{ flex: 1, minHeight: 'clamp(150px,33cqw,420px)', borderRadius: 'var(--slide-radius)' }} />
+      <figure style={{ margin: 0, flex: '0 0 46%', display: 'flex', flexDirection: 'column', gap: 6, alignItems: fixed ? 'center' : 'stretch', justifyContent: 'center' }}>
+        <SlideImage k="imageUrl" label="Image" shape={shape} src={g<string>(topic, 'imageUrl')} alt={g<string>(topic, 'alt')}
+          style={fixed ? { width: 'min(100%, 33cqw)' } : { flex: 1, minHeight: 'clamp(150px,33cqw,420px)', borderRadius: 'var(--slide-radius)' }} />
         {(caption || editable) && <figcaption style={{ fontSize: fs.sm, opacity: 0.85 }}><E k="caption" label="Caption" value={caption || ''} placeholder="Add a caption (optional)" /></figcaption>}
       </figure>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>

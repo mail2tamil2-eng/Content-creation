@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useSlideEdit } from './slideEdit';
-import { samplePhoto, useSlideTemplate } from './slidePhotos';
+import { samplePhoto, useSlideTemplate, type ResolvedShape } from './slidePhotos';
 
 export interface SlideImageProps {
   /** Field key of the image URL, e.g. 'imageCards.0.image' (the panel's upload button has the same data-field). */
@@ -14,20 +14,34 @@ export interface SlideImageProps {
   /** CSS object-position for the photo. */
   position?: string;
   style?: CSSProperties;
+  /** Crop shape (default rectangle). */
+  shape?: ResolvedShape;
 }
 
-/**
- * Photo on a slide. Shows the uploaded image or a sample photo matched to the template.
- * In the Step 2 editor it is selectable: hover outline + label, click/Enter opens its
- * upload control in Slide Settings; a "Sample" tag marks photos that still need replacing.
- */
-export function SlideImage({ k, label, src, alt = '', sampleIndex = 0, position, style }: SlideImageProps) {
+/** Box proportions for each shape (on the wrapper) and the crop (on the picture itself, so tags and outlines stay visible). */
+function shapeBox(shape: ResolvedShape | undefined): CSSProperties {
+  if (shape === 'circle' || shape === 'square') return { aspectRatio: '1', height: 'auto', minHeight: 0 };
+  if (shape === 'hex') return { aspectRatio: '1.1', height: 'auto', minHeight: 0, borderRadius: 0 };
+  return {};
+}
+function shapeCrop(shape: ResolvedShape | undefined): CSSProperties {
+  switch (shape) {
+    case 'circle': return { borderRadius: '50%' };
+    case 'hex':    return { clipPath: 'polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%)' };
+    case 'arch':   return { borderRadius: '999px 999px var(--slide-radius) var(--slide-radius)' };
+    case 'square': return { borderRadius: 'var(--slide-radius)' };
+    default:       return {};
+  }
+}
+const cropped = (shape: ResolvedShape | undefined) => shape === 'circle' || shape === 'hex' || shape === 'arch';
+
+export function SlideImage({ k, label, src, alt = '', sampleIndex = 0, position, style, shape }: SlideImageProps) {
   const ctx = useSlideEdit();
   const template = useSlideTemplate();
   const isSample = !src;
   const photo = src || samplePhoto(template, sampleIndex);
-  const img = <img src={photo} alt={isSample ? '' : alt} draggable={false} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: position }} />;
-  const box: CSSProperties = { position: 'relative', overflow: 'hidden', ...style };
+  const img = <img src={photo} alt={isSample ? '' : alt} draggable={false} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: position, ...shapeCrop(shape) }} />;
+  const box: CSSProperties = { position: 'relative', overflow: cropped(shape) ? 'visible' : 'hidden', ...style, ...shapeBox(shape), ...(cropped(shape) ? { borderRadius: 0 } : {}) };
 
   if (!ctx?.editable) return <div style={box}>{img}</div>;
 

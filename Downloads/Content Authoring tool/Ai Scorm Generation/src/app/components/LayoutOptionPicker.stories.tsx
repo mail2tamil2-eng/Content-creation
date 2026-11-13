@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
-import { GALLERY_LAYOUTS, HORIZONTAL_SERIES_LAYOUTS, IMAGE_POSITIONS, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
+import { GALLERY_LAYOUTS, HORIZONTAL_SERIES_LAYOUTS, IMAGE_POSITIONS, imageStyleOptions, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
 
 const meta = {
   title: 'Slides/Settings/LayoutOptionPicker',
@@ -26,6 +26,9 @@ export const HorizontalSeries: Story = { args: { value: 'scroll', options: HORIZ
 export const VerticalSeries: Story = { args: { value: 'stack', options: VERTICAL_SERIES_LAYOUTS } };
 /** Image + Text: picture on the left or right. */
 export const ImagePosition: Story = { args: { label: 'Image position', value: 'left', options: IMAGE_POSITIONS } };
+
+/** Image + Text picture shape; "Template" follows the course template (here Forest Hexa's hexagon). */
+export const ImageStyle: Story = { args: { label: 'Image style', value: 'template', options: imageStyleOptions('hex', 'Hexagon') } };
 
 /** Keyboard: Tab into the group, arrow keys change the layout. */
 export const Keyboard: Story = {

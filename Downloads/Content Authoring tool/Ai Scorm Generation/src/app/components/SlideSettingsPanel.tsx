@@ -8,8 +8,8 @@ import {
 import type { CSTopic } from './CourseSidebar';
 import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
 import { ImageUploadField } from './ImageUploadField';
-import { GALLERY_LAYOUTS, HORIZONTAL_SERIES_LAYOUTS, IMAGE_POSITIONS, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
-import { samplePhoto, useSlideTemplate } from './slidePhotos';
+import { GALLERY_LAYOUTS, HORIZONTAL_SERIES_LAYOUTS, IMAGE_POSITIONS, imageStyleOptions, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
+import { samplePhoto, shapeName, templateShape, useSlideTemplate } from './slidePhotos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -668,9 +668,12 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
 function ImageTextFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }) {
   const [position, setPosition] = useState((t.imagePosition as string) === 'right' ? 'right' : 'left');
   const [body, setBody] = useState((t.content as string) || '');
+  const [imageStyle, setImageStyle] = useState((t.imageStyle as string) || 'template');
+  const tShape = templateShape(useSlideTemplate());
   return (
     <>
       <LayoutOptionPicker label="Image position" field="imagePosition" value={position} options={IMAGE_POSITIONS} onChange={v => { setPosition(v); u({ imagePosition: v }); }} />
+      <LayoutOptionPicker label="Image style" field="imageStyle" value={imageStyle} options={imageStyleOptions(tShape, shapeName(tShape))} onChange={v => { setImageStyle(v); u({ imageStyle: v }); }} />
       <ImageManagement t={t} u={u} />
       <div><FieldLabel>Body text</FieldLabel><SInput rows={5} field="content" label="Body text" value={body} placeholder="Text shown beside the image…" onChange={v => { setBody(v); u({ content: v }); }} /></div>
     </>

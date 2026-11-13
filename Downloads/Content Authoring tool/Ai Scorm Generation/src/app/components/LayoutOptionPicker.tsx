@@ -74,6 +74,12 @@ export const LAYOUT_ICONS = {
   twoColumns: (
     <svg {...box}><rect x="1" y="1" width="20" height="8" rx="2" /><rect x="23" y="1" width="20" height="8" rx="2" /><rect x="1" y="11" width="20" height="8" rx="2" /><rect x="23" y="11" width="20" height="8" rx="2" /><rect x="1" y="21" width="20" height="8" rx="2" /></svg>
   ),
+  /** Picture shapes (Image + Text "Image style"). */
+  shapeRect: <svg {...box}><rect x="4" y="5" width="36" height="20" rx="2" /></svg>,
+  shapeSquare: <svg {...box}><rect x="11" y="3" width="22" height="24" rx="2" /></svg>,
+  shapeCircle: <svg {...box}><circle cx="22" cy="15" r="12" /></svg>,
+  shapeHex: <svg {...box}><polygon points="15,3 29,3 36,15 29,27 15,27 8,15" /></svg>,
+  shapeArch: <svg {...box}><path d="M11 27V14a11 11 0 0 1 22 0v13z" /></svg>,
   /** Picture on the left, text on the right. */
   imageLeft: (
     <svg {...box}><rect x="1" y="3" width="18" height="24" rx="2" /><rect x="23" y="5" width="19" height="4" rx="1" /><rect x="23" y="13" width="17" height="2" rx="1" opacity=".55" /><rect x="23" y="18" width="19" height="2" rx="1" opacity=".55" /><rect x="23" y="23" width="13" height="2" rx="1" opacity=".55" /></svg>
@@ -103,3 +109,14 @@ export const VERTICAL_SERIES_LAYOUTS: LayoutOption[] = [
   { value: 'stack', label: 'Stack', icon: LAYOUT_ICONS.stack },
   { value: 'grid', label: 'Two columns', icon: LAYOUT_ICONS.twoColumns },
 ];
+
+/** Image style options; the first ("Template") shows the current template's own shape. */
+export function imageStyleOptions(templateShape: 'rect' | 'square' | 'circle' | 'arch' | 'hex', templateShapeName: string): LayoutOption[] {
+  const icon = { rect: LAYOUT_ICONS.shapeRect, square: LAYOUT_ICONS.shapeSquare, circle: LAYOUT_ICONS.shapeCircle, arch: LAYOUT_ICONS.shapeArch, hex: LAYOUT_ICONS.shapeHex }[templateShape];
+  return [
+    { value: 'template', label: `Template (${templateShapeName})`, icon },
+    { value: 'circle', label: 'Circle', icon: LAYOUT_ICONS.shapeCircle },
+    { value: 'square', label: 'Square', icon: LAYOUT_ICONS.shapeSquare },
+    { value: 'rect', label: 'Rectangle', icon: LAYOUT_ICONS.shapeRect },
+  ];
+}

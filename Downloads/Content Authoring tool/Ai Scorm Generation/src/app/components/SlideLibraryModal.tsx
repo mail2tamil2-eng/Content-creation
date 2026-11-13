@@ -525,9 +525,12 @@ function SlideTemplateCard({
   return (
     <div
       role="button"
-      tabIndex={isAvailable ? 0 : -1}
+      tabIndex={0}
+      aria-disabled={!isAvailable || undefined}
+      aria-label={isAvailable ? `${template.name}: ${template.description}` : `${template.name}, locked: needs ${template.minComplexity} complexity`}
+      className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1565F0]"
       onClick={isAvailable && !isFlashing ? onClick : undefined}
-      onKeyDown={e => { if (isAvailable && !isFlashing && (e.key === 'Enter' || e.key === ' ')) onClick(); }}
+      onKeyDown={e => { if (isAvailable && !isFlashing && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick(); } }}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
@@ -535,7 +538,6 @@ function SlideTemplateCard({
         border: `2px solid ${isFlashing ? P : hov && isAvailable ? '#93C5FD' : BORDER}`,
         background: '#fff',
         cursor: isAvailable && !isFlashing ? 'pointer' : 'default',
-        outline: 'none',
         overflow: 'hidden',
         position: 'relative',
         transition: 'border-color 0.1s, box-shadow 0.1s',
@@ -554,7 +556,7 @@ function SlideTemplateCard({
         {!isAvailable && (
           <div style={{ position:'absolute', inset:0, background:'rgba(255,255,255,0.82)', backdropFilter:'blur(1px)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5 }}>
             <Lock size={18} color="#6B7280" />
-            <span style={{ fontSize:10, fontWeight:600, color:'#6B7280', textTransform:'uppercase', letterSpacing:'0.06em' }}>
+            <span style={{ fontSize:11, fontWeight:700, color:'#4B5563', textTransform:'uppercase', letterSpacing:'0.06em' }}>
               {template.minComplexity}
             </span>
           </div>
@@ -591,6 +593,9 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
   const [flashingCardId, setFlashingCardId] = useState<string | null>(null);
 
   const searchRef    = useRef<HTMLInputElement>(null);
+  const dialogRef    = useRef<HTMLDivElement>(null);
+  const openerRef    = useRef<HTMLElement | null>(null);
+  const titleId      = React.useId();
   const closingRef   = useRef(false);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -604,6 +609,7 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
   // Enter animation + reset state on open
   useEffect(() => {
     if (isOpen) {
+      openerRef.current = document.activeElement as HTMLElement | null;
       if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
       if (flashTimerRef.current) { clearTimeout(flashTimerRef.current); flashTimerRef.current = null; }
       closingRef.current = false;
@@ -644,13 +650,27 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
       closingRef.current = false;
       closeTimerRef.current = null;
       if (!action) onCloseRef.current();
+      // Return focus to whatever opened the library (if it is still on the page)
+      const opener = openerRef.current;
+      if (opener && document.contains(opener) && !action) opener.focus();
     }, 260);
   }, []);
 
   // Escape key
   useEffect(() => {
     if (!alive) return;
-    const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') triggerClose(); };
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { triggerClose(); return; }
+      // Keep Tab inside the dialog
+      if (e.key === 'Tab' && dialogRef.current) {
+        const items = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('button, input, [tabindex="0"]')).filter(el => el.offsetParent !== null);
+        if (!items.length) return;
+        const first = items[0], last = items[items.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey && (active === first || !dialogRef.current.contains(active))) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && (active === last || !dialogRef.current.contains(active))) { e.preventDefault(); first.focus(); }
+      }
+    };
     document.addEventListener('keydown', fn);
     return () => document.removeEventListener('keydown', fn);
   }, [alive, triggerClose]);
@@ -691,6 +711,10 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
       onClick={e => { if (e.target === e.currentTarget) triggerClose(); }}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         style={{
           width: 1200, maxWidth: 'calc(100vw - 48px)', height: '88vh', maxHeight: 800,
           background: '#fff', borderRadius: 16,
@@ -705,7 +729,7 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
 
         {/* ── Header ── */}
         <div style={{ display:'flex', alignItems:'center', gap:16, padding:'18px 24px', borderBottom:`1px solid ${BORDER}`, flexShrink:0 }}>
-          <span style={{ fontSize:18, fontWeight:700, color:'#111827', flex:1 }}>Slide library</span>
+          <h2 id={titleId} style={{ margin:0, fontSize:18, fontWeight:700, color:'#111827', flex:1 }}>Slide library</h2>
 
           {/* Search */}
           <div style={{ position:'relative', width:260 }}>
@@ -715,12 +739,13 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search templates…"
+              aria-label="Search slide templates"
               style={{ width:'100%', padding:'8px 10px 8px 34px', border:`1px solid ${BORDER}`, borderRadius:8, fontSize:13, color:'#111827', background:'#F9FAFB', outline:'none', boxSizing:'border-box', fontFamily:'inherit' }}
               onFocus={e => { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.background = '#fff'; }}
               onBlur={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
             />
             {search && (
-              <button onClick={() => setSearch('')}
+              <button type="button" aria-label="Clear search" onClick={() => { setSearch(''); searchRef.current?.focus(); }}
                 style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', border:'none', background:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#6B7280', padding:2 }}>
                 <X size={13} />
               </button>
@@ -729,6 +754,8 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
 
           {/* Close */}
           <button
+            type="button"
+            aria-label="Close slide library"
             onClick={() => triggerClose()}
             style={{ width:32, height:32, borderRadius:8, border:`1px solid ${BORDER}`, background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#6B7280', flexShrink:0 }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
@@ -742,13 +769,15 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
         <div style={{ flex:1, display:'flex', overflow:'hidden' }}>
 
           {/* Left navigation — flat category list */}
-          <nav style={{ width:168, flexShrink:0, borderRight:`1px solid ${BORDER}`, background:'#FAFAFA', padding:'12px 8px', display:'flex', flexDirection:'column', gap:2, overflowY:'auto' }}>
+          <nav aria-label="Slide categories" style={{ width:168, flexShrink:0, borderRight:`1px solid ${BORDER}`, background:'#FAFAFA', padding:'12px 8px', display:'flex', flexDirection:'column', gap:2, overflowY:'auto' }}>
             {NAV_CATEGORIES.map(cat => {
               const active = !searchActive && activeCategory === cat.id;
               const count = SLIDE_TEMPLATES.filter(t => t.category === cat.id).length;
               return (
                 <button
                   key={cat.id}
+                  type="button"
+                  aria-current={active ? 'true' : undefined}
                   onClick={() => { setActiveCategory(cat.id); setSearch(''); }}
                   style={{
                     display:'flex', alignItems:'center', gap:10,
@@ -756,7 +785,7 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
                     borderRadius:8,
                     border:'none',
                     background: active ? PL : 'transparent',
-                    color: active ? P : '#4B5563',
+                    color: active ? '#1254C7' : '#4B5563',
                     cursor:'pointer',
                     textAlign:'left',
                     fontSize:13,
@@ -769,7 +798,7 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
                 >
                   <span style={{ color: active ? P : '#6B7280', display:'flex', flexShrink:0, transition:'color 0.1s' }}>{cat.icon}</span>
                   <span style={{ flex:1 }}>{cat.label}</span>
-                  <span style={{ fontSize:11, color: active ? P : '#D1D5DB', fontWeight:500 }}>{count}</span>
+                  <span style={{ fontSize:11, color: active ? '#1254C7' : '#6B7280', fontWeight:500 }} aria-label={`${count} templates`}>{count}</span>
                 </button>
               );
             })}
@@ -779,7 +808,7 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
           <div style={{ flex:1, overflowY:'auto', padding:'20px 24px', scrollbarWidth:'thin', scrollbarColor:`${BORDER} transparent` }}>
 
             <div style={{ marginBottom:16 }}>
-              <h3 style={{ margin:0, fontSize:15, fontWeight:700, color:'#111827' }}>
+              <h3 aria-live="polite" style={{ margin:0, fontSize:15, fontWeight:700, color:'#111827' }}>
                 {searchActive
                   ? `Results for "${search}"`
                   : NAV_CATEGORIES.find(c => c.id === activeCategory)?.label}

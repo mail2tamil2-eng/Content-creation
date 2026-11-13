@@ -128,7 +128,7 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
 
   return <SlideEditContext.Provider value={api}><SlideTemplateContext.Provider value={settings.template}><article className={'course-presentation' + (editable ? ' is-editable' : '')} style={style} data-testid="course-presentation" data-view="combined" data-template={settings.template} aria-label={'Slide preview: ' + topic.title}>
     <div className={'course-slide course-slide--' + settings.template} data-layout={settings.layout}>
-      {tpl ? <TemplateMotifLayer motif={tpl.motif} /> : <div className="course-slide-decoration" aria-hidden="true" />}
+      {tpl ? <TemplateMotifLayer motif={tpl.motif} strong={topic.slideType === 'image-vertical'} /> : <div className="course-slide-decoration" aria-hidden="true" />}
       {showHeader && (
         <header className="course-slide-header">
           {hLogo && settings.logo && <img src={settings.logo} alt="Course logo" />}
