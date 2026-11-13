@@ -211,30 +211,30 @@ function Table({ topic }: { topic: CourseTopic }) {
 }
 
 function ImageCards({ topic }: { topic: CourseTopic }) {
-  const cards  = useSeeded(g<ImageCard[]>(topic, 'imageCards'), { id: '', heading: '', description: '' });
-  const layout = g<string>(topic, 'layout') || 'horizontal';
+  const cards = useSeeded(g<ImageCard[]>(topic, 'imageCards'), { id: '', heading: '', description: '' });
+  // Card style: 'boxed' = bordered card (default); 'plain' = no box, rounded picture, left-aligned text without padding
+  const plain = g<string>(topic, 'cardStyle') === 'plain';
   const editable = useEditable();
   if (!cards.length) return <p style={{ fontSize: fs.md }}><Dim>Add image cards in Slide Settings</Dim></p>;
 
-  const gap = 'clamp(6px,1cqw,12px)';
-  const card = (c: ImageCard, i: number, imageHeight: string, extra?: React.CSSProperties) => (
-    <div key={c.id || i} style={{ background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', overflow: 'hidden', border: '1px solid', borderColor: 'color-mix(in srgb,var(--slide-text) 12%,transparent)', ...extra }}>
-      <SlideImage k={`imageCards.${i}.image`} label={`Card ${i + 1} image`} src={c.image} alt={c.alt} sampleIndex={i} style={{ height: imageHeight }} />
-      <div style={{ padding: 'clamp(6px,0.9cqw,9px)' }}>
-        <E as="p" k={`imageCards.${i}.heading`} label={`Card ${i + 1} heading`} value={c.heading} placeholder={`Card ${i + 1}`} style={{ margin: '0 0 2px', fontSize: fs.sm, fontWeight: 600 }} />
-        {(c.description || editable) && <E as="p" multiline k={`imageCards.${i}.description`} label={`Card ${i + 1} description`} value={c.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.5 }} />}
-      </div>
-    </div>
-  );
-
-  // Grid: equal tiles, three per row ('masonry' from older courses shows as grid)
-  if (layout === 'grid' || layout === 'masonry') {
-    return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap }}>{cards.map((c, i) => card(c, i, 'clamp(56px,10cqw,120px)'))}</div>;
-  }
-  // Scroll row: one row of wide cards that scrolls sideways
+  const cols = Math.min(cards.length, 3);
+  // Taller pictures when there is only one row of cards
+  const imageHeight = cards.length <= 3 ? 'clamp(100px,20cqw,270px)' : 'clamp(56px,9cqw,120px)';
   return (
-    <div style={{ display: 'flex', gap, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'thin' }}>
-      {cards.map((c, i) => card(c, i, 'clamp(70px,13cqw,150px)', { flex: '0 0 clamp(150px,40%,420px)' }))}
+    // Grid only (no sideways scrolling); older 'horizontal'/'masonry' galleries show the same way
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: plain ? 'clamp(10px,2cqw,24px)' : 'clamp(8px,1.2cqw,14px)' }}>
+      {cards.map((c, i) => (
+        <div key={c.id || i} style={plain
+          ? { display: 'flex', flexDirection: 'column', gap: 'clamp(6px,1cqw,10px)', minWidth: 0 }
+          : { background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', overflow: 'hidden', border: '1px solid', borderColor: 'color-mix(in srgb,var(--slide-text) 12%,transparent)', minWidth: 0 }}>
+          <SlideImage k={`imageCards.${i}.image`} label={`Card ${i + 1} image`} src={c.image} alt={c.alt} sampleIndex={i}
+            style={{ height: imageHeight, borderRadius: plain ? 'clamp(8px,1.4cqw,16px)' : 0 }} />
+          <div style={{ padding: plain ? 0 : 'clamp(8px,1.2cqw,12px)', textAlign: 'left' }}>
+            <E as="p" k={`imageCards.${i}.heading`} label={`Card ${i + 1} heading`} value={c.heading} placeholder={`Card ${i + 1}`} style={{ margin: '0 0 4px', fontSize: fs.md, fontWeight: 700 }} />
+            {(c.description || editable) && <E as="p" multiline k={`imageCards.${i}.description`} label={`Card ${i + 1} description`} value={c.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.5 }} />}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

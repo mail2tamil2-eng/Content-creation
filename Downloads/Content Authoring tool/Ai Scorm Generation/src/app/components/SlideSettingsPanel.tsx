@@ -8,7 +8,7 @@ import {
 import type { CSTopic } from './CourseSidebar';
 import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
 import { ImageUploadField } from './ImageUploadField';
-import { GALLERY_LAYOUTS, HORIZONTAL_SERIES_LAYOUTS, IMAGE_POSITIONS, imageStyleOptions, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
+import { CARD_STYLES, HORIZONTAL_SERIES_LAYOUTS, IMAGE_POSITIONS, imageStyleOptions, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
 import { samplePhoto, shapeName, templateShape, useSlideTemplate } from './slidePhotos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -641,7 +641,7 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
   type Card = { id: string; heading: string; description: string; image?: string; alt?: string };
   const template = useSlideTemplate();
   const [cards, setCards]   = useState<Card[]>(() => (t.imageCards as Card[])?.length ? (t.imageCards as Card[]) : [{ id: uid(), heading: '', description: '' }]);
-  const [layout, setLayout] = useState((t.layout as string) === 'masonry' ? 'grid' : (t.layout as string) || 'horizontal');
+  const [cardStyle, setCardStyle] = useState((t.cardStyle as string) === 'plain' ? 'plain' : 'boxed');
   const sync = (next: Card[]) => { setCards(next); u({ imageCards: next }); };
   return (
     <>
@@ -660,7 +660,7 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
           <AddBtn label="Add card" onClick={() => sync([...cards, { id: uid(), heading: '', description: '' }])} />
         </div>
       </div>
-      <LayoutOptionPicker label="Layout" field="layout" value={layout} options={GALLERY_LAYOUTS} onChange={v => { setLayout(v); u({ layout: v }); }} />
+      <LayoutOptionPicker label="Card style" field="cardStyle" value={cardStyle} options={CARD_STYLES} onChange={v => { setCardStyle(v); u({ cardStyle: v }); }} />
     </>
   );
 }

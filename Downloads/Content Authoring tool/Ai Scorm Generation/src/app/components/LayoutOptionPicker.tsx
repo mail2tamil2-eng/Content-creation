@@ -80,6 +80,14 @@ export const LAYOUT_ICONS = {
   shapeCircle: <svg {...box}><circle cx="22" cy="15" r="12" /></svg>,
   shapeHex: <svg {...box}><polygon points="15,3 29,3 36,15 29,27 15,27 8,15" /></svg>,
   shapeArch: <svg {...box}><path d="M11 27V14a11 11 0 0 1 22 0v13z" /></svg>,
+  /** Card with border: picture on top, padded text inside the box. */
+  cardBoxed: (
+    <svg {...box}><rect x="1" y="1" width="20" height="28" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" /><rect x="1" y="1" width="20" height="13" rx="3" /><rect x="4" y="18" width="12" height="2.5" rx="1" /><rect x="4" y="23" width="9" height="2" rx="1" opacity=".55" /><rect x="23" y="1" width="20" height="28" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" /><rect x="23" y="1" width="20" height="13" rx="3" /><rect x="26" y="18" width="12" height="2.5" rx="1" /><rect x="26" y="23" width="9" height="2" rx="1" opacity=".55" /></svg>
+  ),
+  /** No box: rounded picture with left-aligned text underneath. */
+  cardPlain: (
+    <svg {...box}><rect x="1" y="1" width="20" height="16" rx="4" /><rect x="1" y="20" width="13" height="2.5" rx="1" /><rect x="1" y="25" width="9" height="2" rx="1" opacity=".55" /><rect x="23" y="1" width="20" height="16" rx="4" /><rect x="23" y="20" width="13" height="2.5" rx="1" /><rect x="23" y="25" width="9" height="2" rx="1" opacity=".55" /></svg>
+  ),
   /** Picture on the left, text on the right. */
   imageLeft: (
     <svg {...box}><rect x="1" y="3" width="18" height="24" rx="2" /><rect x="23" y="5" width="19" height="4" rx="1" /><rect x="23" y="13" width="17" height="2" rx="1" opacity=".55" /><rect x="23" y="18" width="19" height="2" rx="1" opacity=".55" /><rect x="23" y="23" width="13" height="2" rx="1" opacity=".55" /></svg>
@@ -90,9 +98,10 @@ export const LAYOUT_ICONS = {
   ),
 };
 
-export const GALLERY_LAYOUTS: LayoutOption[] = [
-  { value: 'horizontal', label: 'Scroll row', icon: LAYOUT_ICONS.scroll },
-  { value: 'grid', label: 'Grid', icon: LAYOUT_ICONS.grid },
+/** Image Gallery card style. */
+export const CARD_STYLES: LayoutOption[] = [
+  { value: 'boxed', label: 'Card', icon: LAYOUT_ICONS.cardBoxed },
+  { value: 'plain', label: 'No box', icon: LAYOUT_ICONS.cardPlain },
 ];
 
 export const IMAGE_POSITIONS: LayoutOption[] = [

@@ -51,7 +51,7 @@ export const SLIDE_TEMPLATES: SlideTemplate[] = [
   { id: 'expandable-list',    name: 'Expandable List',        category: 'text',        description: 'Reveal detailed content on click',                       minComplexity: 'basic',        slideType: 'expandable-list'    },
   { id: 'table',              name: 'Table',                  category: 'text',        description: 'Compare structured information in rows and columns',      minComplexity: 'basic',        slideType: 'table'              },
   // IMAGE
-  { id: 'image-horizontal',   name: 'Image Gallery',          category: 'image',       description: 'Several pictures with captions, in a scroll row or a grid',                minComplexity: 'basic',        slideType: 'image-horizontal'   },
+  { id: 'image-horizontal',   name: 'Image Gallery',          category: 'image',       description: 'Several pictures with captions, as boxed cards or without a box',                minComplexity: 'basic',        slideType: 'image-horizontal'   },
   { id: 'image-vertical',     name: 'Image + Text',           category: 'image',       description: 'One picture beside your text, on the left or right',           minComplexity: 'basic',        slideType: 'image-vertical'     },
   { id: 'media-collection',   name: 'Media Collection',       category: 'image',       description: 'Curated grid of images and media',                       minComplexity: 'intermediate', slideType: 'media-collection'   },
   // VIDEO
