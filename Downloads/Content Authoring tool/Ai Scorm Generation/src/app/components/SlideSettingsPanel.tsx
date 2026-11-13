@@ -8,6 +8,7 @@ import {
 import type { CSTopic } from './CourseSidebar';
 import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
 import { ImageUploadField } from './ImageUploadField';
+import { GALLERY_LAYOUTS, IMAGE_POSITIONS, LayoutOptionPicker } from './LayoutOptionPicker';
 import { samplePhoto, useSlideTemplate } from './slidePhotos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -58,8 +59,8 @@ const TYPE_INFO: Record<string, TypeInfo> = {
   'vertical-series':    { name: 'Vertical Series',     category: 'TEXT',        color: '#2563EB', bg: '#EFF6FF' },
   'expandable-list':    { name: 'Expandable List',     category: 'TEXT',        color: '#2563EB', bg: '#EFF6FF' },
   'table':              { name: 'Table',               category: 'TEXT',        color: '#2563EB', bg: '#EFF6FF' },
-  'image-horizontal':   { name: 'Image Horizontal',    category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
-  'image-vertical':     { name: 'Image Vertical',      category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
+  'image-horizontal':   { name: 'Image Gallery',       category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
+  'image-vertical':     { name: 'Image + Text',        category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
   'media-collection':   { name: 'Media Collection',    category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
   'video':              { name: 'Video',               category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
   'audio':              { name: 'Audio',               category: 'MEDIA',       color: '#7C3AED', bg: '#F5F3FF' },
@@ -158,9 +159,9 @@ function FieldGroup({ title, children, open: defaultOpen = true }: { title: stri
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-function RemoveBtn({ onClick }: { onClick: () => void }) {
+function RemoveBtn({ onClick, label = 'Remove' }: { onClick: () => void; label?: string }) {
   return (
-    <button onClick={onClick}
+    <button type="button" onClick={onClick} aria-label={label} title={label}
       style={{ width: 20, height: 20, borderRadius: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', flexShrink: 0 }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2'; (e.currentTarget as HTMLElement).style.color = '#DC2626'; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF'; }}
@@ -195,7 +196,7 @@ function ItemCard({ label, onRemove, children }: { label: string; onRemove: () =
     <div style={{ padding: '10px', background: '#F9FAFB', borderRadius: 8, border: `1px solid ${BORDER}`, position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
-        <RemoveBtn onClick={onRemove} />
+        <RemoveBtn onClick={onRemove} label={`Remove ${label.toLowerCase()}`} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>{children}</div>
     </div>
@@ -658,7 +659,20 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
           <AddBtn label="Add card" onClick={() => sync([...cards, { id: uid(), heading: '', description: '' }])} />
         </div>
       </div>
-      <div><FieldLabel>Layout</FieldLabel><SSelect value={layout} onChange={v => { setLayout(v); u({ layout: v }); }} options={[{value:'horizontal',label:'Horizontal scroll'},{value:'grid',label:'Grid'},{value:'masonry',label:'Masonry'}]} /></div>
+      <LayoutOptionPicker label="Layout" field="layout" value={layout} options={GALLERY_LAYOUTS} onChange={v => { setLayout(v); u({ layout: v }); }} />
+    </>
+  );
+}
+
+/** Image + Text: one picture beside the body text. */
+function ImageTextFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }) {
+  const [position, setPosition] = useState((t.imagePosition as string) === 'right' ? 'right' : 'left');
+  const [body, setBody] = useState((t.content as string) || '');
+  return (
+    <>
+      <LayoutOptionPicker label="Image position" field="imagePosition" value={position} options={IMAGE_POSITIONS} onChange={v => { setPosition(v); u({ imagePosition: v }); }} />
+      <ImageManagement t={t} u={u} />
+      <div><FieldLabel>Body text</FieldLabel><SInput rows={5} field="content" label="Body text" value={body} placeholder="Text shown beside the image…" onChange={v => { setBody(v); u({ content: v }); }} /></div>
     </>
   );
 }
@@ -1141,8 +1155,8 @@ function TypeFields({ topic, onUpdate }: { topic: CSTopic; onUpdate: (u: Partial
     case 'expandable-list':    return <ExpandableListFields t={topic} u={onUpdate} />;
     case 'table':              return <TableFields t={topic} u={onUpdate} />;
     case 'image-horizontal':
-    case 'image-vertical':
     case 'media-collection':   return <ImageSeriesFields t={topic} u={onUpdate} />;
+    case 'image-vertical':     return <ImageTextFields t={topic} u={onUpdate} />;
     case 'video':              return <VideoFields t={topic} u={onUpdate} />;
     case 'audio':              return <AudioFields t={topic} u={onUpdate} />;
     case 'spokesperson':       return <SpokespersonFields t={topic} u={onUpdate} />;

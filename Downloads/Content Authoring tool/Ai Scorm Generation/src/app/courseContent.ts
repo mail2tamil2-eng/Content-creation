@@ -47,12 +47,15 @@ export function generateSlideContent(topic: CourseTopic, courseTitle: string, qu
  * shown until the author uploads images — see components/slidePhotos.ts).
  */
 export function sampleMedia(slideType: string | undefined, id: string, title: string): Partial<CourseTopic> {
-  if (slideType === 'image-horizontal' || slideType === 'image-vertical' || slideType === 'media-collection') {
+  if (slideType === 'image-horizontal' || slideType === 'media-collection') {
     return {
       imageCards: ['Set the direction', 'Bring people with you', 'Review and adjust'].map((heading, i) => ({
         id: `${id}-img-${i}`, heading, description: `A practical example of ${title.toLowerCase()}.`, image: '', alt: '',
       })),
     };
+  }
+  if (slideType === 'image-vertical') {
+    return { content: `Use this space to explain ${title.toLowerCase()}. Pair the picture with one clear idea and a short example.`, imagePosition: 'left', imageUrl: '', alt: '' };
   }
   if (slideType === 'hotspot') {
     return { hotspots: ['Start here', 'Key detail', 'Next step'].map((t, i) => ({ id: `${id}-hs-${i}`, title: t, content: `What learners should notice about ${t.toLowerCase()}.` })) };

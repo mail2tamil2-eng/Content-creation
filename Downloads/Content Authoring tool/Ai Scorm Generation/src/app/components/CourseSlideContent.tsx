@@ -210,18 +210,67 @@ function ImageCards({ topic }: { topic: CourseTopic }) {
   const editable = useEditable();
   if (!cards.length) return <p style={{ fontSize: fs.md }}><Dim>Add image cards in Slide Settings</Dim></p>;
 
-  const isGrid = layout === 'grid' || layout === 'masonry';
-  return (
-    <div style={{ display: 'flex', flexWrap: isGrid ? 'wrap' : 'nowrap', gap: 'clamp(6px,1cqw,12px)', overflowX: isGrid ? 'visible' : 'auto' }}>
-      {cards.map((card, i) => (
-        <div key={card.id || i} style={{ flex: isGrid ? '1 1 clamp(100px,28%,200px)' : '1 0 clamp(120px,24cqw,260px)', maxWidth: isGrid ? undefined : 'clamp(160px,34cqw,360px)', background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', overflow: 'hidden', border: '1px solid', borderColor: 'color-mix(in srgb,var(--slide-text) 12%,transparent)' }}>
-          <SlideImage k={`imageCards.${i}.image`} label={`Card ${i + 1} image`} src={card.image} alt={card.alt} sampleIndex={i} style={{ height: 'clamp(70px,12cqw,130px)' }} />
-          <div style={{ padding: 'clamp(6px,0.9cqw,9px)' }}>
-            <E as="p" k={`imageCards.${i}.heading`} label={`Card ${i + 1} heading`} value={card.heading} placeholder={`Card ${i + 1}`} style={{ margin: '0 0 2px', fontSize: fs.sm, fontWeight: 600 }} />
-            {(card.description || editable) && <E as="p" multiline k={`imageCards.${i}.description`} label={`Card ${i + 1} description`} value={card.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.5 }} />}
+  const gap = 'clamp(6px,1cqw,12px)';
+  const card = (c: ImageCard, i: number, imageHeight: string, extra?: React.CSSProperties) => (
+    <div key={c.id || i} style={{ background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', overflow: 'hidden', border: '1px solid', borderColor: 'color-mix(in srgb,var(--slide-text) 12%,transparent)', ...extra }}>
+      <SlideImage k={`imageCards.${i}.image`} label={`Card ${i + 1} image`} src={c.image} alt={c.alt} sampleIndex={i} style={{ height: imageHeight }} />
+      <div style={{ padding: 'clamp(6px,0.9cqw,9px)' }}>
+        <E as="p" k={`imageCards.${i}.heading`} label={`Card ${i + 1} heading`} value={c.heading} placeholder={`Card ${i + 1}`} style={{ margin: '0 0 2px', fontSize: fs.sm, fontWeight: 600 }} />
+        {(c.description || editable) && <E as="p" multiline k={`imageCards.${i}.description`} label={`Card ${i + 1} description`} value={c.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.5 }} />}
+      </div>
+    </div>
+  );
+
+  // Grid: equal tiles, three per row
+  if (layout === 'grid') {
+    return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap }}>{cards.map((c, i) => card(c, i, 'clamp(56px,10cqw,120px)'))}</div>;
+  }
+  // Masonry: cards dealt into columns; pictures alternate tall / short so the columns stagger
+  if (layout === 'masonry') {
+    // Picture heights in cqw (tall / short / medium); each card goes into the currently shortest column
+    const pattern = [16, 5.5, 8.5];
+    const colCount = cards.length <= 4 ? 2 : 3;
+    const cols: { c: ImageCard; i: number }[][] = Array.from({ length: colCount }, () => []);
+    const fill = Array(colCount).fill(0);
+    cards.forEach((c, i) => {
+      const col = fill.indexOf(Math.min(...fill));
+      cols[col].push({ c, i });
+      fill[col] += pattern[i % pattern.length] + 6; // + caption area
+    });
+    const h = (i: number) => `clamp(${Math.round(pattern[i % pattern.length] * 6)}px,${pattern[i % pattern.length]}cqw,${Math.round(pattern[i % pattern.length] * 12)}px)`;
+    return (
+      <div style={{ display: 'flex', gap, alignItems: 'flex-start' }}>
+        {cols.map((col, ci) => (
+          <div key={ci} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap }}>
+            {col.map(({ c, i }) => card(c, i, h(i)))}
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+    );
+  }
+  // Scroll row: one row of wide cards that scrolls sideways
+  return (
+    <div style={{ display: 'flex', gap, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'thin' }}>
+      {cards.map((c, i) => card(c, i, 'clamp(70px,13cqw,150px)', { flex: '0 0 clamp(150px,40%,420px)' }))}
+    </div>
+  );
+}
+
+/** Image + Text: one picture beside the body text (picture left or right). */
+function ImageText({ topic }: { topic: CourseTopic }) {
+  const position = g<string>(topic, 'imagePosition') === 'right' ? 'right' : 'left';
+  const body = g<string>(topic, 'content') || topic.content || '';
+  const caption = g<string>(topic, 'caption');
+  const editable = useEditable();
+  return (
+    <div style={{ display: 'flex', flexDirection: position === 'right' ? 'row-reverse' : 'row', gap: 'clamp(12px,2.4cqw,28px)', alignItems: 'stretch' }}>
+      <figure style={{ margin: 0, flex: '0 0 42%', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <SlideImage k="imageUrl" label="Image" src={g<string>(topic, 'imageUrl')} alt={g<string>(topic, 'alt')} style={{ flex: 1, minHeight: 'clamp(120px,24cqw,300px)', borderRadius: 'var(--slide-radius)' }} />
+        {(caption || editable) && <figcaption style={{ fontSize: fs.sm, opacity: 0.85 }}><E k="caption" label="Caption" value={caption || ''} placeholder="Add a caption (optional)" /></figcaption>}
+      </figure>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center' }}>
+        <E as="p" multiline k="content" label="Body text" value={body} placeholder="Add body text" style={{ margin: 0, fontSize: fs.md, lineHeight: 1.7, whiteSpace: 'pre-wrap' }} />
+      </div>
     </div>
   );
 }
@@ -569,8 +618,8 @@ export default function CourseSlideContent({ topic }: { topic: CourseTopic }) {
     case 'expandable-list':     return <ExpandableList topic={topic} />;
     case 'table':               return <Table topic={topic} />;
     case 'image-horizontal':
-    case 'image-vertical':
     case 'media-collection':    return <ImageCards topic={topic} />;
+    case 'image-vertical':      return <ImageText topic={topic} />;
     case 'video':               return <VideoSlide topic={topic} />;
     case 'audio':               return <AudioSlide topic={topic} />;
     case 'spokesperson':        return <Spokesperson topic={topic} />;
