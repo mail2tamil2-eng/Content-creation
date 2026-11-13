@@ -54,6 +54,12 @@ export function sampleMedia(slideType: string | undefined, id: string, title: st
       })),
     };
   }
+  if (slideType === 'horizontal-series' || slideType === 'vertical-series') {
+    return {
+      seriesItems: [['Prepare', 'Agree the goal and what good looks like.'], ['Act', 'Try the approach with your team.'], ['Review', 'Check the result and adjust.']]
+        .map(([label, description], i) => ({ id: `${id}-s-${i}`, label, description })),
+    };
+  }
   if (slideType === 'image-vertical') {
     return { content: `Use this space to explain ${title.toLowerCase()}. Pair the picture with one clear idea and a short example.`, imagePosition: 'left', imageUrl: '', alt: '' };
   }

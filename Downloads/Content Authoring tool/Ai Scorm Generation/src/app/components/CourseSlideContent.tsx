@@ -91,34 +91,39 @@ function TitleBullets({ topic }: { topic: CourseTopic }) {
 
 function Series({ topic, dir }: { topic: CourseTopic; dir: 'h' | 'v' }) {
   const items = useSeeded(g<SeriesItem[]>(topic, 'seriesItems'), { id: '', label: '', description: '' });
+  const layout = g<string>(topic, 'layout') || (dir === 'h' ? 'scroll' : 'stack');
   if (!items.length) return <p style={{ fontSize: fs.md }}><Dim>Add series items in Slide Settings</Dim></p>;
+  const panel: React.CSSProperties = { background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', border: '1px solid', borderColor: 'color-mix(in srgb,var(--slide-text) 15%,transparent)' };
+  const gap = 'clamp(8px,1.2cqw,14px)';
 
   if (dir === 'h') {
-    return (
-      <div style={{ display: 'flex', gap: 'clamp(8px,1.2cqw,14px)', overflowX: 'auto', paddingBottom: 4 }}>
-        {items.map((item, i) => (
-          <div key={item.id || i} style={{ flex: '0 0 auto', minWidth: 'clamp(100px,18cqw,180px)', padding: 'clamp(8px,1.3cqw,14px)', background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', border: '1px solid', borderColor: 'color-mix(in srgb,var(--slide-text) 15%,transparent)' }}>
-            <E as="p" k={`seriesItems.${i}.label`} label={`Item ${i + 1} label`} value={item.label} placeholder={`Item ${i + 1}`} style={{ margin: '0 0 clamp(3px,0.5cqw,6px)', fontSize: fs.lg, fontWeight: 700 }} />
-            <E as="p" multiline k={`seriesItems.${i}.description`} label={`Item ${i + 1} description`} value={item.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.55 }} />
-          </div>
-        ))}
+    const card = (item: SeriesItem, i: number, extra: React.CSSProperties) => (
+      <div key={item.id || i} style={{ ...panel, padding: 'clamp(8px,1.3cqw,14px)', minWidth: 0, ...extra }}>
+        <E as="p" k={`seriesItems.${i}.label`} label={`Item ${i + 1} label`} value={item.label} placeholder={`Item ${i + 1}`} style={{ margin: '0 0 clamp(3px,0.5cqw,6px)', fontSize: fs.lg, fontWeight: 700 }} />
+        <E as="p" multiline k={`seriesItems.${i}.description`} label={`Item ${i + 1} description`} value={item.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.55 }} />
       </div>
     );
+    // Columns: every item visible, sharing the width equally
+    if (layout === 'fixed') {
+      return <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(items.length, 4)}, minmax(0, 1fr))`, gap }}>{items.map((it, i) => card(it, i, {}))}</div>;
+    }
+    // Scroll row: fixed-width cards in one row that scrolls sideways
+    return <div style={{ display: 'flex', gap, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'thin' }}>{items.map((it, i) => card(it, i, { flex: '0 0 clamp(150px,36%,360px)' }))}</div>;
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(6px,0.9cqw,10px)' }}>
-      {items.map((item, i) => (
-        <div key={item.id || i} style={{ display: 'flex', alignItems: 'flex-start', gap: 'clamp(8px,1.2cqw,14px)', padding: 'clamp(8px,1.2cqw,12px)', background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', border: '1px solid', borderColor: 'color-mix(in srgb,var(--slide-text) 15%,transparent)' }}>
-          <span style={{ fontSize: fs.lg, fontWeight: 800, color: 'var(--slide-primary-text, var(--slide-primary))', flexShrink: 0, minWidth: '1.6em', textAlign: 'center' }}>{i + 1}</span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <E as="p" k={`seriesItems.${i}.label`} label={`Step ${i + 1} label`} value={item.label} placeholder={`Step ${i + 1}`} style={{ margin: '0 0 2px', fontSize: fs.md, fontWeight: 600 }} />
-            <E as="p" multiline k={`seriesItems.${i}.description`} label={`Step ${i + 1} description`} value={item.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.55 }} />
-          </div>
-        </div>
-      ))}
+  const row = (item: SeriesItem, i: number) => (
+    <div key={item.id || i} style={{ ...panel, display: 'flex', alignItems: 'flex-start', gap, padding: 'clamp(8px,1.2cqw,12px)', minWidth: 0 }}>
+      <span style={{ fontSize: fs.lg, fontWeight: 800, color: 'var(--slide-primary-text, var(--slide-primary))', flexShrink: 0, minWidth: '1.6em', textAlign: 'center' }}>{i + 1}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <E as="p" k={`seriesItems.${i}.label`} label={`Step ${i + 1} label`} value={item.label} placeholder={`Step ${i + 1}`} style={{ margin: '0 0 2px', fontSize: fs.md, fontWeight: 600 }} />
+        <E as="p" multiline k={`seriesItems.${i}.description`} label={`Step ${i + 1} description`} value={item.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.55 }} />
+      </div>
     </div>
   );
+  // Two columns: steps flow left-to-right in a 2-column grid
+  if (layout === 'grid') return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 'clamp(6px,0.9cqw,10px)' }}>{items.map(row)}</div>;
+  // Stack: one step under another
+  return <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(6px,0.9cqw,10px)' }}>{items.map(row)}</div>;
 }
 
 function ExpandableList({ topic }: { topic: CourseTopic }) {
@@ -221,32 +226,9 @@ function ImageCards({ topic }: { topic: CourseTopic }) {
     </div>
   );
 
-  // Grid: equal tiles, three per row
-  if (layout === 'grid') {
+  // Grid: equal tiles, three per row ('masonry' from older courses shows as grid)
+  if (layout === 'grid' || layout === 'masonry') {
     return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap }}>{cards.map((c, i) => card(c, i, 'clamp(56px,10cqw,120px)'))}</div>;
-  }
-  // Masonry: cards dealt into columns; pictures alternate tall / short so the columns stagger
-  if (layout === 'masonry') {
-    // Picture heights in cqw (tall / short / medium); each card goes into the currently shortest column
-    const pattern = [16, 5.5, 8.5];
-    const colCount = cards.length <= 4 ? 2 : 3;
-    const cols: { c: ImageCard; i: number }[][] = Array.from({ length: colCount }, () => []);
-    const fill = Array(colCount).fill(0);
-    cards.forEach((c, i) => {
-      const col = fill.indexOf(Math.min(...fill));
-      cols[col].push({ c, i });
-      fill[col] += pattern[i % pattern.length] + 6; // + caption area
-    });
-    const h = (i: number) => `clamp(${Math.round(pattern[i % pattern.length] * 6)}px,${pattern[i % pattern.length]}cqw,${Math.round(pattern[i % pattern.length] * 12)}px)`;
-    return (
-      <div style={{ display: 'flex', gap, alignItems: 'flex-start' }}>
-        {cols.map((col, ci) => (
-          <div key={ci} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap }}>
-            {col.map(({ c, i }) => card(c, i, h(i)))}
-          </div>
-        ))}
-      </div>
-    );
   }
   // Scroll row: one row of wide cards that scrolls sideways
   return (
@@ -257,18 +239,19 @@ function ImageCards({ topic }: { topic: CourseTopic }) {
 }
 
 /** Image + Text: one picture beside the body text (picture left or right). */
-function ImageText({ topic }: { topic: CourseTopic }) {
+function ImageText({ topic, header }: { topic: CourseTopic; header?: React.ReactNode }) {
   const position = g<string>(topic, 'imagePosition') === 'right' ? 'right' : 'left';
   const body = g<string>(topic, 'content') || topic.content || '';
   const caption = g<string>(topic, 'caption');
   const editable = useEditable();
   return (
     <div style={{ display: 'flex', flexDirection: position === 'right' ? 'row-reverse' : 'row', gap: 'clamp(12px,2.4cqw,28px)', alignItems: 'stretch' }}>
-      <figure style={{ margin: 0, flex: '0 0 42%', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <SlideImage k="imageUrl" label="Image" src={g<string>(topic, 'imageUrl')} alt={g<string>(topic, 'alt')} style={{ flex: 1, minHeight: 'clamp(120px,24cqw,300px)', borderRadius: 'var(--slide-radius)' }} />
+      <figure style={{ margin: 0, flex: '0 0 46%', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <SlideImage k="imageUrl" label="Image" src={g<string>(topic, 'imageUrl')} alt={g<string>(topic, 'alt')} style={{ flex: 1, minHeight: 'clamp(150px,33cqw,420px)', borderRadius: 'var(--slide-radius)' }} />
         {(caption || editable) && <figcaption style={{ fontSize: fs.sm, opacity: 0.85 }}><E k="caption" label="Caption" value={caption || ''} placeholder="Add a caption (optional)" /></figcaption>}
       </figure>
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center' }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        {header}
         <E as="p" multiline k="content" label="Body text" value={body} placeholder="Add body text" style={{ margin: 0, fontSize: fs.md, lineHeight: 1.7, whiteSpace: 'pre-wrap' }} />
       </div>
     </div>
@@ -606,7 +589,8 @@ function Quiz({ topic }: { topic: CourseTopic }) {
 
 // ── Main dispatcher ───────────────────────────────────────────────────────────
 
-export default function CourseSlideContent({ topic }: { topic: CourseTopic }) {
+/** `header` (slide title + rule) is placed inside the layout for slide types that need it (Image + Text). */
+export default function CourseSlideContent({ topic, header }: { topic: CourseTopic; header?: React.ReactNode }) {
   const st = topic.slideType || 'title-text';
 
   switch (st) {
@@ -619,7 +603,7 @@ export default function CourseSlideContent({ topic }: { topic: CourseTopic }) {
     case 'table':               return <Table topic={topic} />;
     case 'image-horizontal':
     case 'media-collection':    return <ImageCards topic={topic} />;
-    case 'image-vertical':      return <ImageText topic={topic} />;
+    case 'image-vertical':      return <ImageText topic={topic} header={header} />;
     case 'video':               return <VideoSlide topic={topic} />;
     case 'audio':               return <AudioSlide topic={topic} />;
     case 'spokesperson':        return <Spokesperson topic={topic} />;

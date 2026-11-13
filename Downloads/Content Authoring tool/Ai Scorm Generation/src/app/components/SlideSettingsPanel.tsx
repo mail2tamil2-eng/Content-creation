@@ -8,7 +8,7 @@ import {
 import type { CSTopic } from './CourseSidebar';
 import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
 import { ImageUploadField } from './ImageUploadField';
-import { GALLERY_LAYOUTS, IMAGE_POSITIONS, LayoutOptionPicker } from './LayoutOptionPicker';
+import { GALLERY_LAYOUTS, HORIZONTAL_SERIES_LAYOUTS, IMAGE_POSITIONS, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
 import { samplePhoto, useSlideTemplate } from './slidePhotos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -564,7 +564,7 @@ function SeriesFields({ t, u, dir }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
           <AddBtn label="Add item" onClick={() => sync([...items, { id: uid(), label: '', description: '' }])} />
         </div>
       </div>
-      <div><FieldLabel>Layout</FieldLabel><SSelect value={layout} onChange={v => { setLayout(v); u({ layout: v }); }} options={dir === 'h' ? [{value:'scroll',label:'Scroll'},{value:'fixed',label:'Fixed columns'}] : [{value:'stack',label:'Stack'},{value:'grid',label:'Grid'}]} /></div>
+      <LayoutOptionPicker label="Layout" field="layout" value={layout} options={dir === 'h' ? HORIZONTAL_SERIES_LAYOUTS : VERTICAL_SERIES_LAYOUTS} onChange={v => { setLayout(v); u({ layout: v }); }} />
     </>
   );
 }
@@ -640,7 +640,7 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
   type Card = { id: string; heading: string; description: string; image?: string; alt?: string };
   const template = useSlideTemplate();
   const [cards, setCards]   = useState<Card[]>(() => (t.imageCards as Card[])?.length ? (t.imageCards as Card[]) : [{ id: uid(), heading: '', description: '' }]);
-  const [layout, setLayout] = useState((t.layout as string) || 'horizontal');
+  const [layout, setLayout] = useState((t.layout as string) === 'masonry' ? 'grid' : (t.layout as string) || 'horizontal');
   const sync = (next: Card[]) => { setCards(next); u({ imageCards: next }); };
   return (
     <>

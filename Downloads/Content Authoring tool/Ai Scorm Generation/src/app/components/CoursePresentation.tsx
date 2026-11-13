@@ -113,6 +113,12 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
     fontFamily: settings.font + ', Arial, sans-serif',
   } as CSSProperties;
   const tpl = getTemplate(settings.template);
+  // Image + Text puts the title and rule in the text column, beside the picture
+  const titleInContent = topic.slideType === 'image-vertical';
+  const heading = <>
+    <EditableText as="h2" k="title" label="Title" value={topic.title} placeholder="Add a title" />
+    <div className="course-slide-rule" />
+  </>;
   const showHeader  = settings.showHeader  !== false;
   const showFooter  = settings.showFooter  !== false;
   const hLogo       = settings.headerShowLogo       !== false;
@@ -131,13 +137,12 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
       )}
       <main className="course-slide-main">
         <p className="course-slide-eyebrow">{sectionTitle || 'Course content'}</p>
-        <EditableText as="h2" k="title" label="Title" value={topic.title} placeholder="Add a title" />
-        <div className="course-slide-rule" />
+        {!titleInContent && heading}
         <div
           className="course-slide-body"
           onClick={editable ? e => { if (!(e.target as Element).closest('[data-edit],.se-editing')) onSelectField?.('slide-content', false); } : undefined}
         >
-          <CourseSlideContent key={topic.id} topic={topic} />
+          <CourseSlideContent key={topic.id} topic={topic} header={titleInContent ? heading : undefined} />
         </div>
         {editable && <span id={hintId} hidden>Press Enter to edit in Slide Settings, or F2 to edit on the slide.</span>}
       </main>

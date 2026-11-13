@@ -62,9 +62,17 @@ export const LAYOUT_ICONS = {
   grid: (
     <svg {...box}><rect x="1" y="1" width="13" height="13" rx="2" /><rect x="15.5" y="1" width="13" height="13" rx="2" /><rect x="30" y="1" width="13" height="13" rx="2" /><rect x="1" y="16" width="13" height="13" rx="2" /><rect x="15.5" y="16" width="13" height="13" rx="2" /><rect x="30" y="16" width="13" height="13" rx="2" /></svg>
   ),
-  /** Columns of tiles with different heights. */
-  masonry: (
-    <svg {...box}><rect x="1" y="1" width="13" height="17" rx="2" /><rect x="1" y="20" width="13" height="9" rx="2" /><rect x="15.5" y="1" width="13" height="9" rx="2" /><rect x="15.5" y="12" width="13" height="17" rx="2" /><rect x="30" y="1" width="13" height="12" rx="2" /><rect x="30" y="15" width="13" height="14" rx="2" /></svg>
+  /** All items side by side in equal columns, no scrolling. */
+  columns: (
+    <svg {...box}><rect x="1" y="5" width="13" height="20" rx="2" /><rect x="15.5" y="5" width="13" height="20" rx="2" /><rect x="30" y="5" width="13" height="20" rx="2" /></svg>
+  ),
+  /** Numbered rows, one under another. */
+  stack: (
+    <svg {...box}><rect x="1" y="1" width="42" height="8" rx="2" /><rect x="1" y="11" width="42" height="8" rx="2" /><rect x="1" y="21" width="42" height="8" rx="2" /></svg>
+  ),
+  /** Rows in two columns. */
+  twoColumns: (
+    <svg {...box}><rect x="1" y="1" width="20" height="8" rx="2" /><rect x="23" y="1" width="20" height="8" rx="2" /><rect x="1" y="11" width="20" height="8" rx="2" /><rect x="23" y="11" width="20" height="8" rx="2" /><rect x="1" y="21" width="20" height="8" rx="2" /></svg>
   ),
   /** Picture on the left, text on the right. */
   imageLeft: (
@@ -79,10 +87,19 @@ export const LAYOUT_ICONS = {
 export const GALLERY_LAYOUTS: LayoutOption[] = [
   { value: 'horizontal', label: 'Scroll row', icon: LAYOUT_ICONS.scroll },
   { value: 'grid', label: 'Grid', icon: LAYOUT_ICONS.grid },
-  { value: 'masonry', label: 'Masonry', icon: LAYOUT_ICONS.masonry },
 ];
 
 export const IMAGE_POSITIONS: LayoutOption[] = [
   { value: 'left', label: 'Image left', icon: LAYOUT_ICONS.imageLeft },
   { value: 'right', label: 'Image right', icon: LAYOUT_ICONS.imageRight },
+];
+
+export const HORIZONTAL_SERIES_LAYOUTS: LayoutOption[] = [
+  { value: 'scroll', label: 'Scroll row', icon: LAYOUT_ICONS.scroll },
+  { value: 'fixed', label: 'Columns', icon: LAYOUT_ICONS.columns },
+];
+
+export const VERTICAL_SERIES_LAYOUTS: LayoutOption[] = [
+  { value: 'stack', label: 'Stack', icon: LAYOUT_ICONS.stack },
+  { value: 'grid', label: 'Two columns', icon: LAYOUT_ICONS.twoColumns },
 ];
