@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import type { CSTopic } from './CourseSidebar';
 import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
+import { ImageUploadField } from './ImageUploadField';
+import { samplePhoto, useSlideTemplate } from './slidePhotos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -203,81 +205,17 @@ function ItemCard({ label, onRemove, children }: { label: string; onRemove: () =
 // ── 13.1 Image Management ─────────────────────────────────────────────────────
 
 function ImageManagement({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }) {
-  const fileRef = useRef<HTMLInputElement>(null);
+  const template = useSlideTemplate();
   const [imageUrl, setImageUrl] = useState((t.imageUrl as string) || '');
   const [alt, setAlt]           = useState((t.alt as string) || '');
   const [caption, setCaption]   = useState((t.caption as string) || '');
-  const hasImage = !!imageUrl;
-
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) { alert('Max file size is 10 MB'); return; }
-    const url = URL.createObjectURL(file);
-    setImageUrl(url); u({ imageUrl: url });
-  };
-
-  const overlayBtn: React.CSSProperties = {
-    width: 26, height: 26, borderRadius: 6, border: 'none',
-    background: 'rgba(0,0,0,0.55)', color: '#fff', cursor: 'pointer',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    backdropFilter: 'blur(4px)',
-  };
-
   return (
     <>
-      {hasImage ? (
-        <div>
-          <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#000', lineHeight: 0 }}>
-            <img src={imageUrl} alt={alt} style={{ width: '100%', maxHeight: 150, objectFit: 'cover', display: 'block' }} />
-            <div style={{ position: 'absolute', bottom: 6, right: 6, display: 'flex', gap: 4 }}>
-              {([
-                { icon: <Crop size={12} />,     title: 'Crop' },
-                { icon: <Move size={12} />,     title: 'Reposition' },
-                { icon: <Maximize2 size={12} />,title: 'Resize' },
-                { icon: <RefreshCw size={12} />,title: 'Regenerate with AI' },
-              ]).map(a => (
-                <button key={a.title} title={a.title} style={overlayBtn}>{a.icon}</button>
-              ))}
-              <button title="Delete image"
-                onClick={() => { setImageUrl(''); u({ imageUrl: '' }); }}
-                style={{ ...overlayBtn, background: 'rgba(239,68,68,0.8)' }}>
-                <Trash2 size={12} />
-              </button>
-            </div>
-          </div>
-          <button onClick={() => fileRef.current?.click()}
-            style={{ marginTop: 6, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '6px 0', borderRadius: 7, border: `1px solid ${BORDER}`, background: '#fff', fontSize: 13, color: '#374151', cursor: 'pointer', fontFamily: font }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
-          ><Upload size={12} /> Replace image</button>
-        </div>
-      ) : (
-        <div>
-          <div
-            onClick={() => fileRef.current?.click()}
-            style={{ border: `2px dashed ${BORDER}`, borderRadius: 8, padding: '20px 12px', textAlign: 'center', background: '#FAFAFA', cursor: 'pointer' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = P; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; }}
-          >
-            <ImageIcon size={20} color="#9CA3AF" style={{ marginBottom: 6 }} />
-            <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 500, color: '#374151' }}>Upload image</p>
-            <p style={{ margin: 0, fontSize: 13, color: '#6B7280' }}>PNG, JPG, JPEG, SVG, WebP — max 10 MB</p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 6 }}>
-            <AiBtn label="Generate with AI" onClick={() => {}} />
-            <button
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '6px 0', borderRadius: 6, border: `1px solid ${BORDER}`, background: '#fff', fontSize: 13, color: '#374151', cursor: 'pointer', fontFamily: font, fontWeight: 600 }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
-            ><FolderOpen size={11} /> Asset Library</button>
-          </div>
-        </div>
-      )}
-      <input ref={fileRef} type="file" accept=".png,.jpg,.jpeg,.svg,.webp" style={{ display: 'none' }} onChange={handleFile} />
+      <ImageUploadField field="imageUrl" label="Image" value={imageUrl} sampleSrc={samplePhoto(template, 0)}
+        onChange={url => { setImageUrl(url); u({ imageUrl: url }); }} />
       <div>
         <FieldLabel>Alt text</FieldLabel>
-        <SInput value={alt} placeholder="Describe image for accessibility…" onChange={v => { setAlt(v); u({ alt: v }); }} />
+        <SInput field="alt" label="Alt text" value={alt} placeholder="Describe image for accessibility…" onChange={v => { setAlt(v); u({ alt: v }); }} />
       </div>
       <div>
         <FieldLabel note="optional">Caption</FieldLabel>
@@ -698,7 +636,8 @@ function TableFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
 }
 
 function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }) {
-  type Card = { id: string; heading: string; description: string };
+  type Card = { id: string; heading: string; description: string; image?: string; alt?: string };
+  const template = useSlideTemplate();
   const [cards, setCards]   = useState<Card[]>(() => (t.imageCards as Card[])?.length ? (t.imageCards as Card[]) : [{ id: uid(), heading: '', description: '' }]);
   const [layout, setLayout] = useState((t.layout as string) || 'horizontal');
   const sync = (next: Card[]) => { setCards(next); u({ imageCards: next }); };
@@ -709,10 +648,9 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {cards.map((card, i) => (
             <ItemCard key={card.id} label={`Card ${i+1}`} onRemove={() => sync(cards.filter((_,j) => j !== i))}>
-              <div style={{ height: 44, background: '#E5E7EB', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 13, color: '#6B7280', gap: 5 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#D1D5DB'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#E5E7EB'; }}
-              ><ImageIcon size={13} /> Click to upload image</div>
+              <ImageUploadField field={`imageCards.${i}.image`} label={`Card ${i + 1} image`} value={card.image || ''} sampleSrc={samplePhoto(template, i)}
+                onChange={url => sync(cards.map((x,j) => j===i ? {...x,image:url} : x))} />
+              <input data-field={`imageCards.${i}.alt`} aria-label={`Card ${i + 1} alt text`} value={card.alt || ''} onChange={e => sync(cards.map((x,j) => j===i ? {...x,alt:e.target.value} : x))} placeholder="Alt text: describe the image…" style={inlineInput} />
               <input data-field={`imageCards.${i}.heading`} aria-label={`Item ${i + 1} heading`} value={card.heading} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,heading:e.target.value} : x); sync(n); }} placeholder="Heading…" style={inlineInput} />
               <textarea data-field={`imageCards.${i}.description`} aria-label={`Item ${i + 1} description`} value={card.description} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,description:e.target.value} : x); sync(n); }} placeholder="Description…" rows={2} style={inlineTA} />
             </ItemCard>
@@ -773,16 +711,23 @@ function ClickRevealFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
 function SliderFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }) {
   const [beforeLabel, setBeforeLabel] = useState((t.beforeLabel as string) || 'Before');
   const [afterLabel, setAfterLabel]   = useState((t.afterLabel  as string) || 'After');
+  const template = useSlideTemplate();
+  const [imgs, setImgs] = useState({
+    beforeImage: (t.beforeImage as string) || '', afterImage: (t.afterImage as string) || '',
+    beforeAlt: (t.beforeAlt as string) || '', afterAlt: (t.afterAlt as string) || '',
+  });
   return (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-        {(['Before','After'] as const).map(side => (
-          <div key={side} style={{ border:`2px dashed ${BORDER}`, borderRadius:7, padding:'12px 8px', textAlign:'center', background:'#FAFAFA', cursor:'pointer' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = P; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; }}
-          >
-            <Upload size={13} color="#9CA3AF" style={{ marginBottom:3 }} />
-            <p style={{ margin:0, fontSize:11, color:'#374151', fontWeight:500 }}>{side}</p>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {([
+          { side: 'Before', key: 'beforeImage', altKey: 'beforeAlt', sample: 0 },
+          { side: 'After',  key: 'afterImage',  altKey: 'afterAlt',  sample: 1 },
+        ] as const).map(({ side, key, altKey, sample }) => (
+          <div key={side} style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
+            <ImageUploadField field={key} label={`${side} image`} value={imgs[key]} sampleSrc={samplePhoto(template, sample)}
+              onChange={url => { setImgs(v => ({ ...v, [key]: url })); u({ [key]: url }); }} />
+            <input aria-label={`${side} image alt text`} value={imgs[altKey]} placeholder="Alt text…" style={inlineInput}
+              onChange={e => { const v = e.target.value; setImgs(o => ({ ...o, [altKey]: v })); u({ [altKey]: v }); }} />
           </div>
         ))}
       </div>

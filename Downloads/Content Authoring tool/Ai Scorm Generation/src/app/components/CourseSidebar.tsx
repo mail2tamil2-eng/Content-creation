@@ -6,6 +6,7 @@ import {
   PanelLeftClose, ChevronLeft,
 } from 'lucide-react';
 import { SlideLibraryModal, type SlideComplexity } from './SlideLibraryModal';
+import { sampleMedia } from '../courseContent';
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const P                = '#1565F0';
@@ -846,7 +847,8 @@ export function CourseSidebar({
 
   // ── Topic mutations ────────────────────────────────────────────────────────
   const doAddTopic = (si: number, afterTi: number, slideType = 'title-bullets', templateId?: string) => {
-    const newTopic = { id: uid(), title: 'New slide', slideType, templateId, content: '', bullets: [], locked: false };
+    const id = uid();
+    const newTopic = { id, title: 'New slide', slideType, templateId, content: '', bullets: [], locked: false, ...sampleMedia(slideType, id, 'this topic') };
     onSectionsChange(prev => prev.map((s, i) => {
       if (i !== si) return s;
       const topics = [...s.topics];

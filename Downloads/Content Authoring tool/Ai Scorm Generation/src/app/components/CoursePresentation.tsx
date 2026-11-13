@@ -6,6 +6,7 @@ import { getTemplate } from './templates/courseTemplates';
 import { TemplateMotifLayer } from './templates/TemplateSlide';
 import { EditableText, SlideEditContext, type SlideEditApi } from './slideEdit';
 import { contrast, readableAccent } from './slideColors';
+import { SlideTemplateContext } from './slidePhotos';
 
 export interface PresentationSettings {
   template: string; primary: string; accent: string;
@@ -119,7 +120,7 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
   const fCourseName = settings.footerShowCourseName !== false;
   const fPageNum    = settings.footerShowPageNum    !== false;
 
-  return <SlideEditContext.Provider value={api}><article className={'course-presentation' + (editable ? ' is-editable' : '')} style={style} data-testid="course-presentation" data-view="combined" data-template={settings.template} aria-label={'Slide preview: ' + topic.title}>
+  return <SlideEditContext.Provider value={api}><SlideTemplateContext.Provider value={settings.template}><article className={'course-presentation' + (editable ? ' is-editable' : '')} style={style} data-testid="course-presentation" data-view="combined" data-template={settings.template} aria-label={'Slide preview: ' + topic.title}>
     <div className={'course-slide course-slide--' + settings.template} data-layout={settings.layout}>
       {tpl ? <TemplateMotifLayer motif={tpl.motif} /> : <div className="course-slide-decoration" aria-hidden="true" />}
       {showHeader && (
@@ -165,5 +166,5 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
         </footer>
       )}
     </div>
-  </article></SlideEditContext.Provider>;
+  </article></SlideTemplateContext.Provider></SlideEditContext.Provider>;
 }

@@ -24,6 +24,7 @@ import { type ThemeSettings, THEME_OPTIONS } from '../components/ThemePopover';
 import { CourseSidebar, type CSSection } from '../components/CourseSidebar';
 import { SlideSettingsPanel } from '../components/SlideSettingsPanel';
 import { focusSlideField } from '../components/slideFieldFocus';
+import { SlideTemplateContext } from '../components/slidePhotos';
 import { SlideLibraryModal } from '../components/SlideLibraryModal';
 import { TemplateGallery } from '../components/templates/TemplateGallery';
 import { COURSE_TEMPLATES, DEFAULT_TEMPLATE_ID, getTemplate } from '../components/templates/courseTemplates';
@@ -1274,6 +1275,7 @@ export function AICreateCoursePage() {
                   className={panelRev ? undefined : 'slide-panel-enter'}
                   style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}
                 >
+                  <SlideTemplateContext.Provider value={presentationSettings.template}>
                   <SlideSettingsPanel
                     topic={currentTopic as unknown as import('../components/CourseSidebar').CSTopic}
                     sectionTitle={currentSection?.title}
@@ -1286,6 +1288,7 @@ export function AICreateCoursePage() {
                     enhancing={enhancing}
                     onRegenerateSlide={regenerateSlide}
                   />
+                  </SlideTemplateContext.Provider>
                 </div>
               ) : (
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

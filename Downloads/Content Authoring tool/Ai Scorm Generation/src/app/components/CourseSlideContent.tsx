@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { CourseTopic } from '../courseContent';
 import { EditableText, EditableText as E, useSlideEdit } from './slideEdit';
+import { SlideImage } from './SlideImage';
 
 const useEditable = () => !!useSlideEdit()?.editable;
 /** In the editor an empty list shows one blank item so it can be typed into on the slide. */
@@ -13,7 +14,7 @@ function useSeeded<T>(list: T[] | undefined, blank: T): T[] {
 
 type AccordionItem = { id: string; heading: string; body: string };
 type SeriesItem    = { id: string; label: string; description: string };
-type ImageCard     = { id: string; heading: string; description: string };
+type ImageCard     = { id: string; heading: string; description: string; image?: string; alt?: string };
 type HotspotItem   = { id: string; title: string; content: string };
 type RevealCard    = { id: string; front: string; back: string };
 type MatchPair     = { id: string; left: string; right: string };
@@ -213,8 +214,8 @@ function ImageCards({ topic }: { topic: CourseTopic }) {
   return (
     <div style={{ display: 'flex', flexWrap: isGrid ? 'wrap' : 'nowrap', gap: 'clamp(6px,1cqw,12px)', overflowX: isGrid ? 'visible' : 'auto' }}>
       {cards.map((card, i) => (
-        <div key={card.id || i} style={{ flex: isGrid ? '1 1 clamp(100px,28%,200px)' : '0 0 auto', minWidth: isGrid ? undefined : 'clamp(90px,16cqw,160px)', background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', overflow: 'hidden', border: '1px solid', borderColor: 'color-mix(in srgb,var(--slide-text) 12%,transparent)' }}>
-          <div style={{ height: 'clamp(40px,7cqw,70px)', background: 'color-mix(in srgb,var(--slide-primary) 15%,var(--slide-panel))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs.sm, opacity: 0.85 }}>Image</div>
+        <div key={card.id || i} style={{ flex: isGrid ? '1 1 clamp(100px,28%,200px)' : '1 0 clamp(120px,24cqw,260px)', maxWidth: isGrid ? undefined : 'clamp(160px,34cqw,360px)', background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', overflow: 'hidden', border: '1px solid', borderColor: 'color-mix(in srgb,var(--slide-text) 12%,transparent)' }}>
+          <SlideImage k={`imageCards.${i}.image`} label={`Card ${i + 1} image`} src={card.image} alt={card.alt} sampleIndex={i} style={{ height: 'clamp(70px,12cqw,130px)' }} />
           <div style={{ padding: 'clamp(6px,0.9cqw,9px)' }}>
             <E as="p" k={`imageCards.${i}.heading`} label={`Card ${i + 1} heading`} value={card.heading} placeholder={`Card ${i + 1}`} style={{ margin: '0 0 2px', fontSize: fs.sm, fontWeight: 600 }} />
             {(card.description || editable) && <E as="p" multiline k={`imageCards.${i}.description`} label={`Card ${i + 1} description`} value={card.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.5 }} />}
@@ -278,7 +279,7 @@ function Hotspot({ topic }: { topic: CourseTopic }) {
   const num = (i: number): React.CSSProperties => ({ width: 16, height: 16, borderRadius: '50%', background: open === i ? '#fff' : 'var(--slide-primary)', color: open === i ? 'var(--slide-primary)' : 'var(--slide-on-primary, #fff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 10, border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 });
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(6px,1cqw,10px)' }}>
-      <div style={{ position: 'relative', aspectRatio: '16/9', background: 'color-mix(in srgb,var(--slide-primary) 10%,var(--slide-panel))', borderRadius: 'var(--slide-radius)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs.sm, opacity: 0.85 }}>Base image</div>
+      <SlideImage k="imageUrl" label="Hotspot image" src={g<string>(topic, 'imageUrl')} alt={g<string>(topic, 'alt')} style={{ width: '100%', height: 'clamp(110px,22cqw,280px)', borderRadius: 'var(--slide-radius)' }} />
       {spots.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(4px,0.6cqw,7px)' }}>
           {spots.map((s, i) => editable ? (
@@ -336,14 +337,21 @@ function SliderSlide({ topic }: { topic: CourseTopic }) {
   const beforeLabel = g<string>(topic, 'beforeLabel') || 'Before';
   const afterLabel  = g<string>(topic, 'afterLabel') || 'After';
   const [pos, setPos] = useState(50);
-  const lbl: React.CSSProperties = { fontSize: fs.sm, color: '#fff', fontWeight: 600 };
+  // Label chip keeps white text readable on any photo
+  const lbl: React.CSSProperties = { position: 'relative', zIndex: 1, fontSize: fs.sm, color: '#fff', fontWeight: 600, background: 'rgba(0,0,0,.72)', padding: '2px 8px', borderRadius: 4 };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(6px,1cqw,10px)' }}>
-      <div style={{ position: 'relative', aspectRatio: '16/9', borderRadius: 'var(--slide-radius)', overflow: 'hidden', background: '#111', cursor: 'ew-resize' }}>
+      <div style={{ position: 'relative', height: 'clamp(120px,24cqw,300px)', borderRadius: 'var(--slide-radius)', overflow: 'hidden', background: '#111', cursor: 'ew-resize' }}>
         <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-          <div style={{ flex: pos, background: 'color-mix(in srgb,var(--slide-primary) 30%,#222)', display: 'flex', alignItems: 'flex-end', padding: 8 }}><E k="beforeLabel" label="Before label" value={beforeLabel} style={lbl} /></div>
-          <div style={{ position: 'absolute', left: `${pos}%`, top: 0, bottom: 0, width: 2, background: '#fff', transform: 'translateX(-50%)' }} />
-          <div style={{ flex: 100 - pos, background: 'color-mix(in srgb,var(--slide-accent) 30%,#222)', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: 8 }}><E k="afterLabel" label="After label" value={afterLabel} style={lbl} /></div>
+          <div style={{ flex: pos, position: 'relative', display: 'flex', alignItems: 'flex-end', padding: 8, minWidth: 0 }}>
+            <SlideImage k="beforeImage" label="Before image" src={g<string>(topic, 'beforeImage')} alt={g<string>(topic, 'beforeAlt')} sampleIndex={0} style={{ position: 'absolute', inset: 0 }} />
+            <E as="div" k="beforeLabel" label="Before label" value={beforeLabel} style={lbl} />
+          </div>
+          <div style={{ position: 'absolute', zIndex: 2, left: `${pos}%`, top: 0, bottom: 0, width: 2, background: '#fff', transform: 'translateX(-50%)' }} />
+          <div style={{ flex: 100 - pos, position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: 8, minWidth: 0 }}>
+            <SlideImage k="afterImage" label="After image" src={g<string>(topic, 'afterImage')} alt={g<string>(topic, 'afterAlt')} sampleIndex={1} style={{ position: 'absolute', inset: 0 }} />
+            <E as="div" k="afterLabel" label="After label" value={afterLabel} style={lbl} />
+          </div>
         </div>
       </div>
       <input type="range" min={0} max={100} value={pos} onChange={e => setPos(Number(e.target.value))} aria-label="Compare before and after"

@@ -28,9 +28,11 @@ export function focusSlideField(key: string, focus = true, attempt = 0): void {
   el.classList.add('se-flash');
   window.setTimeout(() => el.classList.remove('se-flash'), 1900);
 
-  if (focus && key !== 'slide-content' && (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) {
+  if (focus && key !== 'slide-content') {
     el.focus({ preventScroll: true });
-    const end = el.value.length;
-    el.setSelectionRange(end, end);
+    if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+      const end = el.value.length;
+      el.setSelectionRange(end, end);
+    }
   }
 }

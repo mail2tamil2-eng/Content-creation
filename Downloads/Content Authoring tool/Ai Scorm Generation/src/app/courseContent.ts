@@ -26,6 +26,7 @@ export function generateSlideContent(topic: CourseTopic, courseTitle: string, qu
   if (topic.slideType === 'title-bullets' || topic.slideType === 'summary') result.bullets = bullets;
   if (topic.slideType === 'spokesperson') { result.presenter = 'Maya'; result.script = `Welcome to ${topic.title}. ${content}`; }
   if (topic.slideType === 'audio') result.audioScript = content;
+  Object.assign(result, sampleMedia(topic.slideType, topic.id, topic.title));
   if (topic.slideType === 'scenario') { result.element = 'sequencing'; result.bullets = bullets; }
   if (topic.slideType === 'quiz' || topic.slideType === 'knowledge-check') {
     result.questions = Array.from({ length: Math.max(1, Math.min(50, questionCount)) }, (_, i) => ({
@@ -39,4 +40,22 @@ export function generateSlideContent(topic: CourseTopic, courseTitle: string, qu
     }));
   }
   return result;
+}
+
+/**
+ * Starter items for media slides so a new slide shows its layout (sample photos are
+ * shown until the author uploads images — see components/slidePhotos.ts).
+ */
+export function sampleMedia(slideType: string | undefined, id: string, title: string): Partial<CourseTopic> {
+  if (slideType === 'image-horizontal' || slideType === 'image-vertical' || slideType === 'media-collection') {
+    return {
+      imageCards: ['Set the direction', 'Bring people with you', 'Review and adjust'].map((heading, i) => ({
+        id: `${id}-img-${i}`, heading, description: `A practical example of ${title.toLowerCase()}.`, image: '', alt: '',
+      })),
+    };
+  }
+  if (slideType === 'hotspot') {
+    return { hotspots: ['Start here', 'Key detail', 'Next step'].map((t, i) => ({ id: `${id}-hs-${i}`, title: t, content: `What learners should notice about ${t.toLowerCase()}.` })) };
+  }
+  return {};
 }
