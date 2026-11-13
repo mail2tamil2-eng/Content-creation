@@ -223,13 +223,13 @@ export function AICreateCoursePage() {
   const themeBgColor      = customBgStyle === 'dark' ? '#111827' : customBgStyle === 'warm' ? '#FEF9EE' : '#FFFFFF';
   const autoFontColor     = customBgStyle === 'dark' ? '#FFFFFF' : '#172033';
   const baseSettings: PresentationSettings = aiTemplate
-    ? { template: 'vivid-blue', primary: '#134780', accent: '#F48120', background: '#111C2D', foreground: '#FFFFFF', font: 'Inter', buttonStyle: 'rounded', layout: 'single', logo: logoPreview || undefined }
+    ? { template: 'vivid-blue', primary: '#134780', accent: '#F48120', background: '#111C2D', foreground: '#FFFFFF', font: 'Inter', buttonStyle: 'rounded', layout: 'single', logo: customLogoPreview || logoPreview || undefined }
     : selectedPredefined === 'blank'
-    ? { template: 'elevate-white', primary: '#111827', accent: '#3B82F6', background: '#FFFFFF', foreground: '#172033', font: customFont, buttonStyle: customButtonStyle, layout: 'single', logo: logoPreview || undefined }
+    ? { template: 'elevate-white', primary: '#111827', accent: '#3B82F6', background: '#FFFFFF', foreground: '#172033', font: customFont, buttonStyle: customButtonStyle, layout: 'single', logo: customLogoPreview || logoPreview || undefined }
     : { template: design.template, primary: customPrimary, accent: customSecondary,
         background: useTplColours ? tpl!.colors.bg : themeBgColor, foreground: useTplColours ? tpl!.colors.text : autoFontColor,
         font: customFont, headingFont: tpl && customFont === tpl.fonts.body ? tpl.fonts.heading : undefined,
-        buttonStyle: customButtonStyle, layout: 'single', logo: logoPreview || undefined };
+        buttonStyle: customButtonStyle, layout: 'single', logo: customLogoPreview || logoPreview || undefined };
 
   /** Apply one of the 10 templates: colours, fonts, background and button style. */
   const applyTemplate = (id: string) => {
@@ -951,7 +951,7 @@ export function AICreateCoursePage() {
                             onMouseEnter={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.background = PL; } }}
                             onMouseLeave={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; } }}>
                             <input type="file" accept=".png,.jpg,.jpeg,.svg" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f && f.size <= 5 * 1024 * 1024) setCustomLogoPreview(URL.createObjectURL(f)); }} />
-                            {customLogoPreview ? <><img src={customLogoPreview} alt="logo" style={{ height: 28, objectFit: 'contain', maxWidth: 80 }} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Logo uploaded</span><button type="button" onClick={e => { e.preventDefault(); setCustomLogoPreview(''); }} style={{ marginLeft: 'auto', fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button></> : <><Upload size={15} color="#6B7280" /><span style={{ fontSize: 13, color: '#4B5563' }}>Upload logo</span></>}
+                            {customLogoPreview ? <><img src={customLogoPreview} alt="Organization logo preview" style={{ height: 28, objectFit: 'contain', maxWidth: 80 }} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Logo uploaded</span><button type="button" onClick={e => { e.preventDefault(); setCustomLogoPreview(''); }} style={{ marginLeft: 'auto', fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button></> : <><Upload size={15} color="#6B7280" /><span style={{ fontSize: 13, color: '#4B5563' }}>Upload logo</span></>}
                           </label>
                         </div>
                         {/* Copyright (bottom-left of every slide) and Watermark (large faint text across the slide) */}

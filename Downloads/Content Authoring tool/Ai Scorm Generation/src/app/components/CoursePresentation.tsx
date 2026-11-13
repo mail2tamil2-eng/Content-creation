@@ -121,7 +121,6 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
   </>;
   const showHeader  = settings.showHeader  !== false;
   const showFooter  = settings.showFooter  !== false;
-  const hLogo       = settings.headerShowLogo       !== false;
   const hCourseName = settings.headerShowCourseName !== false;
   const fCourseName = settings.footerShowCourseName !== false;
   const fPageNum    = settings.footerShowPageNum    !== false;
@@ -131,7 +130,6 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
       {tpl ? <TemplateMotifLayer motif={tpl.motif} strong={titleInContent} /> : <div className="course-slide-decoration" aria-hidden="true" />}
       {showHeader && (
         <header className="course-slide-header">
-          {hLogo && settings.logo && <img src={settings.logo} alt="Course logo" />}
           {hCourseName && <span>{courseTitle || 'Untitled Course'}</span>}
         </header>
       )}
@@ -153,6 +151,8 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
             textLength={Math.min(900, settings.footerWatermark.length * 70)} lengthAdjust="spacingAndGlyphs">{settings.footerWatermark}</text>
         </svg>
       )}
+      {/* Organization logo: top-right corner of every slide */}
+      {settings.logo && <img className="course-slide-logo" src={settings.logo} alt="Organization logo" />}
       {/* Copyright: bottom-left corner of every slide */}
       {settings.footerCopyright && <p className="course-slide-copyright">{settings.footerCopyright}</p>}
       {showFooter && (

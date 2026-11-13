@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   Plus, MoreHorizontal, FileText, List, Lock,
   GripVertical, Pencil, Trash2, Sparkles, RefreshCw, X,
-  PanelLeftClose, ChevronLeft, ArrowUp, ArrowDown,
+  PanelLeftClose, ChevronLeft,
 } from 'lucide-react';
 import { SlideLibraryModal, type SlideComplexity } from './SlideLibraryModal';
 import { sampleMedia } from '../courseContent';
@@ -381,19 +381,15 @@ function AddSlideWithAIModal({
 
 // ── TopicMenu ─────────────────────────────────────────────────────────────────
 export function TopicMenu({
-  x, y, onClose, onEdit, onRegenerate, onDelete, onMoveUp, onMoveDown,
+  x, y, onClose, onEdit, onRegenerate, onDelete,
 }: {
   x: number; y: number; onClose: () => void;
   onEdit: () => void;
   onRegenerate: () => void; onDelete: () => void;
-  /** Omitted when the slide is already first / last in the course. */
-  onMoveUp?: () => void; onMoveDown?: () => void;
 }) {
   return (
     <PortalMenu x={x} y={y} onClose={onClose}>
       <MenuItem icon={<Pencil size={14} />} label="Edit slide" onClick={() => { onEdit(); onClose(); }} />
-      <MenuItem icon={<ArrowUp size={14} />} label="Move up" disabled={!onMoveUp} onClick={() => { onMoveUp?.(); onClose(); }} />
-      <MenuItem icon={<ArrowDown size={14} />} label="Move down" disabled={!onMoveDown} onClick={() => { onMoveDown?.(); onClose(); }} />
       <MenuItem icon={<RefreshCw size={14} />} label="Regenerate slide" onClick={() => { onRegenerate(); onClose(); }} />
       <MenuItem icon={<Trash2 size={14} />} label="Delete slide" danger divider onClick={() => { onDelete(); onClose(); }} />
     </PortalMenu>
@@ -1169,8 +1165,6 @@ export function CourseSidebar({
           onEdit={() => setEditTopic({ si: topicMenu.si, ti: topicMenu.ti, title: sections[topicMenu.si]?.topics[topicMenu.ti]?.title ?? '' })}
           onRegenerate={() => setConfirmRegenTopic({ si: topicMenu.si, ti: topicMenu.ti })}
           onDelete={() => setConfirmDelTopic({ si: topicMenu.si, ti: topicMenu.ti })}
-          onMoveUp={moveTarget(topicMenu.si, topicMenu.ti, -1) ? () => moveTopicBy(topicMenu.si, topicMenu.ti, -1) : undefined}
-          onMoveDown={moveTarget(topicMenu.si, topicMenu.ti, 1) ? () => moveTopicBy(topicMenu.si, topicMenu.ti, 1) : undefined}
         />
       )}
 
