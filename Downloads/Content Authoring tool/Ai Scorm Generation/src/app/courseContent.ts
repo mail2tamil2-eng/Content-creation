@@ -60,6 +60,15 @@ export function sampleMedia(slideType: string | undefined, id: string, title: st
         .map(([label, description], i) => ({ id: `${id}-s-${i}`, label, description })),
     };
   }
+  if (slideType === 'table') {
+    return {
+      tableHeaders: ['Approach', 'When to use it', 'Example'],
+      tableRows: [
+        ['Quick fix', 'The issue is small and clear', 'Replace a missing item straight away'],
+        ['Escalate', 'You need more authority or information', 'Bring in a supervisor and explain the next step'],
+      ],
+    };
+  }
   if (slideType === 'image-vertical' || slideType === 'image-visual') {
     return { content: `Use this space to explain ${title.toLowerCase()}. Pair the picture with one clear idea and a short example.`, imagePosition: 'left', imageUrl: '', alt: '' };
   }

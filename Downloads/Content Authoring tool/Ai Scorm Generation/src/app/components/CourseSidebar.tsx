@@ -6,7 +6,8 @@ import {
   PanelLeftClose, ChevronLeft,
 } from 'lucide-react';
 import { SlideLibraryModal, type SlideComplexity } from './SlideLibraryModal';
-import { sampleMedia } from '../courseContent';
+import { generateSlideContent, sampleMedia, type CourseTopic } from '../courseContent';
+import { AIPromptDialog } from './AIPromptDialog';
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const P                = '#1565F0';
@@ -197,96 +198,6 @@ function EditModal({
   );
 }
 
-// ── GenerateSectionModal ──────────────────────────────────────────────────────
-export function GenerateSectionModal({
-  onGenerate, onClose,
-}: {
-  onGenerate: (prompt: string, location: string) => Promise<void>;
-  onClose: () => void;
-}) {
-  const [prompt, setPrompt] = useState('');
-  const [location, setLocation] = useState('end');
-  const [loading, setLoading] = useState(false);
-
-  const handle = async () => {
-    if (!prompt.trim() || loading) return;
-    setLoading(true);
-    try { await onGenerate(prompt.trim(), location); onClose(); }
-    finally { setLoading(false); }
-  };
-
-  return createPortal(
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: '#fff', borderRadius: 14, padding: 24, width: 480, maxWidth: 'calc(100vw - 32px)', boxShadow: '0 20px 60px rgba(0,0,0,0.18)', fontFamily: 'Nunito Sans, system-ui, sans-serif' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
-          <span style={{ flex: 1, fontSize: 16, fontWeight: 600, color: '#111827' }}>Generate section with AI</span>
-          <button onClick={onClose} style={{ width: 28, height: 28, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, color: '#6B7280' }}>
-            <X size={16} />
-          </button>
-        </div>
-        <p style={{ fontSize: 13, color: '#6B7280', marginBottom: 16 }}>
-          Describe the section and topics you want to create.
-        </p>
-        <textarea
-          autoFocus
-          value={prompt}
-          onChange={e => setPrompt(e.target.value)}
-          placeholder="e.g. A section covering communication skills for front-desk hotel staff…"
-          rows={4}
-          style={{ width: '100%', padding: '10px 12px', border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 14, resize: 'vertical', outline: 'none', boxSizing: 'border-box', marginBottom: 14, fontFamily: 'inherit', lineHeight: 1.6, transition: 'border-color 0.15s' }}
-          onFocus={e => { (e.currentTarget).style.borderColor = P; }}
-          onBlur={e => { (e.currentTarget).style.borderColor = BORDER; }}
-        />
-        <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#6B7280', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-            Location
-          </label>
-          <select
-            value={location}
-            onChange={e => setLocation(e.target.value)}
-            style={{ width: '100%', padding: '9px 12px', border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 13, color: '#374151', background: '#F9FAFB', outline: 'none', cursor: 'pointer' }}
-          >
-            <option value="end">Add at end</option>
-            <option value="before">Before selected section</option>
-            <option value="after">After selected section</option>
-          </select>
-        </div>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '9px 18px', borderRadius: 8, border: `1px solid ${BORDER}`, background: '#fff', fontSize: 13, cursor: 'pointer', color: '#374151' }}>
-            Cancel
-          </button>
-          <button
-            onClick={handle}
-            disabled={!prompt.trim() || loading}
-            style={{
-              padding: '9px 18px', borderRadius: 8, border: 'none',
-              background: !prompt.trim() ? '#93C5FD' : P,
-              color: '#fff', fontSize: 13, fontWeight: 600,
-              cursor: prompt.trim() && !loading ? 'pointer' : 'default',
-              display: 'flex', alignItems: 'center', gap: 6, minWidth: 110, justifyContent: 'center',
-              transition: 'background 0.15s',
-            }}
-          >
-            {loading ? (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ animation: 'spin 0.8s linear infinite' }}>
-                  <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-                  <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="3" strokeOpacity="0.25" />
-                  <path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round" />
-                </svg>
-                Generating…
-              </>
-            ) : (
-              <><Sparkles size={14} /> Generate</>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
-  );
-}
-
 // ── SectionMenu ───────────────────────────────────────────────────────────────
 export function SectionMenu({
   x, y, onClose, onEdit, onAddWithAI, onRegenerate, onDelete,
@@ -301,81 +212,6 @@ export function SectionMenu({
       <MenuItem icon={<RefreshCw size={14} />} label="Regenerate complete section" onClick={() => { onRegenerate(); onClose(); }} />
       <MenuItem icon={<Trash2 size={14} />} label="Delete section" danger divider onClick={() => { onDelete(); onClose(); }} />
     </PortalMenu>
-  );
-}
-
-// ── AddSlideWithAIModal ───────────────────────────────────────────────────────
-function AddSlideWithAIModal({
-  onAdd, onClose,
-}: {
-  onAdd: (prompt: string) => Promise<void>;
-  onClose: () => void;
-}) {
-  const [prompt, setPrompt] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handle = async () => {
-    if (!prompt.trim() || loading) return;
-    setLoading(true);
-    try { await onAdd(prompt.trim()); onClose(); }
-    finally { setLoading(false); }
-  };
-
-  return createPortal(
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: '#fff', borderRadius: 14, padding: 24, width: 480, maxWidth: 'calc(100vw - 32px)', boxShadow: '0 20px 60px rgba(0,0,0,0.18)', fontFamily: 'Nunito Sans, system-ui, sans-serif' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
-          <span style={{ flex: 1, fontSize: 16, fontWeight: 600, color: '#111827' }}>Add slide with AI</span>
-          <button onClick={onClose} style={{ width: 28, height: 28, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, color: '#6B7280' }}>
-            <X size={16} />
-          </button>
-        </div>
-        <p style={{ fontSize: 13, color: '#6B7280', marginBottom: 16 }}>
-          Describe the slide you want to create and AI will generate it for you.
-        </p>
-        <textarea
-          autoFocus
-          value={prompt}
-          onChange={e => setPrompt(e.target.value)}
-          onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handle(); }}
-          placeholder="e.g. A slide about the importance of active listening in customer service…"
-          rows={4}
-          style={{ width: '100%', padding: '10px 12px', border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 14, resize: 'vertical', outline: 'none', boxSizing: 'border-box', marginBottom: 20, fontFamily: 'inherit', lineHeight: 1.6, transition: 'border-color 0.15s' }}
-          onFocus={e => { e.currentTarget.style.borderColor = P; }}
-          onBlur={e => { e.currentTarget.style.borderColor = BORDER; }}
-        />
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '9px 18px', borderRadius: 8, border: `1px solid ${BORDER}`, background: '#fff', fontSize: 13, cursor: 'pointer', color: '#374151' }}>
-            Cancel
-          </button>
-          <button
-            onClick={handle}
-            disabled={!prompt.trim() || loading}
-            style={{
-              padding: '9px 18px', borderRadius: 8, border: 'none',
-              background: !prompt.trim() ? '#93C5FD' : P,
-              color: '#fff', fontSize: 13, fontWeight: 600,
-              cursor: prompt.trim() && !loading ? 'pointer' : 'default',
-              display: 'flex', alignItems: 'center', gap: 6, minWidth: 110, justifyContent: 'center',
-              transition: 'background 0.15s',
-            }}
-          >
-            {loading ? (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ animation: 'spin 0.8s linear infinite' }}>
-                  <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="3" strokeOpacity="0.25" />
-                  <path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round" />
-                </svg>
-                Generating…
-              </>
-            ) : (
-              <><Sparkles size={14} /> Generate slide</>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
   );
 }
 
@@ -574,7 +410,7 @@ export function TopicItem({
 export function SectionItem({
   section, si, isExpanded, selectedSection, selectedTopic,
   onToggle, onSelectTopic, onSectionMenu, onTopicMenu, onOpenSlideLibrary,
-  newTopicId, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd, topicDnd, onMoveTopic,
+  newTopicId, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd, topicDnd, onMoveTopic, onGenerateSlide,
 }: {
   section: CSSection; si: number; isExpanded: boolean;
   selectedSection: number; selectedTopic: number;
@@ -592,6 +428,8 @@ export function SectionItem({
   /** Drag-and-drop for the slides in this section. */
   topicDnd?: (ti: number) => TopicDnD;
   onMoveTopic?: (ti: number, dir: -1 | 1) => void;
+  /** Opens "Generate slide with AI" for this section. */
+  onGenerateSlide?: () => void;
 }) {
   const [rowHovered, setRowHovered] = useState(false);
   const [hoveredTi, setHoveredTi] = useState<number | null>(null);
@@ -746,11 +584,12 @@ export function SectionItem({
             </React.Fragment>
           ))}
 
-          {/* + New slide — aligned with topic title column (~54px from sidebar edge) */}
+          {/* + New slide / Generate with AI — aligned with topic title column (~54px from sidebar edge) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 46, marginTop: 4, flexWrap: 'wrap' }}>
           <button
+            type="button"
             onClick={() => onOpenSlideLibrary(section.topics.length - 1)}
             style={{
-              marginLeft: 46, marginTop: 4,
               display: 'flex', alignItems: 'center', gap: 5,
               height: 32, padding: '0 8px', borderRadius: 6,
               border: 'none', background: 'none',
@@ -762,6 +601,20 @@ export function SectionItem({
             <Plus size={13} color={P} />
             New slide
           </button>
+          {onGenerateSlide && (
+            <button
+              type="button"
+              onClick={onGenerateSlide}
+              className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#1565F0]"
+              style={{ height: 32, padding: '0 8px', borderRadius: 6, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: P, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 5 }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(79,70,229,0.07)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
+            >
+              <Sparkles size={13} color={P} aria-hidden="true" />
+              Generate with AI
+            </button>
+          )}
+          </div>
         </div>
       )}
     </div>
@@ -826,6 +679,7 @@ export function CourseSidebar({
   // Add section
   const [showAddMenu, setShowAddMenu] = useState<{ x: number; y: number } | null>(null);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [slideAI, setSlideAI] = useState<number | null>(null);
   const addBtnRef = useRef<HTMLButtonElement>(null);
 
   // Drag & drop reorder
@@ -917,29 +771,49 @@ export function CourseSidebar({
     setTimeout(() => onSelectTopic(sections.length, 0), 0);
   };
 
-  const doGenerateSection = async (prompt: string, location: string) => {
+  /** Turns a prompt like "a slide about active listening" into a short title. */
+  const titleFromPrompt = (prompt: string, maxWords: number) => {
+    const core = prompt.trim()
+      .replace(/^(please\s+)?(create|make|generate|add|write)\s+/i, '')
+      .replace(/^(a|an|the)\s+/i, '')
+      .replace(/^(new\s+)?(slide|section|module|lesson)\s+/i, '')
+      .replace(/^(about|on|covering|explaining|that explains|for|to explain)\s+/i, '')
+      .replace(/^(a|an|the)\s+/i, '')
+      .replace(/[.?!]+$/, '');
+    const words = core.split(/\s+/).slice(0, maxWords).join(' ');
+    return words ? words.charAt(0).toUpperCase() + words.slice(1) : 'New slide';
+  };
+  /** Picks a slide layout from the words in the prompt (falls back to bullet points). */
+  const slideTypeFromPrompt = (prompt: string) => {
+    const p = prompt.toLowerCase();
+    if (/\b(quiz|question|check|test|assess)/.test(p)) return 'knowledge-check';
+    if (/\b(step|steps|process|stages|sequence|timeline|how to)\b/.test(p)) return 'vertical-series';
+    if (/\b(compare|comparison|versus|vs\.?|table|difference)/.test(p)) return 'table';
+    if (/\b(image|photo|picture|visual|diagram)/.test(p)) return 'image-vertical';
+    if (/\b(explain|overview|introduc|describe|what is)/.test(p)) return 'title-text';
+    return 'title-bullets';
+  };
+  const buildTopic = (title: string, slideType: string) => {
+    const topic = generateSlideContent({ id: uid(), title, slideType } as CourseTopic, courseTitle || 'this course');
+    return { ...topic, locked: false };
+  };
+
+  // New section from a prompt, always added at the end of the course
+  const doGenerateSection = async (prompt: string) => {
     await new Promise(r => setTimeout(r, 900));
-    const words = prompt.split(' ');
-    const titleWords = words.slice(0, Math.min(5, words.length));
-    const sectionTitle = titleWords.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const sectionTitle = titleFromPrompt(prompt, 6);
     const newSec = {
       id: uid(), title: sectionTitle, description: '', expanded: false,
       topics: [
-        { id: uid(), title: `Introduction to ${sectionTitle}`, slideType: 'title-bullets', content: '', bullets: [], locked: false },
-        { id: uid(), title: 'Key Concepts and Skills', slideType: 'title-bullets', content: '', bullets: [], locked: false },
-        { id: uid(), title: 'Practical Examples', slideType: 'title-bullets', content: '', bullets: [], locked: false },
-        { id: uid(), title: 'Summary and Next Steps', slideType: 'summary', content: '', bullets: [], locked: false },
+        buildTopic(`Introduction to ${sectionTitle.toLowerCase()}`, 'title-text'),
+        buildTopic('Key concepts and skills', 'title-bullets'),
+        buildTopic('In practice', 'image-vertical'),
+        buildTopic('Summary and next steps', 'title-bullets'),
       ],
     };
-    onSectionsChange(prev => {
-      const arr = [...prev];
-      if (location === 'end') return [...arr, newSec as never];
-      const idx = Math.max(0, selectedSection);
-      if (location === 'before') arr.splice(idx, 0, newSec as never);
-      else arr.splice(idx + 1, 0, newSec as never);
-      return arr;
-    });
+    onSectionsChange(prev => [...prev, newSec as never]);
     setExpandedId(newSec.id);
+    setTimeout(() => onSelectTopic(sections.length, 0), 0);
   };
 
   // ── Topic mutations ────────────────────────────────────────────────────────
@@ -979,22 +853,23 @@ export function CourseSidebar({
     doEditTopic(si, ti, titles[Math.floor(Math.random() * titles.length)]);
   };
 
-  const doAddTopicWithAI = async (si: number, afterTi: number, prompt: string) => {
+  // New slide from a prompt: layout chosen from the prompt, content generated, added at the end of the section
+  const doAddTopicWithAI = async (si: number, prompt: string) => {
     await new Promise(r => setTimeout(r, 900));
-    const words = prompt.split(' ');
-    const titleWords = words.slice(0, Math.min(6, words.length));
-    const title = titleWords.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    doAddTopic(si, afterTi, 'title-bullets', undefined);
-    // Update the just-inserted topic with the AI-generated title
-    setTimeout(() => {
-      onSectionsChange(prev => prev.map((s, i) => {
-        if (i !== si) return s;
-        const topics = [...s.topics];
-        const inserted = topics[afterTi + 1];
-        if (inserted) topics[afterTi + 1] = { ...inserted, title };
-        return { ...s, topics };
-      }));
-    }, 50);
+    const type = slideTypeFromPrompt(prompt);
+    let topic = buildTopic(titleFromPrompt(prompt, 8), type);
+    if (type === 'knowledge-check') {
+      // Ask about the subject of the prompt ("…understanding of empathy" → "empathy")
+      const subject = (prompt.match(/\b(?:of|about|on|for)\s+(.+?)[.?!]*$/i)?.[1] ?? titleFromPrompt(prompt, 6)).trim();
+      const q = topic.questions?.[0];
+      topic = { ...topic, title: `Check your understanding: ${subject.charAt(0).toUpperCase() + subject.slice(1)}`,
+        questions: q ? [{ ...q, text: `Which action best shows ${subject.toLowerCase()} in practice?` }] : topic.questions };
+    }
+    const at = sections[si]?.topics.length ?? 0;
+    onSectionsChange(prev => prev.map((s2, i) => i === si ? { ...s2, topics: [...s2.topics, topic as never] } : s2));
+    setNewTopicId(topic.id);
+    setTimeout(() => setNewTopicId(null), 600);
+    setTimeout(() => { onSelectTopic(si, at); onTopicInserted?.(); }, 0);
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -1113,6 +988,7 @@ export function CourseSidebar({
             onDragEnd={() => { setDragFrom(null); setDragOver(null); }}
             topicDnd={topicDndFor(si)}
             onMoveTopic={(ti, dir) => moveTopicBy(si, ti, dir)}
+            onGenerateSlide={() => setSlideAI(si)}
           />
         ))}
 
@@ -1237,12 +1113,26 @@ export function CourseSidebar({
       )}
 
       {/* ── Generate with AI modal ── */}
-      {showGenerateModal && (
-        <GenerateSectionModal
-          onGenerate={doGenerateSection}
-          onClose={() => setShowGenerateModal(false)}
-        />
-      )}
+      <AIPromptDialog
+        open={showGenerateModal}
+        onOpenChange={setShowGenerateModal}
+        title="Generate section with AI"
+        description="Describe the section and topics you want to create."
+        hint="The new section is added at the end of the course."
+        placeholder="e.g. A section covering communication skills for front-desk hotel staff…"
+        actionLabel="Generate"
+        onGenerate={doGenerateSection}
+      />
+      <AIPromptDialog
+        open={slideAI !== null}
+        onOpenChange={o => { if (!o) setSlideAI(null); }}
+        title="Generate slide with AI"
+        description="Describe the slide you want. AI picks a fitting layout (text, bullet points, steps, table, image or knowledge check) and writes the first draft."
+        hint={slideAI !== null && sections[slideAI] ? `Added at the end of “${sections[slideAI].title}”.` : undefined}
+        placeholder="e.g. A slide explaining the steps to handle a customer complaint…"
+        actionLabel="Generate slide"
+        onGenerate={async prompt => { if (slideAI !== null) await doAddTopicWithAI(slideAI, prompt); }}
+      />
 
 
       {/* ── Slide Library modal ── */}
