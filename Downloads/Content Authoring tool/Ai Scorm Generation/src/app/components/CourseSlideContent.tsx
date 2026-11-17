@@ -552,41 +552,110 @@ function Quiz({ topic }: { topic: CourseTopic }) {
   // Questions live in `questions[]` (Slide Settings quiz editor / generator):
   //   { question | text, options[{ text, correct, remark? }], feedback? }
   // Older/simple data may use `question` / `quizOptions` / `feedback` on the topic (one question).
+  //
+  // Knowledge check (ungraded): instant right/wrong feedback + "Reveal answer".
+  // Quiz (graded): answers are neutral until "Submit quiz", then a score screen (pass mark = passingScore, default 70%).
   type Opt = { id?: string; text: string; correct: boolean; remark?: string };
   type Q = { question?: string; text?: string; options?: Opt[]; feedback?: string };
   const list = g<Q[]>(topic, 'questions') || [];
   const fromQuestions = list.length > 0;
   const total = fromQuestions ? list.length : 1;
+  const isQuiz = topic.slideType === 'quiz';
+  const passMark = g<number>(topic, 'passingScore') ?? 70;
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [revealed, setRevealed] = useState<Record<number, boolean>>({});
+  const [submitted, setSubmitted] = useState(false);
   const editable = useEditable();
   const idx = Math.min(index, total - 1);
-  const q = fromQuestions ? list[idx] : undefined;
 
+  const questionAt = (i: number) => fromQuestions ? list[i] : undefined;
+  const optionsAt = (i: number): Opt[] => questionAt(i)?.options ?? g<QuizOption[]>(topic, 'quizOptions') ?? [];
+  const q = questionAt(idx);
   const question = (q ? (q.question ?? q.text) : undefined) || g<string>(topic, 'question') || (fromQuestions ? '' : topic.content) || '';
-  const options: Opt[] = q?.options ?? g<QuizOption[]>(topic, 'quizOptions') ?? [];
+  const options = optionsAt(idx);
   const chosen = answers[idx];
   const chosenOpt = chosen !== undefined ? options[chosen] : undefined;
+  const correctOpt = options.find(o => o.correct);
   const feedback = (q ? q.feedback : g<string>(topic, 'feedback')) || '';
-  const shownFeedback = chosenOpt?.remark || feedback;
+  const isRevealed = !isQuiz && !!revealed[idx];
   const qKey = fromQuestions ? `questions.${idx}.question` : 'question';
   const optKey = (i: number) => fromQuestions ? `questions.${idx}.options.${i}.text` : `quizOptions.${i}.text`;
   const fbKey = fromQuestions ? `questions.${idx}.feedback` : 'feedback';
-  const label = topic.slideType === 'quiz' ? 'Quiz' : 'Knowledge check';
+  const label = isQuiz ? 'Quiz' : 'Knowledge check';
   const brand = 'var(--slide-primary-text, var(--slide-primary))';
+  const OK = '#047857', BAD = '#B91C1C'; // white text on these ≥ 4.5:1
 
-  const row = (isChosen: boolean, correct: boolean): React.CSSProperties => ({ display: 'flex', alignItems: 'center', gap: 'clamp(6px,1cqw,10px)', padding: 'clamp(7px,1.1cqw,11px) clamp(10px,1.5cqw,15px)', background: isChosen ? (correct ? 'color-mix(in srgb,#059669 14%,var(--slide-panel))' : 'color-mix(in srgb,#DC2626 10%,var(--slide-panel))') : 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', border: '1px solid', borderColor: isChosen ? (correct ? '#059669' : '#DC2626') : 'color-mix(in srgb,var(--slide-text) 22%,transparent)', transition: 'all 0.12s' });
-  const navBtn: React.CSSProperties = { padding: 'clamp(6px,0.9cqw,9px) clamp(12px,1.8cqw,18px)', borderRadius: 'var(--slide-radius)', border: '1px solid color-mix(in srgb,var(--slide-text) 30%,transparent)', background: 'transparent', color: 'var(--slide-text)', fontSize: fs.sm, fontWeight: 600, cursor: 'pointer', minHeight: 32 };
+  // Score
+  const isCorrect = (i: number) => { const a = answers[i]; return a !== undefined && !!optionsAt(i)[a]?.correct; };
+  const correctCount = Array.from({ length: total }, (_, i) => i).filter(isCorrect).length;
+  const answeredCount = Object.keys(answers).length;
+  const pct = Math.round((correctCount / total) * 100);
+  const passed = pct >= passMark;
 
+  const panelBorder = 'color-mix(in srgb,var(--slide-text) 22%,transparent)';
+  const row = (i: number): React.CSSProperties => {
+    const isChosen = chosen === i, opt = options[i];
+    let border = panelBorder, bg = 'var(--slide-panel)';
+    if (isQuiz) { if (isChosen) { border = 'var(--slide-primary)'; bg = 'color-mix(in srgb,var(--slide-primary) 14%,var(--slide-panel))'; } }
+    else if (isChosen || (isRevealed && opt?.correct)) {
+      const good = !!opt?.correct;
+      border = good ? '#059669' : '#DC2626';
+      bg = good ? 'color-mix(in srgb,#059669 14%,var(--slide-panel))' : 'color-mix(in srgb,#DC2626 10%,var(--slide-panel))';
+    }
+    return { display: 'flex', alignItems: 'center', gap: 'clamp(6px,1cqw,10px)', padding: 'clamp(7px,1.1cqw,11px) clamp(10px,1.5cqw,15px)', background: bg, borderRadius: 'var(--slide-radius)', border: `1px solid ${border}`, transition: 'all 0.12s' };
+  };
+  const btn = (primary = false): React.CSSProperties => ({ padding: 'clamp(6px,0.9cqw,9px) clamp(12px,1.8cqw,18px)', borderRadius: 'var(--slide-radius)', border: primary ? '1px solid var(--slide-primary)' : `1px solid color-mix(in srgb,var(--slide-text) 30%,transparent)`, background: primary ? 'var(--slide-primary)' : 'transparent', color: primary ? 'var(--slide-on-primary, #fff)' : 'var(--slide-text)', fontSize: fs.sm, fontWeight: 600, cursor: 'pointer', minHeight: 32 });
+  const chip = (good: boolean, text: string) => <span style={{ marginLeft: 'auto', flexShrink: 0, padding: '2px 8px', borderRadius: 999, background: good ? OK : BAD, color: '#fff', fontSize: 'clamp(10px,1.2cqw,12px)', fontWeight: 700 }}>{text}</span>;
+
+  const card: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 'clamp(8px,1.2cqw,12px)', padding: 'clamp(10px,1.8cqw,18px)', borderRadius: 'calc(var(--slide-radius) + 4px)', border: '1px solid color-mix(in srgb,var(--slide-text) 14%,transparent)', background: 'color-mix(in srgb,var(--slide-panel) 60%,transparent)' };
+  const header = (right: React.ReactNode) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <span aria-hidden="true" style={{ width: 'clamp(22px,3cqw,30px)', height: 'clamp(22px,3cqw,30px)', borderRadius: 7, background: brand, color: 'var(--slide-bg)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: fs.sm, fontWeight: 800 }}>✓</span>
+      <E as="h2" k="title" label="Title" value={topic.title || label} placeholder={label}
+        style={{ margin: 0, fontSize: fs.sm, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: brand, fontFamily: 'inherit', lineHeight: 1.3 }} />
+      <span style={{ marginLeft: 'auto', fontSize: fs.sm, opacity: 0.85 }} aria-live="polite">{right}</span>
+    </div>
+  );
+
+  // ── Quiz results screen ──
+  if (isQuiz && submitted) {
+    return (
+      <section aria-label={`${label} results`} style={card}>
+        {header(`${total} question${total !== 1 ? 's' : ''}`)}
+        <div role="status" style={{ display: 'flex', alignItems: 'center', gap: 'clamp(12px,2cqw,20px)', flexWrap: 'wrap' }}>
+          <div>
+            <p style={{ margin: 0, fontSize: fs.sm, opacity: 0.85 }}>Your score</p>
+            <p style={{ margin: 0, fontSize: 'clamp(24px,5cqw,48px)', fontWeight: 800, lineHeight: 1.1 }}>{correctCount} / {total}</p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span style={{ fontSize: fs.lg, fontWeight: 700 }}>{pct}%</span>
+            <span style={{ alignSelf: 'flex-start', padding: '3px 10px', borderRadius: 999, background: passed ? OK : BAD, color: '#fff', fontSize: fs.sm, fontWeight: 700 }}>
+              {passed ? '✓ Passed' : '✗ Not passed'}
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, flexBasis: '100%' }}>Pass mark {passMark}%{answeredCount < total ? ` · ${total - answeredCount} unanswered` : ''}</p>
+        </div>
+        <ol style={{ margin: 0, paddingLeft: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {Array.from({ length: total }, (_, i) => (
+            <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: fs.sm }}>
+              <span aria-hidden="true" style={{ fontWeight: 800, color: isCorrect(i) ? '#34D399' : '#F87171', width: '1.2em' }}>{isCorrect(i) ? '✓' : '✗'}</span>
+              <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Q{i + 1}. {questionAt(i)?.question ?? questionAt(i)?.text ?? question}</span>
+              <span style={{ fontWeight: 600 }}>{isCorrect(i) ? 'Correct' : answers[i] === undefined ? 'Unanswered' : 'Incorrect'}</span>
+            </li>
+          ))}
+        </ol>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button type="button" style={btn(true)} onClick={() => { setAnswers({}); setSubmitted(false); setIndex(0); }}>Retake quiz</button>
+        </div>
+      </section>
+    );
+  }
+
+  const last = idx === total - 1;
   return (
-    <section aria-label={label} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(8px,1.2cqw,12px)', padding: 'clamp(10px,1.8cqw,18px)', borderRadius: 'calc(var(--slide-radius) + 4px)', border: '1px solid color-mix(in srgb,var(--slide-text) 14%,transparent)', background: 'color-mix(in srgb,var(--slide-panel) 60%,transparent)' }}>
-      {/* Header: label + "1 / N" */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span aria-hidden="true" style={{ width: 'clamp(22px,3cqw,30px)', height: 'clamp(22px,3cqw,30px)', borderRadius: 7, background: brand, color: 'var(--slide-bg)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: fs.sm, fontWeight: 800 }}>✓</span>
-        <E as="h2" k="title" label="Title" value={topic.title || label} placeholder={label}
-          style={{ margin: 0, fontSize: fs.sm, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: brand, fontFamily: 'inherit', lineHeight: 1.3 }} />
-        {total > 1 && <span style={{ marginLeft: 'auto', fontSize: fs.sm, opacity: 0.85 }} aria-live="polite">{idx + 1} / {total}</span>}
-      </div>
+    <section aria-label={label} style={card}>
+      {header(total > 1 ? `${idx + 1} / ${total}` : null)}
       {total > 1 && (
         <div role="progressbar" aria-label="Questions" aria-valuemin={1} aria-valuemax={total} aria-valuenow={idx + 1}
           style={{ height: 'clamp(3px,0.45cqw,5px)', borderRadius: 3, background: 'color-mix(in srgb,var(--slide-text) 18%,transparent)', overflow: 'hidden' }}>
@@ -599,33 +668,46 @@ function Quiz({ topic }: { topic: CourseTopic }) {
       {options.length > 0 && (
         <div role={editable ? undefined : 'radiogroup'} aria-label={editable ? undefined : `Answers for question ${idx + 1}`} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(4px,0.6cqw,7px)' }}>
           {options.map((opt, i) => editable ? (
-            <div key={opt.id || i} style={row(false, false)}>
+            <div key={opt.id || i} style={row(i)}>
               <span aria-hidden="true" style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid color-mix(in srgb,var(--slide-text) 60%,transparent)', flexShrink: 0 }} />
               <E k={optKey(i)} label={`Option ${i + 1}`} value={opt.text} placeholder={`Option ${i + 1}`} style={{ fontSize: fs.md, flex: 1, minWidth: 0 }} />
+              {isRevealed && opt.correct && chip(true, 'Correct answer')}
             </div>
           ) : (
-            <label key={`${idx}-${opt.id || i}`} style={{ ...row(chosen === i, opt.correct), cursor: 'pointer' }}>
+            <label key={`${idx}-${opt.id || i}`} style={{ ...row(i), cursor: 'pointer' }}>
               <input type="radio" name={`q-${topic.id}-${idx}`} checked={chosen === i} onChange={() => setAnswers(a => ({ ...a, [idx]: i }))} style={{ accentColor: 'var(--slide-primary)', flexShrink: 0 }} />
-              <span style={{ fontSize: fs.md }}>{opt.text || <Dim>{`Option ${i + 1}`}</Dim>}</span>
+              <span style={{ fontSize: fs.md, flex: 1 }}>{opt.text || <Dim>{`Option ${i + 1}`}</Dim>}</span>
+              {!isQuiz && chosen === i && chip(opt.correct, opt.correct ? 'Correct' : 'Incorrect')}
+              {isRevealed && opt.correct && chosen !== i && chip(true, 'Correct answer')}
             </label>
           ))}
         </div>
       )}
 
-      {(editable || (chosen !== undefined && shownFeedback)) && (
+      {/* Knowledge check feedback: after answering or revealing */}
+      {!isQuiz && (editable || chosen !== undefined || isRevealed) && (
         <div role={editable ? undefined : 'status'} style={{ fontSize: fs.sm, padding: 'clamp(6px,1cqw,10px)', background: 'var(--slide-panel)', borderRadius: 'var(--slide-radius)', lineHeight: 1.6 }}>
           {editable
             ? <><span style={{ fontWeight: 700 }}>Feedback: </span><E k={fbKey} multiline label={`Question ${idx + 1} feedback`} value={feedback} placeholder="Add feedback shown after answering" /></>
-            : <><span style={{ fontWeight: 700 }}>{chosenOpt?.correct ? 'Correct. ' : 'Not quite. '}</span>{shownFeedback}</>}
+            : chosen !== undefined
+              ? <><span style={{ fontWeight: 700 }}>{chosenOpt?.correct ? 'Correct. ' : 'Not quite. '}</span>{chosenOpt?.remark || feedback}</>
+              : <><span style={{ fontWeight: 700 }}>Answer: </span>{correctOpt?.text}{(correctOpt?.remark || feedback) ? ` — ${correctOpt?.remark || feedback}` : ''}</>}
         </div>
       )}
 
-      {total > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, paddingTop: 2 }}>
-          <button type="button" style={{ ...navBtn, opacity: idx === 0 ? 0.5 : 1, cursor: idx === 0 ? 'not-allowed' : 'pointer' }} disabled={idx === 0} onClick={() => setIndex(idx - 1)}>Previous</button>
-          <button type="button" style={{ ...navBtn, opacity: idx === total - 1 ? 0.5 : 1, cursor: idx === total - 1 ? 'not-allowed' : 'pointer' }} disabled={idx === total - 1} onClick={() => setIndex(idx + 1)}>Next question</button>
-        </div>
-      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 2, flexWrap: 'wrap' }}>
+        {total > 1 && <button type="button" style={{ ...btn(), opacity: idx === 0 ? 0.5 : 1, cursor: idx === 0 ? 'not-allowed' : 'pointer' }} disabled={idx === 0} onClick={() => setIndex(idx - 1)}>Previous</button>}
+        {!isQuiz && (
+          <button type="button" aria-pressed={isRevealed} style={{ ...btn(), marginLeft: total > 1 ? 0 : undefined }} onClick={() => setRevealed(r => ({ ...r, [idx]: !r[idx] }))}>
+            {isRevealed ? 'Hide answer' : 'Reveal answer'}
+          </button>
+        )}
+        <span style={{ flex: 1 }} />
+        {isQuiz && last
+          ? <button type="button" style={btn(true)} onClick={() => setSubmitted(true)}>Submit quiz</button>
+          : total > 1 && <button type="button" style={{ ...btn(), opacity: last ? 0.5 : 1, cursor: last ? 'not-allowed' : 'pointer' }} disabled={last} onClick={() => setIndex(idx + 1)}>Next question</button>}
+      </div>
+      {isQuiz && <p style={{ margin: 0, fontSize: fs.sm, opacity: 0.85 }} aria-live="polite">{answeredCount} of {total} answered · pass mark {passMark}%</p>}
     </section>
   );
 }

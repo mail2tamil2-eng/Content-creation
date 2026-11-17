@@ -1039,7 +1039,8 @@ function QuestionCard({
 }
 
 function QuizEditor({ t, u, templateId }: { t: CSTopic; u: (x: Partial<CSTopic>) => void; templateId?: string }) {
-  const isGraded = templateId?.startsWith('quiz-') ?? false;
+  // Graded = any Quiz slide (generated Final Assessment or a quiz template); knowledge checks are ungraded
+  const isGraded = (t.slideType as string) === 'quiz' || (templateId?.startsWith('quiz-') ?? false);
   const [passScore, setPassScore] = useState((t.passingScore as number) ?? 70);
   const [retry, setRetry]         = useState((t.retryBehavior as string) || 'unlimited');
   const [generating, setGenerating] = useState(false);
