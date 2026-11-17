@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { CourseTopic } from '../courseContent';
 import { EditableText, EditableText as E, useSlideEdit } from './slideEdit';
 import { SlideImage } from './SlideImage';
+import { TEXT_LIMITS } from './textLimits';
 import { resolveImageShape, useSlideTemplate } from './slidePhotos';
 
 const useEditable = () => !!useSlideEdit()?.editable;
@@ -100,31 +101,27 @@ function Series({ topic, dir }: { topic: CourseTopic; dir: 'h' | 'v' }) {
   if (dir === 'h') {
     const card = (item: SeriesItem, i: number, extra: React.CSSProperties) => (
       <div key={item.id || i} style={{ ...panel, padding: 'clamp(8px,1.3cqw,14px)', minWidth: 0, ...extra }}>
-        <E as="p" k={`seriesItems.${i}.label`} label={`Item ${i + 1} label`} value={item.label} placeholder={`Item ${i + 1}`} style={{ margin: '0 0 clamp(3px,0.5cqw,6px)', fontSize: fs.lg, fontWeight: 700 }} />
-        <E as="p" multiline k={`seriesItems.${i}.description`} label={`Item ${i + 1} description`} value={item.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.55 }} />
+        <E as="p" maxLength={TEXT_LIMITS.seriesLabel} k={`seriesItems.${i}.label`} label={`Item ${i + 1} label`} value={item.label} placeholder={`Item ${i + 1}`} style={{ margin: '0 0 clamp(3px,0.5cqw,6px)', fontSize: fs.lg, fontWeight: 700 }} />
+        <E as="p" multiline maxLength={TEXT_LIMITS.seriesDescription} k={`seriesItems.${i}.description`} label={`Item ${i + 1} description`} value={item.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.55 }} />
       </div>
     );
-    // Columns: every item visible, sharing the width equally
-    if (layout === 'fixed') {
-      return <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(items.length, 4)}, minmax(0, 1fr))`, gap }}>{items.map((it, i) => card(it, i, {}))}</div>;
-    }
-    // Scroll row: fixed-width cards in one row that scrolls sideways
-    return <div style={{ display: 'flex', gap, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'thin' }}>{items.map((it, i) => card(it, i, { flex: '0 0 clamp(150px,36%,360px)' }))}</div>;
+    // Always columns: every item visible, sharing the width (wraps to a new row after 4; never scrolls sideways)
+    return <div style={{ display: 'grid', gridTemplateColumns: `repeat(${items.length <= 4 ? items.length : 3}, minmax(0, 1fr))`, gap }}>{items.map((it, i) => card(it, i, {}))}</div>;
   }
 
   const row = (item: SeriesItem, i: number) => (
-    <div key={item.id || i} style={{ ...panel, display: 'flex', alignItems: 'flex-start', gap, padding: 'clamp(8px,1.2cqw,12px)', minWidth: 0 }}>
+    <div key={item.id || i} style={{ ...panel, display: 'flex', alignItems: 'flex-start', gap, padding: 'clamp(6px,0.9cqw,10px) clamp(8px,1.2cqw,12px)', minWidth: 0 }}>
       <span style={{ fontSize: fs.lg, fontWeight: 800, color: 'var(--slide-primary-text, var(--slide-primary))', flexShrink: 0, minWidth: '1.6em', textAlign: 'center' }}>{i + 1}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <E as="p" k={`seriesItems.${i}.label`} label={`Step ${i + 1} label`} value={item.label} placeholder={`Step ${i + 1}`} style={{ margin: '0 0 2px', fontSize: fs.md, fontWeight: 600 }} />
-        <E as="p" multiline k={`seriesItems.${i}.description`} label={`Step ${i + 1} description`} value={item.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.55 }} />
+        <E as="p" maxLength={TEXT_LIMITS.seriesLabel} k={`seriesItems.${i}.label`} label={`Step ${i + 1} label`} value={item.label} placeholder={`Step ${i + 1}`} style={{ margin: '0 0 2px', fontSize: fs.md, fontWeight: 600 }} />
+        <E as="p" multiline maxLength={TEXT_LIMITS.seriesDescription} k={`seriesItems.${i}.description`} label={`Step ${i + 1} description`} value={item.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.55 }} />
       </div>
     </div>
   );
   // Two columns: steps flow left-to-right in a 2-column grid
-  if (layout === 'grid') return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 'clamp(6px,0.9cqw,10px)' }}>{items.map(row)}</div>;
+  if (layout === 'grid') return <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 'clamp(4px,0.7cqw,8px)' }}>{items.map(row)}</div>;
   // Stack: one step under another
-  return <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(6px,0.9cqw,10px)' }}>{items.map(row)}</div>;
+  return <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(4px,0.7cqw,8px)' }}>{items.map(row)}</div>;
 }
 
 function ExpandableList({ topic }: { topic: CourseTopic }) {
@@ -219,7 +216,12 @@ function ImageCards({ topic }: { topic: CourseTopic }) {
 
   const cols = Math.min(cards.length, 3);
   // Taller pictures when there is only one row of cards
-  const imageHeight = cards.length <= 3 ? 'clamp(100px,20cqw,270px)' : 'clamp(56px,9cqw,120px)';
+  // Picture height adapts to the text: the longer the longest card text, the shorter the pictures, so cards fit the slide
+  const longest = Math.max(0, ...cards.map(c => (c.heading?.length ?? 0) / 0.6 + (c.description?.length ?? 0)));
+  const imageHeight = cards.length > 3 ? 'clamp(56px,9cqw,120px)'
+    : longest <= 90 ? 'clamp(100px,20cqw,270px)'
+    : longest <= 140 ? 'clamp(80px,15cqw,200px)'
+    : 'clamp(60px,10.5cqw,140px)';
   return (
     // Grid only (no sideways scrolling); older 'horizontal'/'masonry' galleries show the same way
     <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: plain ? 'clamp(10px,2cqw,24px)' : 'clamp(8px,1.2cqw,14px)' }}>
@@ -230,8 +232,8 @@ function ImageCards({ topic }: { topic: CourseTopic }) {
           <SlideImage k={`imageCards.${i}.image`} label={`Card ${i + 1} image`} src={c.image} alt={c.alt} sampleIndex={i}
             style={{ height: imageHeight, borderRadius: plain ? 'clamp(8px,1.4cqw,16px)' : 0 }} />
           <div style={{ padding: plain ? 0 : 'clamp(8px,1.2cqw,12px)', textAlign: 'left' }}>
-            <E as="p" k={`imageCards.${i}.heading`} label={`Card ${i + 1} heading`} value={c.heading} placeholder={`Card ${i + 1}`} style={{ margin: '0 0 4px', fontSize: fs.md, fontWeight: 700 }} />
-            {(c.description || editable) && <E as="p" multiline k={`imageCards.${i}.description`} label={`Card ${i + 1} description`} value={c.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.5 }} />}
+            <E as="p" maxLength={TEXT_LIMITS.cardHeading} k={`imageCards.${i}.heading`} label={`Card ${i + 1} heading`} value={c.heading} placeholder={`Card ${i + 1}`} style={{ margin: '0 0 4px', fontSize: fs.md, fontWeight: 700 }} />
+            {(c.description || editable) && <E as="p" multiline maxLength={TEXT_LIMITS.cardDescription} k={`imageCards.${i}.description`} label={`Card ${i + 1} description`} value={c.description} placeholder="Description" style={{ margin: 0, fontSize: fs.sm, opacity: 0.85, lineHeight: 1.5 }} />}
           </div>
         </div>
       ))}
@@ -703,11 +705,11 @@ function Quiz({ topic }: { topic: CourseTopic }) {
           </button>
         )}
         <span style={{ flex: 1 }} />
-        {isQuiz && last
+        {isQuiz && last && !editable
           ? <button type="button" style={btn(true)} onClick={() => setSubmitted(true)}>Submit quiz</button>
           : total > 1 && <button type="button" style={{ ...btn(), opacity: last ? 0.5 : 1, cursor: last ? 'not-allowed' : 'pointer' }} disabled={last} onClick={() => setIndex(idx + 1)}>Next question</button>}
       </div>
-      {isQuiz && <p style={{ margin: 0, fontSize: fs.sm, opacity: 0.85 }} aria-live="polite">{answeredCount} of {total} answered · pass mark {passMark}%</p>}
+      {isQuiz && !editable && <p style={{ margin: 0, fontSize: fs.sm, opacity: 0.85 }} aria-live="polite">{answeredCount} of {total} answered · pass mark {passMark}%</p>}
     </section>
   );
 }

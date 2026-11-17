@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type CSSProperties } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import type { CourseTopic } from '../courseContent';
 import CourseSlideContent from './CourseSlideContent';
 import './CoursePresentation.css';
@@ -73,6 +73,29 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
   topic: CourseTopic; courseTitle: string; sectionTitle?: string; index: number; total: number; settings: PresentationSettings;
 } & CoursePresentationEditProps) {
   const [editing, setEditing] = useState<string | null>(null);
+
+  // Auto-fit: if the content is taller than the slide, shrink it in 5% steps (down to 80%) before it would scroll.
+  // Re-measured whenever the content or the slide size changes. Runs before paint, so there is no flicker.
+  const mainRef = useRef<HTMLElement>(null);
+  const [fit, setFit] = useState(1);
+  const [measure, setMeasure] = useState(0); // bumps when the content's size changes (fonts/images loading)
+  const fitKey = `${settings.template}|${settings.font}|${settings.headingFont}|${settings.background}|${editing}`;
+  useLayoutEffect(() => { setFit(1); }, [topic, fitKey]);
+  useLayoutEffect(() => {
+    const m = mainRef.current;
+    if (m && fit > 0.8 && m.scrollHeight > m.clientHeight + 1) setFit(f => Math.max(0.8, Math.round((f - 0.05) * 100) / 100));
+  }, [fit, measure, topic, fitKey]);
+  useEffect(() => {
+    const m = mainRef.current;
+    if (!m || typeof ResizeObserver === 'undefined') return;
+    let w = m.offsetWidth; // offsetWidth ignores a scrollbar appearing, which would otherwise restart the fit
+    const ro = new ResizeObserver(() => { if (m.offsetWidth !== w) { w = m.offsetWidth; setFit(1); } else setMeasure(x => x + 1); });
+    ro.observe(m);
+    // Content growing later (web fonts / images loading) triggers a re-measure
+    const body = m.querySelector('.course-slide-body');
+    if (body) ro.observe(body);
+    return () => ro.disconnect();
+  }, []);
   const hintId = useId();
   useEffect(() => { setEditing(null); }, [topic.id]);
 
@@ -133,12 +156,13 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
           {hCourseName && <span>{courseTitle || 'Untitled Course'}</span>}
         </header>
       )}
-      <main className={'course-slide-main' + (titleInContent ? ' course-slide-main--split' : '')}>
+      <main ref={mainRef} className={'course-slide-main' + (titleInContent ? ' course-slide-main--split' : '')}>
         <p className="course-slide-eyebrow">{sectionTitle || 'Course content'}</p>
         {/* Quiz / knowledge-check cards carry the title in their own header */}
         {!titleInContent && !(topic.slideType === 'quiz' || topic.slideType === 'knowledge-check') && heading}
         <div
           className="course-slide-body"
+          style={fit < 1 ? { zoom: fit } : undefined}
           onClick={editable ? e => { if (!(e.target as Element).closest('[data-edit],.se-editing')) onSelectField?.('slide-content', false); } : undefined}
         >
           <CourseSlideContent key={topic.id} topic={topic} header={titleInContent ? heading : undefined} />

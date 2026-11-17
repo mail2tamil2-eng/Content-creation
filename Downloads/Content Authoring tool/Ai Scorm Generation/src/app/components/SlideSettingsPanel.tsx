@@ -8,7 +8,8 @@ import {
 import type { CSTopic } from './CourseSidebar';
 import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
 import { ImageUploadField } from './ImageUploadField';
-import { CARD_STYLES, HORIZONTAL_SERIES_LAYOUTS, IMAGE_POSITIONS, imageStyleOptions, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
+import { TEXT_LIMITS } from './textLimits';
+import { CARD_STYLES, IMAGE_POSITIONS, imageStyleOptions, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
 import { samplePhoto, shapeName, templateShape, useSlideTemplate } from './slidePhotos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -202,6 +203,12 @@ function ItemCard({ label, onRemove, children }: { label: string; onRemove: () =
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>{children}</div>
     </div>
   );
+}
+
+/** "12 / 40" under a length-limited field; turns red at the limit. */
+function CharCount({ id, value, max }: { id: string; value: string; max: number }) {
+  const n = value?.length ?? 0;
+  return <span id={id} style={{ alignSelf: 'flex-end', marginTop: -2, fontSize: 11, color: n >= max ? '#B91C1C' : '#6B7280' }}>{n} / {max} characters</span>;
 }
 
 // ── 13.1 Image Management ─────────────────────────────────────────────────────
@@ -558,14 +565,17 @@ function SeriesFields({ t, u, dir }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {items.map((item, i) => (
             <ItemCard key={item.id} label={`Item ${i + 1}`} onRemove={() => sync(items.filter((_, j) => j !== i))}>
-              <input data-field={`seriesItems.${i}.label`} aria-label={`Item ${i + 1} label`} value={item.label} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, label: e.target.value } : x); sync(n); }} placeholder="Label…" style={inlineInput} />
-              <textarea data-field={`seriesItems.${i}.description`} aria-label={`Item ${i + 1} description`} value={item.description} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, description: e.target.value } : x); sync(n); }} placeholder="Description…" rows={2} style={inlineTA} />
+              <input data-field={`seriesItems.${i}.label`} aria-label={`Item ${i + 1} label`} maxLength={TEXT_LIMITS.seriesLabel} aria-describedby={`sl-${item.id}`} value={item.label} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, label: e.target.value } : x); sync(n); }} placeholder="Label…" style={inlineInput} />
+              <CharCount id={`sl-${item.id}`} value={item.label} max={TEXT_LIMITS.seriesLabel} />
+              <textarea data-field={`seriesItems.${i}.description`} aria-label={`Item ${i + 1} description`} maxLength={TEXT_LIMITS.seriesDescription} aria-describedby={`sd-${item.id}`} value={item.description} onChange={e => { const n = items.map((x, j) => j === i ? { ...x, description: e.target.value } : x); sync(n); }} placeholder="Description…" rows={2} style={inlineTA} />
+              <CharCount id={`sd-${item.id}`} value={item.description} max={TEXT_LIMITS.seriesDescription} />
             </ItemCard>
           ))}
           <AddBtn label="Add item" onClick={() => sync([...items, { id: uid(), label: '', description: '' }])} />
         </div>
       </div>
-      <LayoutOptionPicker label="Layout" field="layout" value={layout} options={dir === 'h' ? HORIZONTAL_SERIES_LAYOUTS : VERTICAL_SERIES_LAYOUTS} onChange={v => { setLayout(v); u({ layout: v }); }} />
+      {/* Horizontal Series is always columns (no sideways scrolling), so only Vertical has a layout choice */}
+      {dir === 'v' && <LayoutOptionPicker label="Layout" field="layout" value={layout} options={VERTICAL_SERIES_LAYOUTS} onChange={v => { setLayout(v); u({ layout: v }); }} />}
     </>
   );
 }
@@ -653,8 +663,10 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
               <ImageUploadField field={`imageCards.${i}.image`} label={`Card ${i + 1} image`} value={card.image || ''} sampleSrc={samplePhoto(template, i)}
                 onChange={url => sync(cards.map((x,j) => j===i ? {...x,image:url} : x))} />
               <input data-field={`imageCards.${i}.alt`} aria-label={`Card ${i + 1} alt text`} value={card.alt || ''} onChange={e => sync(cards.map((x,j) => j===i ? {...x,alt:e.target.value} : x))} placeholder="Alt text: describe the image…" style={inlineInput} />
-              <input data-field={`imageCards.${i}.heading`} aria-label={`Item ${i + 1} heading`} value={card.heading} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,heading:e.target.value} : x); sync(n); }} placeholder="Heading…" style={inlineInput} />
-              <textarea data-field={`imageCards.${i}.description`} aria-label={`Item ${i + 1} description`} value={card.description} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,description:e.target.value} : x); sync(n); }} placeholder="Description…" rows={2} style={inlineTA} />
+              <input data-field={`imageCards.${i}.heading`} aria-label={`Item ${i + 1} heading`} maxLength={TEXT_LIMITS.cardHeading} aria-describedby={`ch-${card.id}`} value={card.heading} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,heading:e.target.value} : x); sync(n); }} placeholder="Heading…" style={inlineInput} />
+              <CharCount id={`ch-${card.id}`} value={card.heading} max={TEXT_LIMITS.cardHeading} />
+              <textarea data-field={`imageCards.${i}.description`} aria-label={`Item ${i + 1} description`} maxLength={TEXT_LIMITS.cardDescription} aria-describedby={`cd-${card.id}`} value={card.description} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,description:e.target.value} : x); sync(n); }} placeholder="Description…" rows={2} style={inlineTA} />
+              <CharCount id={`cd-${card.id}`} value={card.description} max={TEXT_LIMITS.cardDescription} />
             </ItemCard>
           ))}
           <AddBtn label="Add card" onClick={() => sync([...cards, { id: uid(), heading: '', description: '' }])} />

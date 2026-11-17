@@ -46,12 +46,14 @@ export interface EditableTextProps {
   style?: React.CSSProperties;
   /** Current value of the key's root field when the slide shows a fallback (e.g. default table headers). */
   source?: unknown;
+  /** Character limit while typing on the slide. */
+  maxLength?: number;
 }
 
 // Placeholder stays readable (≥4.5:1) even inside a parent with opacity .85
 const placeholderStyle: React.CSSProperties = { opacity: 0.75, fontStyle: 'italic' };
 
-export function EditableText({ k, label, value, placeholder, as = 'span', multiline = false, className, style, source }: EditableTextProps) {
+export function EditableText({ k, label, value, placeholder, as = 'span', multiline = false, className, style, source, maxLength }: EditableTextProps) {
   const ctx = useSlideEdit();
   const Tag = as as React.ElementType;
   const editRef = useRef<HTMLElement>(null);
@@ -86,7 +88,8 @@ export function EditableText({ k, label, value, placeholder, as = 'span', multil
     if (done.current) return;
     done.current = true;
     const text = (editRef.current?.innerText ?? '').replace(/ /g, ' ').replace(/\n+$/, '');
-    if (save) ctx.commit(k, multiline ? text.trim() : text.replace(/\s*\n\s*/g, ' ').trim(), { ...opts, source });
+    const clean = multiline ? text.trim() : text.replace(/\s*\n\s*/g, ' ').trim();
+    if (save) ctx.commit(k, maxLength ? clean.slice(0, maxLength) : clean, { ...opts, source });
     else if (k.startsWith('bullet:') && !value) ctx.commit(k, ''); // Esc on a new empty bullet removes it
     else ctx.cancel();
   };
@@ -112,6 +115,15 @@ export function EditableText({ k, label, value, placeholder, as = 'span', multil
             }
           }}
           onPaste={e => { e.preventDefault(); document.execCommand('insertText', false, e.clipboardData.getData('text/plain')); }}
+          onInput={maxLength ? e => {
+            // Keep within the limit; caret goes to the end
+            const el = e.currentTarget;
+            if (el.innerText.length > maxLength) {
+              el.innerText = el.innerText.slice(0, maxLength);
+              const r = document.createRange(); r.selectNodeContents(el); r.collapse(false);
+              const sel = window.getSelection(); sel?.removeAllRanges(); sel?.addRange(r);
+            }
+          } : undefined}
           onBlur={() => finish(true)}
           onClick={e => e.stopPropagation()}
         />
