@@ -53,3 +53,7 @@ export const FirstSlide: Story = {};
 export const QuizSlide: Story = { args: { slide: 4 } };
 export const MenuPanel: Story = { args: { panel: 'menu' } };
 export const DarkDesign: Story = { args: { design: 'modern' } };
+export const HelpPanel: Story = { args: { panel: 'help' } };
+export const TranscriptPanel: Story = { args: { panel: 'transcript' } };
+/** Last slide: both "Next slide" buttons are disabled. */
+export const LastSlide: Story = { args: { slide: 7 } };

@@ -116,6 +116,7 @@ export function EditorTopToolbar({
         <button
           onClick={onPreview}
           title="Preview course"
+          aria-label="Preview course"
           className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors"
         >
           <Play size={16} className="text-gray-700" />

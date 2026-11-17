@@ -156,7 +156,7 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
           {hCourseName && <span>{courseTitle || 'Untitled Course'}</span>}
         </header>
       )}
-      <main ref={mainRef} className={'course-slide-main' + (titleInContent ? ' course-slide-main--split' : '')}>
+      <div ref={mainRef} className={'course-slide-main' + (titleInContent ? ' course-slide-main--split' : '')}>
         <p className="course-slide-eyebrow">{sectionTitle || 'Course content'}</p>
         {/* Quiz / knowledge-check cards carry the title in their own header */}
         {!titleInContent && !(topic.slideType === 'quiz' || topic.slideType === 'knowledge-check') && heading}
@@ -168,7 +168,7 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
           <CourseSlideContent key={topic.id} topic={topic} header={titleInContent ? heading : undefined} />
         </div>
         {editable && <span id={hintId} hidden>Press Enter to edit in Slide Settings, or F2 to edit on the slide.</span>}
-      </main>
+      </div>
       {/* Watermark: large faint diagonal text behind the content (decorative, like PowerPoint) */}
       {settings.footerWatermark && (
         <svg className="course-slide-watermark" aria-hidden="true" viewBox="0 0 1000 562" preserveAspectRatio="xMidYMid meet">
