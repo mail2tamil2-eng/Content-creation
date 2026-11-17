@@ -697,7 +697,7 @@ function Quiz({ topic }: { topic: CourseTopic }) {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 2, flexWrap: 'wrap' }}>
         {total > 1 && <button type="button" style={{ ...btn(), opacity: idx === 0 ? 0.5 : 1, cursor: idx === 0 ? 'not-allowed' : 'pointer' }} disabled={idx === 0} onClick={() => setIndex(idx - 1)}>Previous</button>}
-        {!isQuiz && (
+        {!isQuiz && g<boolean>(topic, 'allowReveal') && (
           <button type="button" aria-pressed={isRevealed} style={{ ...btn(), marginLeft: total > 1 ? 0 : undefined }} onClick={() => setRevealed(r => ({ ...r, [idx]: !r[idx] }))}>
             {isRevealed ? 'Hide answer' : 'Reveal answer'}
           </button>

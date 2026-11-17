@@ -75,8 +75,8 @@ const TYPE_INFO: Record<string, TypeInfo> = {
   'flash-card':         { name: 'Flash Card',          category: 'INTERACTIVE', color: '#D97706', bg: '#FFFBEB' },
   'branching-scenario': { name: 'Branching Scenario',  category: 'INTERACTIVE', color: '#D97706', bg: '#FFFBEB' },
   'simulation':         { name: 'Simulation',          category: 'INTERACTIVE', color: '#D97706', bg: '#FFFBEB' },
-  'knowledge-check':    { name: 'Knowledge Check',     category: 'QUIZ',        color: '#059669', bg: '#ECFDF5' },
-  'quiz':               { name: 'Quiz',                category: 'QUIZ',        color: '#059669', bg: '#ECFDF5' },
+  'knowledge-check':    { name: 'Knowledge Check',     category: 'QUIZ',        color: '#047857', bg: '#ECFDF5' },
+  'quiz':               { name: 'Quiz',                category: 'QUIZ',        color: '#047857', bg: '#ECFDF5' },
 };
 
 const TEMPLATE_NAMES: Record<string, string> = {
@@ -134,10 +134,10 @@ function SSelect({ value, onChange, options }: { value: string; onChange: (v: st
 
 function Toggle({ value, onChange, label }: { value: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
-    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, cursor: 'pointer' }}>
       <span style={{ fontSize: 13, color: '#374151' }}>{label}</span>
-      <button type="button" onClick={() => onChange(!value)}
-        style={{ width: 36, height: 20, borderRadius: 10, background: value ? P : '#D1D5DB', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
+      <button type="button" role="switch" aria-checked={value} aria-label={label} onClick={() => onChange(!value)}
+        style={{ width: 36, height: 20, borderRadius: 10, background: value ? P : '#6B7280', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.15s', flexShrink: 0 }}>
         <span style={{ position: 'absolute', top: 2, left: value ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
       </button>
     </label>
@@ -938,12 +938,11 @@ function defaultOptions(type: Question['type']): QOpt[] {
 }
 
 function QuestionCard({
-  q, index, isGraded, onUpdate, onDelete, onRegenerate,
+  q, index, isGraded, onUpdate, onDelete,
 }: {
   q: Question; index: number; isGraded: boolean;
   onUpdate: (u: Partial<Question>) => void;
   onDelete: () => void;
-  onRegenerate: () => void;
 }) {
   const [open, setOpen] = useState(true);
   const isTF = q.type === 'true-false';
@@ -961,21 +960,17 @@ function QuestionCard({
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 10px', background: '#F9FAFB', borderBottom: open ? `1px solid ${BORDER}` : 'none' }}>
         <GripVertical size={13} color="#9CA3AF" style={{ cursor: 'grab', flexShrink: 0 }} />
         <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#374151' }}>Q{index + 1}</span>
-        <select value={q.type} onChange={e => { const t = e.target.value as Question['type']; onUpdate({ type: t, options: defaultOptions(t) }); }}
+        <select aria-label={`Question ${index + 1} type`} value={q.type} onChange={e => { const t = e.target.value as Question['type']; onUpdate({ type: t, options: defaultOptions(t) }); }}
           style={{ fontSize: 13, border: `1px solid ${BORDER}`, borderRadius: 5, padding: '2px 4px', background: '#fff', outline: 'none', cursor: 'pointer' }}>
           <option value="mcq-multi">MCQ (multi)</option>
           <option value="mcq-single">MCQ (single)</option>
           <option value="true-false">True / False</option>
         </select>
-        <button onClick={onRegenerate} title="Regenerate question" style={{ width: 22, height: 22, borderRadius: 5, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; (e.currentTarget as HTMLElement).style.color = P; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF'; }}
-        ><RefreshCw size={11} /></button>
-        <button onClick={onDelete} title="Delete question" style={{ width: 22, height: 22, borderRadius: 5, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280' }}
+        <button type="button" onClick={onDelete} title="Delete question" aria-label={`Delete question ${index + 1}`} style={{ width: 22, height: 22, borderRadius: 5, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2'; (e.currentTarget as HTMLElement).style.color = '#DC2626'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF'; }}
         ><X size={11} /></button>
-        <button onClick={() => setOpen(v => !v)} style={{ width: 22, height: 22, borderRadius: 5, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280' }}>
+        <button type="button" onClick={() => setOpen(v => !v)} aria-expanded={open} aria-label={`${open ? 'Collapse' : 'Expand'} question ${index + 1}`} style={{ width: 22, height: 22, borderRadius: 5, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280' }}>
           {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
         </button>
       </div>
@@ -993,7 +988,7 @@ function QuestionCard({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {q.options.map((opt, i) => (
                   <div key={opt.id} style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-                    <button onClick={() => toggleCorrect(opt.id)}
+                    <button type="button" onClick={() => toggleCorrect(opt.id)} aria-pressed={opt.correct} aria-label={`Mark option ${i + 1} as correct`}
                       style={{ width: 16, height: 16, borderRadius: isMulti ? 3 : '50%', border: `2px solid ${opt.correct ? '#059669' : BORDER}`, background: opt.correct ? '#059669' : '#fff', cursor: 'pointer', flexShrink: 0, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {opt.correct && <Check size={9} color="#fff" strokeWidth={3} />}
                     </button>
@@ -1038,11 +1033,11 @@ function QuestionCard({
   );
 }
 
-function QuizEditor({ t, u, templateId }: { t: CSTopic; u: (x: Partial<CSTopic>) => void; templateId?: string }) {
+function QuizEditor({ t, u, templateId, sectionTitle }: { t: CSTopic; u: (x: Partial<CSTopic>) => void; templateId?: string; sectionTitle?: string }) {
   // Graded = any Quiz slide (generated Final Assessment or a quiz template); knowledge checks are ungraded
   const isGraded = (t.slideType as string) === 'quiz' || (templateId?.startsWith('quiz-') ?? false);
   const [passScore, setPassScore] = useState((t.passingScore as number) ?? 70);
-  const [retry, setRetry]         = useState((t.retryBehavior as string) || 'unlimited');
+  const [allowReveal, setAllowReveal] = useState(!!t.allowReveal);
   const [generating, setGenerating] = useState(false);
 
   const initQuestions = (): Question[] => {
@@ -1064,18 +1059,24 @@ function QuizEditor({ t, u, templateId }: { t: CSTopic; u: (x: Partial<CSTopic>)
 
   const addQuestion = () => syncQ([...questions, { id: uid(), type: 'mcq-single', question: '', options: defaultOptions('mcq-single'), feedback: '', marks: 1 }]);
 
+  // One AI action: (re)writes all questions for this slide, keeping the current number of questions
   const generateWithAI = () => {
     setGenerating(true);
     setTimeout(() => {
-      const aiQuestions: Question[] = [
-        { id: uid(), type: 'mcq-single', question: 'What is the primary purpose of this topic?', options: [
-          { id: uid(), text: 'Option A', correct: true }, { id: uid(), text: 'Option B', correct: false },
-          { id: uid(), text: 'Option C', correct: false }, { id: uid(), text: 'Option D', correct: false },
-        ], feedback: 'Correct! Option A is the right answer.', marks: 1 },
-        { id: uid(), type: 'true-false', question: 'This concept applies to all scenarios.', options: [
-          { id: uid(), text: 'True', correct: false }, { id: uid(), text: 'False', correct: true },
-        ], feedback: 'Correct — this only applies in specific scenarios.', marks: 1 },
-      ];
+      // Generic slide names ("Knowledge Check", "Final Assessment") → ask about the section instead
+      const title = (t.title as string) || '';
+      const generic = /^(knowledge check|final assessment|quiz|check your understanding)/i.test(title.trim());
+      const topicName = ((generic ? sectionTitle : title) || 'this topic').toLowerCase();
+      const count = Math.max(questions.length, 2);
+      const aiQuestions: Question[] = Array.from({ length: count }, (_, k) => k % 2 === 1
+        ? { id: uid(), type: 'true-false', question: `Applying ${topicName} means using the same approach in every situation.`, options: [
+            { id: uid(), text: 'True', correct: false }, { id: uid(), text: 'False', correct: true },
+          ], feedback: 'False — adapt the approach to the situation.', marks: 1 }
+        : { id: uid(), type: 'mcq-single', question: `Which action best shows ${topicName} in practice?`, options: [
+            { id: uid(), text: 'Apply it to a real situation and review the result', correct: true },
+            { id: uid(), text: 'Repeat the same action without checking', correct: false },
+            { id: uid(), text: 'Wait for someone else to decide', correct: false },
+          ], feedback: 'Practising and reviewing helps the learning stick.', marks: 1 });
       syncQ(aiQuestions);
       setGenerating(false);
     }, 1000);
@@ -1083,17 +1084,13 @@ function QuizEditor({ t, u, templateId }: { t: CSTopic; u: (x: Partial<CSTopic>)
 
   return (
     <>
-      {/* AI toolbar */}
-      <div style={{ display: 'flex', gap: 6 }}>
-        <button onClick={generateWithAI} disabled={generating}
-          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '7px 0', borderRadius: 7, border: 'none', background: 'linear-gradient(135deg,#2D74FA,#1A63E8)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: generating ? 'default' : 'pointer', opacity: generating ? 0.7 : 1, fontFamily: font }}>
-          <Wand2 size={12} />{generating ? 'Generating…' : 'Generate with AI'}
+      {/* AI: a single action for all questions */}
+      <div>
+        <button type="button" onClick={generateWithAI} disabled={generating} aria-describedby="quiz-ai-hint"
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 0', borderRadius: 7, border: 'none', background: P, color: '#fff', fontSize: 13, fontWeight: 600, cursor: generating ? 'default' : 'pointer', opacity: generating ? 0.7 : 1, fontFamily: font }}>
+          <Wand2 size={12} aria-hidden="true" />{generating ? 'Generating…' : 'Generate questions with AI'}
         </button>
-        <button onClick={() => generateWithAI()}
-          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '7px 10px', borderRadius: 7, border: `1px solid ${BORDER}`, background: '#fff', fontSize: 13, color: '#374151', cursor: 'pointer', fontFamily: font, fontWeight: 600 }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
-        ><RotateCcw size={11} /> Regenerate all</button>
+        <p id="quiz-ai-hint" style={{ margin: '4px 0 0', fontSize: 12, color: '#6B7280' }}>Writes all {Math.max(questions.length, 2)} questions again from the slide topic.</p>
       </div>
 
       {/* Questions */}
@@ -1103,39 +1100,24 @@ function QuizEditor({ t, u, templateId }: { t: CSTopic; u: (x: Partial<CSTopic>)
             key={q.id} q={q} index={i} isGraded={isGraded}
             onUpdate={u2 => syncQ(questions.map((x, j) => j === i ? {...x, ...u2} : x))}
             onDelete={() => syncQ(questions.filter((_, j) => j !== i))}
-            onRegenerate={() => {
-              const titles = ['How does this concept apply in practice?', 'Which of these is NOT a valid approach?', 'What is the correct sequence of steps?'];
-              syncQ(questions.map((x, j) => j === i ? {...x, question: titles[i % titles.length]} : x));
-            }}
           />
         ))}
         <AddBtn label="Add question" onClick={addQuestion} />
       </div>
 
-      {/* Quiz config */}
-      {isGraded && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, paddingTop: 4 }}>
-          <div>
-            <FieldLabel>Pass %</FieldLabel>
-            <input type="number" min={0} max={100} value={passScore} onChange={e => { const n = parseInt(e.target.value)||0; setPassScore(n); u({ passingScore: n }); }} style={{ ...inputBase }} />
-          </div>
-          <div>
-            <FieldLabel>Retry</FieldLabel>
-            <SSelect value={retry} onChange={v => { setRetry(v); u({ retryBehavior: v }); }} options={[{value:'unlimited',label:'Unlimited'},{value:'once',label:'Once'},{value:'none',label:'No retry'}]} />
-          </div>
+      {/* Quiz: pass mark only. Knowledge check: optional Reveal answer button. Changes save automatically. */}
+      {isGraded ? (
+        <div style={{ maxWidth: 140 }}>
+          <FieldLabel>Pass %</FieldLabel>
+          <input type="number" min={0} max={100} value={passScore} aria-label="Pass percentage"
+            onChange={e => { const n = Math.max(0, Math.min(100, parseInt(e.target.value) || 0)); setPassScore(n); u({ passingScore: n }); }} style={{ ...inputBase }} />
+        </div>
+      ) : (
+        <div>
+          <Toggle value={allowReveal} label="Show “Reveal answer” button" onChange={v => { setAllowReveal(v); u({ allowReveal: v }); }} />
+          <p style={{ margin: '4px 0 0', fontSize: 12, color: '#6B7280' }}>Learners can see the correct answer and explanation for each question.</p>
         </div>
       )}
-
-      {/* Preview + Save */}
-      <div style={{ display: 'flex', gap: 6 }}>
-        <button style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '7px 0', borderRadius: 7, border: `1px solid ${BORDER}`, background: '#fff', fontSize: 13, color: '#374151', cursor: 'pointer', fontFamily: font, fontWeight: 600 }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
-        ><Play size={11} /> Preview quiz</button>
-        <button style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '7px 0', borderRadius: 7, border: 'none', background: '#059669', color: '#fff', fontSize: 13, cursor: 'pointer', fontFamily: font, fontWeight: 600 }}>
-          <Check size={11} /> Save quiz
-        </button>
-      </div>
 
       {questions.length === 0 && (
         <div style={{ padding: '16px', textAlign: 'center', color: '#6B7280', fontSize: 13, border: `1px dashed ${BORDER}`, borderRadius: 8 }}>
@@ -1149,7 +1131,7 @@ function QuizEditor({ t, u, templateId }: { t: CSTopic; u: (x: Partial<CSTopic>)
 
 // ── Type dispatcher ───────────────────────────────────────────────────────────
 
-function TypeFields({ topic, onUpdate }: { topic: CSTopic; onUpdate: (u: Partial<CSTopic>) => void }) {
+function TypeFields({ topic, onUpdate, sectionTitle }: { topic: CSTopic; onUpdate: (u: Partial<CSTopic>) => void; sectionTitle?: string }) {
   const st  = topic.slideType as string;
   const tid = topic.templateId as string | undefined;
   switch (st) {
@@ -1176,7 +1158,7 @@ function TypeFields({ topic, onUpdate }: { topic: CSTopic; onUpdate: (u: Partial
     case 'branching-scenario': return <BranchingFields t={topic} u={onUpdate} />;
     case 'simulation':         return <SimulationFields t={topic} u={onUpdate} />;
     case 'knowledge-check':
-    case 'quiz':               return <QuizEditor t={topic} u={onUpdate} templateId={tid} />;
+    case 'quiz':               return <QuizEditor t={topic} u={onUpdate} templateId={tid} sectionTitle={sectionTitle} />;
     default:                   return <TitleTextFields t={topic} u={onUpdate} />;
   }
 }
@@ -1184,7 +1166,7 @@ function TypeFields({ topic, onUpdate }: { topic: CSTopic; onUpdate: (u: Partial
 // ── Main Panel ────────────────────────────────────────────────────────────────
 
 export function SlideSettingsPanel({
-  topic, onUpdate, onClose, onChangeSlideType, onDelete, onEnhanceWithAI, enhancing, onRegenerateSlide,
+  topic, sectionTitle, onUpdate, onClose, onChangeSlideType, onDelete, onEnhanceWithAI, enhancing, onRegenerateSlide,
 }: SlideSettingsPanelProps) {
   const [topicTitle, setTopicTitle] = useState(topic.title);
 
@@ -1207,8 +1189,8 @@ export function SlideSettingsPanel({
             {topic.title || 'New topic'}
           </p>
         </div>
-        {/* Enhance with AI */}
-        {onRegenerateSlide && (
+        {/* Enhance with AI — quiz slides use the single "Generate questions with AI" button instead */}
+        {onRegenerateSlide && !isQuiz && (
           <button onClick={onRegenerateSlide} title="Enhance with AI"
             style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${BORDER}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', flexShrink: 0 }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; (e.currentTarget as HTMLElement).style.color = P; }}
@@ -1245,7 +1227,7 @@ export function SlideSettingsPanel({
 
         {/* Type-specific content */}
         <FieldGroup title={isQuiz ? 'Quiz Settings' : 'Slide Content'}>
-          <TypeFields topic={topic} onUpdate={onUpdate} />
+          <TypeFields topic={topic} onUpdate={onUpdate} sectionTitle={sectionTitle} />
         </FieldGroup>
 
         {/* 13.3 Audio Narration — text slides only */}
