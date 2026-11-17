@@ -171,10 +171,10 @@ function RemoveBtn({ onClick, label = 'Remove' }: { onClick: () => void; label?:
   );
 }
 
-function AddBtn({ label, onClick }: { label: string; onClick: () => void }) {
+function AddBtn({ label, onClick, full }: { label: string; onClick: () => void; full?: boolean }) {
   return (
-    <button onClick={onClick}
-      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 8px', borderRadius: 6, border: `1px dashed ${BORDER}`, background: 'none', cursor: 'pointer', fontSize: 13, color: P, fontWeight: 500 }}
+    <button type="button" onClick={onClick}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: full ? 'center' : undefined, width: full ? '100%' : undefined, minHeight: 32, gap: 4, padding: '5px 8px', borderRadius: 6, border: `1px dashed ${BORDER}`, background: 'none', cursor: 'pointer', fontSize: 13, color: P, fontWeight: 500 }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}
     ><Plus size={11} />{label}</button>
@@ -950,11 +950,14 @@ function defaultOptions(type: Question['type']): QOpt[] {
 }
 
 function QuestionCard({
-  q, index, isGraded, onUpdate, onDelete,
+  q, index, isGraded, onUpdate, onDelete, onRegenerate, regenerating,
 }: {
   q: Question; index: number; isGraded: boolean;
   onUpdate: (u: Partial<Question>) => void;
   onDelete: () => void;
+  /** Rewrites this question with AI. */
+  onRegenerate: () => void;
+  regenerating?: boolean;
 }) {
   const [open, setOpen] = useState(true);
   const isTF = q.type === 'true-false';
@@ -978,6 +981,11 @@ function QuestionCard({
           <option value="mcq-single">MCQ (single)</option>
           <option value="true-false">True / False</option>
         </select>
+        <button type="button" onClick={onRegenerate} disabled={regenerating} title="Regenerate question with AI" aria-label={`Regenerate question ${index + 1} with AI`}
+          style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'none', cursor: regenerating ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4B5563' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; (e.currentTarget as HTMLElement).style.color = P; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#4B5563'; }}
+        ><RefreshCw size={12} aria-hidden="true" className={regenerating ? 'animate-spin motion-reduce:animate-none' : undefined} /></button>
         <button type="button" onClick={onDelete} title="Delete question" aria-label={`Delete question ${index + 1}`} style={{ width: 22, height: 22, borderRadius: 5, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2'; (e.currentTarget as HTMLElement).style.color = '#DC2626'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF'; }}
@@ -1050,7 +1058,6 @@ function QuizEditor({ t, u, templateId, sectionTitle }: { t: CSTopic; u: (x: Par
   const isGraded = (t.slideType as string) === 'quiz' || (templateId?.startsWith('quiz-') ?? false);
   const [passScore, setPassScore] = useState((t.passingScore as number) ?? 70);
   const [allowReveal, setAllowReveal] = useState(!!t.allowReveal);
-  const [generating, setGenerating] = useState(false);
 
   const initQuestions = (): Question[] => {
     type Raw = Partial<Question> & { text?: string; points?: number; type?: string };
@@ -1071,40 +1078,49 @@ function QuizEditor({ t, u, templateId, sectionTitle }: { t: CSTopic; u: (x: Par
 
   const addQuestion = () => syncQ([...questions, { id: uid(), type: 'mcq-single', question: '', options: defaultOptions('mcq-single'), feedback: '', marks: 1 }]);
 
-  // One AI action: (re)writes all questions for this slide, keeping the current number of questions
-  const generateWithAI = () => {
-    setGenerating(true);
+  // AI (local stand-in): one question about the slide topic. `variant` varies the wording / type.
+  const [busy, setBusy] = useState<string | null>(null); // 'new' or the id of the question being regenerated
+  const topicName = (() => {
+    const title = (t.title as string) || '';
+    const generic = /^(knowledge check|final assessment|quiz|check your understanding)/i.test(title.trim());
+    return ((generic ? sectionTitle : title) || 'this topic').toLowerCase();
+  })();
+  const makeQuestion = (variant: number): Question => {
+    const v = variant % 4;
+    if (v === 1) return { id: uid(), type: 'true-false', question: `Applying ${topicName} means using the same approach in every situation.`, options: [
+      { id: uid(), text: 'True', correct: false }, { id: uid(), text: 'False', correct: true }], feedback: 'False — adapt the approach to the situation.', marks: 1 };
+    if (v === 2) return { id: uid(), type: 'mcq-single', question: `What should you do first when using ${topicName}?`, options: [
+      { id: uid(), text: 'Understand the situation and the goal', correct: true },
+      { id: uid(), text: 'Act immediately without checking', correct: false },
+      { id: uid(), text: 'Leave it to someone else', correct: false }], feedback: 'Start by understanding the goal before acting.', marks: 1 };
+    if (v === 3) return { id: uid(), type: 'mcq-single', question: `Which result shows ${topicName} is working?`, options: [
+      { id: uid(), text: 'The outcome improves and people know why', correct: true },
+      { id: uid(), text: 'Nothing changes', correct: false },
+      { id: uid(), text: 'Only one person benefits', correct: false }], feedback: 'Look for a better outcome that others understand.', marks: 1 };
+    return { id: uid(), type: 'mcq-single', question: `Which action best shows ${topicName} in practice?`, options: [
+      { id: uid(), text: 'Apply it to a real situation and review the result', correct: true },
+      { id: uid(), text: 'Repeat the same action without checking', correct: false },
+      { id: uid(), text: 'Wait for someone else to decide', correct: false }], feedback: 'Practising and reviewing helps the learning stick.', marks: 1 };
+  };
+  const generateNew = () => {
+    setBusy('new');
+    setTimeout(() => { syncQ([...questions, makeQuestion(questions.length)]); setBusy(null); }, 800);
+  };
+  const regenerateOne = (i: number) => {
+    const id = questions[i].id;
+    setBusy(id);
     setTimeout(() => {
-      // Generic slide names ("Knowledge Check", "Final Assessment") → ask about the section instead
-      const title = (t.title as string) || '';
-      const generic = /^(knowledge check|final assessment|quiz|check your understanding)/i.test(title.trim());
-      const topicName = ((generic ? sectionTitle : title) || 'this topic').toLowerCase();
-      const count = Math.max(questions.length, 2);
-      const aiQuestions: Question[] = Array.from({ length: count }, (_, k) => k % 2 === 1
-        ? { id: uid(), type: 'true-false', question: `Applying ${topicName} means using the same approach in every situation.`, options: [
-            { id: uid(), text: 'True', correct: false }, { id: uid(), text: 'False', correct: true },
-          ], feedback: 'False — adapt the approach to the situation.', marks: 1 }
-        : { id: uid(), type: 'mcq-single', question: `Which action best shows ${topicName} in practice?`, options: [
-            { id: uid(), text: 'Apply it to a real situation and review the result', correct: true },
-            { id: uid(), text: 'Repeat the same action without checking', correct: false },
-            { id: uid(), text: 'Wait for someone else to decide', correct: false },
-          ], feedback: 'Practising and reviewing helps the learning stick.', marks: 1 });
-      syncQ(aiQuestions);
-      setGenerating(false);
-    }, 1000);
+      setQuestions(prev => {
+        const next = prev.map((x, j) => j === i ? { ...makeQuestion(i + 1 + Math.floor(Math.random() * 3)), id: x.id, marks: x.marks } : x);
+        u({ questions: next });
+        return next;
+      });
+      setBusy(null);
+    }, 800);
   };
 
   return (
     <>
-      {/* AI: a single action for all questions */}
-      <div>
-        <button type="button" onClick={generateWithAI} disabled={generating} aria-describedby="quiz-ai-hint"
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 0', borderRadius: 7, border: 'none', background: P, color: '#fff', fontSize: 13, fontWeight: 600, cursor: generating ? 'default' : 'pointer', opacity: generating ? 0.7 : 1, fontFamily: font }}>
-          <Wand2 size={12} aria-hidden="true" />{generating ? 'Generating…' : 'Generate questions with AI'}
-        </button>
-        <p id="quiz-ai-hint" style={{ margin: '4px 0 0', fontSize: 12, color: '#6B7280' }}>Writes all {Math.max(questions.length, 2)} questions again from the slide topic.</p>
-      </div>
-
       {/* Questions */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {questions.map((q, i) => (
@@ -1112,9 +1128,18 @@ function QuizEditor({ t, u, templateId, sectionTitle }: { t: CSTopic; u: (x: Par
             key={q.id} q={q} index={i} isGraded={isGraded}
             onUpdate={u2 => syncQ(questions.map((x, j) => j === i ? {...x, ...u2} : x))}
             onDelete={() => syncQ(questions.filter((_, j) => j !== i))}
+            onRegenerate={() => regenerateOne(i)}
+            regenerating={busy === q.id}
           />
         ))}
-        <AddBtn label="Add question" onClick={addQuestion} />
+        {/* Add manually or with AI */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ flex: 1 }}><AddBtn full label="Add question" onClick={addQuestion} /></div>
+          <button type="button" onClick={generateNew} disabled={busy === 'new'} aria-busy={busy === 'new' || undefined}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '5px 8px', borderRadius: 6, border: 'none', background: P, color: '#fff', fontSize: 13, fontWeight: 600, cursor: busy === 'new' ? 'default' : 'pointer', opacity: busy === 'new' ? 0.7 : 1, fontFamily: font }}>
+            <Wand2 size={12} aria-hidden="true" />{busy === 'new' ? 'Generating…' : 'Generate with AI'}
+          </button>
+        </div>
       </div>
 
       {/* Quiz: pass mark only. Knowledge check: optional Reveal answer button. Changes save automatically. */}

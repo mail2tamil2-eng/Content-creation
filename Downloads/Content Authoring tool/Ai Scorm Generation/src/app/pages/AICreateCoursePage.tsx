@@ -225,7 +225,8 @@ export function AICreateCoursePage() {
   const baseSettings: PresentationSettings = aiTemplate
     ? { template: 'vivid-blue', primary: '#134780', accent: '#F48120', background: '#111C2D', foreground: '#FFFFFF', font: 'Inter', buttonStyle: 'rounded', layout: 'single', logo: customLogoPreview || logoPreview || undefined }
     : selectedPredefined === 'blank'
-    ? { template: 'elevate-white', primary: '#111827', accent: '#3B82F6', background: '#FFFFFF', foreground: '#172033', font: customFont, buttonStyle: customButtonStyle, layout: 'single', logo: customLogoPreview || logoPreview || undefined }
+    // Blank: everything comes from Colours & Style (primary, secondary, font, background)
+    ? { template: 'elevate-white', primary: customPrimary, accent: customSecondary, background: themeBgColor, foreground: autoFontColor, font: customFont, buttonStyle: customButtonStyle, layout: 'single', logo: customLogoPreview || logoPreview || undefined }
     : { template: design.template, primary: customPrimary, accent: customSecondary,
         background: useTplColours ? tpl!.colors.bg : themeBgColor, foreground: useTplColours ? tpl!.colors.text : autoFontColor,
         font: customFont, headingFont: tpl && customFont === tpl.fonts.body ? tpl.fonts.heading : undefined,
@@ -296,7 +297,8 @@ export function AICreateCoursePage() {
   const previewTopic: CourseTopic = {
     id: 'preview', title: title || 'Your Course Title',
     slideType: 'title-text', contentReady: true,
-    content: objective || 'Your course overview will appear here after you enter the course details above.',
+    // The objective is used to generate the course, not shown on the preview slide
+    content: 'Your course overview will appear here after you enter the course details above.',
   };
 
   // Actions
@@ -541,6 +543,7 @@ export function AICreateCoursePage() {
     const durationNum = Number(duration);
     const missing = [
       !title.trim() && 'course title',
+      !objective.trim() && 'course objective',
       !(duration !== '' && durationNum >= 10 && durationNum <= 60) && 'duration',
       !language && 'language',
     ].filter(Boolean) as string[];
@@ -676,8 +679,12 @@ export function AICreateCoursePage() {
               </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Course Objective</label>
+                <label htmlFor="course-objective" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+                  Course Objective <span aria-hidden="true" style={{ color: '#DC2626' }}>*</span>
+                </label>
                 <textarea
+                  id="course-objective"
+                  required aria-required="true"
                   rows={3}
                   style={{ ...fieldStyle, resize: 'vertical' as const, lineHeight: 1.6 }}
                   placeholder="Describe what this course is about"
