@@ -126,7 +126,7 @@ export function AICreateCoursePage() {
   const [addQuiz, setAddQuiz] = useState(false);
   const [addQuizQuestions, setAddQuizQuestions] = useState(10);
   const [knowledgeCheck, setKnowledgeCheck] = useState(false);
-  const [knowledgeCheckQuestions, setKnowledgeCheckQuestions] = useState(5);
+  const [knowledgeCheckQuestions, setKnowledgeCheckQuestions] = useState(3); // default when the toggle is turned on
 
   // Theme
   const [designId, setDesignId] = useState(DEFAULT_TEMPLATE_ID);
@@ -968,8 +968,8 @@ export function AICreateCoursePage() {
                           </div>
                           <div>
                             <label htmlFor="brand-watermark" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Watermark</label>
-                            <input id="brand-watermark" style={fieldStyle} value={watermarkText} onChange={e => setWatermarkText(e.target.value)} placeholder="e.g. CONFIDENTIAL" aria-describedby="brand-watermark-hint" onFocus={focusField} onBlur={blurField} />
-                            <p id="brand-watermark-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Large faint text across each slide, like PowerPoint</p>
+                            <input id="brand-watermark" maxLength={15} style={fieldStyle} value={watermarkText} onChange={e => setWatermarkText(e.target.value.slice(0, 15))} placeholder="e.g. CONFIDENTIAL" aria-describedby="brand-watermark-hint" onFocus={focusField} onBlur={blurField} />
+                            <p id="brand-watermark-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Large faint text across each slide, like PowerPoint · {watermarkText.length} / 15 characters</p>
                           </div>
                         </div>
                       </div>

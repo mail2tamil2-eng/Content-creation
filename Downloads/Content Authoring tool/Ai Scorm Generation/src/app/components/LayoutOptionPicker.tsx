@@ -34,7 +34,8 @@ export function LayoutOptionPicker({ label, value, options, onChange, field, cla
             <label
               key={o.value}
               className={cn(
-                'flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 px-1 pb-1.5 pt-2 text-center text-xs transition-colors',
+                // `relative` anchors the visually-hidden radio inside the label, so focusing it doesn't scroll the panel away
+                'relative flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 px-1 pb-1.5 pt-2 text-center text-xs transition-colors',
                 'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#1565F0] has-[:focus-visible]:ring-offset-2',
                 on ? 'border-[#1565F0] bg-[#EBF3FF] font-semibold text-[#1254C7]' : 'border-[#E5E7EB] bg-white text-[#374151] hover:border-[#6B7280]',
               )}

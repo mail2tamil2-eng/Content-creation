@@ -8,7 +8,7 @@ import {
 import type { CSTopic } from './CourseSidebar';
 import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
 import { ImageUploadField } from './ImageUploadField';
-import { TEXT_LIMITS } from './textLimits';
+import { ITEM_LIMITS, TEXT_LIMITS } from './textLimits';
 import { CARD_STYLES, IMAGE_POSITIONS, imageStyleOptions, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
 import { samplePhoto, shapeName, templateShape, useSlideTemplate } from './slidePhotos';
 
@@ -209,6 +209,12 @@ function ItemCard({ label, onRemove, children }: { label: string; onRemove: () =
 function CharCount({ id, value, max }: { id: string; value: string; max: number }) {
   const n = value?.length ?? 0;
   return <span id={id} style={{ alignSelf: 'flex-end', marginTop: -2, fontSize: 11, color: n >= max ? '#B91C1C' : '#6B7280' }}>{n} / {max} characters</span>;
+}
+
+/** "+ Add … (n/max)" until the maximum is reached, then a short note instead. */
+function LimitedAdd({ label, count, max, noun, onClick }: { label: string; count: number; max: number; noun: string; onClick: () => void }) {
+  if (count < max) return <AddBtn label={`${label} (${count}/${max})`} onClick={onClick} />;
+  return <p role="status" style={{ margin: 0, fontSize: 12, color: '#4B5563' }}>Maximum {max} {noun} reached.</p>;
 }
 
 // ── 13.1 Image Management ─────────────────────────────────────────────────────
@@ -571,7 +577,7 @@ function SeriesFields({ t, u, dir }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
               <CharCount id={`sd-${item.id}`} value={item.description} max={TEXT_LIMITS.seriesDescription} />
             </ItemCard>
           ))}
-          <AddBtn label="Add item" onClick={() => sync([...items, { id: uid(), label: '', description: '' }])} />
+          <LimitedAdd label="Add item" noun="items" count={items.length} max={ITEM_LIMITS.seriesItems} onClick={() => sync([...items, { id: uid(), label: '', description: '' }])} />
         </div>
       </div>
       {/* Horizontal Series is always columns (no sideways scrolling), so only Vertical has a layout choice */}
@@ -625,7 +631,7 @@ function TableFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
               {headers.length > 1 && <RemoveBtn onClick={() => uH(headers.filter((_,j) => j !== i))} />}
             </div>
           ))}
-          <AddBtn label="Add column" onClick={() => uH([...headers, `Column ${headers.length+1}`])} />
+          <LimitedAdd label="Add column" noun="columns" count={headers.length} max={ITEM_LIMITS.tableColumns} onClick={() => uH([...headers, `Column ${headers.length+1}`])} />
         </div>
       </div>
       <div>
@@ -639,7 +645,7 @@ function TableFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
               <RemoveBtn onClick={() => uR(rows.filter((_,i) => i !== ri))} />
             </div>
           ))}
-          <AddBtn label="Add row" onClick={() => uR([...rows, new Array(headers.length).fill('')])} />
+          <LimitedAdd label="Add row" noun="rows" count={rows.length} max={ITEM_LIMITS.tableRows} onClick={() => uR([...rows, new Array(headers.length).fill('')])} />
         </div>
       </div>
       <div><FieldLabel>Header style</FieldLabel><SSelect value={hStyle} onChange={v => { setHStyle(v); u({ headerStyle: v }); }} options={[{value:'filled',label:'Filled'},{value:'outlined',label:'Outlined'},{value:'minimal',label:'Minimal'}]} /></div>
@@ -669,7 +675,7 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
               <CharCount id={`cd-${card.id}`} value={card.description} max={TEXT_LIMITS.cardDescription} />
             </ItemCard>
           ))}
-          <AddBtn label="Add card" onClick={() => sync([...cards, { id: uid(), heading: '', description: '' }])} />
+          <LimitedAdd label="Add card" noun="cards" count={cards.length} max={ITEM_LIMITS.imageCards} onClick={() => sync([...cards, { id: uid(), heading: '', description: '' }])} />
         </div>
       </div>
       <LayoutOptionPicker label="Card style" field="cardStyle" value={cardStyle} options={CARD_STYLES} onChange={v => { setCardStyle(v); u({ cardStyle: v }); }} />
@@ -963,12 +969,25 @@ function QuestionCard({
   const isTF = q.type === 'true-false';
   const isMulti = q.type === 'mcq-multi';
 
+  // A question must always have at least one correct answer: unticking / removing the last one is blocked
+  const [blocked, setBlocked] = useState(false);
+  const noCorrect = !q.options.some(o => o.correct);
   const toggleCorrect = (id: string) => {
     const next = isMulti
       ? q.options.map(o => o.id === id ? {...o, correct: !o.correct} : o)
       : q.options.map(o => ({...o, correct: o.id === id}));
+    if (!next.some(o => o.correct)) { setBlocked(true); return; }
+    setBlocked(false);
     onUpdate({ options: next });
   };
+  const removeOption = (i: number) => {
+    const next = q.options.filter((_, j) => j !== i);
+    if (q.options[i].correct && !next.some(o => o.correct)) { setBlocked(true); return; }
+    setBlocked(false);
+    onUpdate({ options: next });
+  };
+  const errorId = `q-${q.id}-error`;
+  const error = noCorrect ? 'Mark the correct answer for this question.' : blocked ? 'At least one answer must stay correct. Mark another answer first.' : '';
 
   return (
     <div style={{ border: `1px solid ${BORDER}`, borderRadius: 8, background: '#fff', overflow: 'hidden' }}>
@@ -1015,7 +1034,7 @@ function QuestionCard({
                     <input data-field={`questions.${index}.options.${i}.text`} aria-label={`Option ${i + 1}`} value={opt.text} onChange={e => onUpdate({ options: q.options.map((o,j) => j===i ? {...o,text:e.target.value} : o) })}
                       placeholder={`Option ${i+1}…`}
                       style={{ ...inlineInput, background: opt.correct ? '#F0FDF4' : '#FAFAFA', borderColor: opt.correct ? '#D1FAE5' : BORDER }} />
-                    {q.options.length > 2 && <RemoveBtn onClick={() => onUpdate({ options: q.options.filter((_,j) => j !== i) })} />}
+                    {q.options.length > 2 && <RemoveBtn label={`Remove option ${i + 1}`} onClick={() => removeOption(i)} />}
                   </div>
                 ))}
                 <AddBtn label="Add option" onClick={() => onUpdate({ options: [...q.options, { id: uid(), text: '', correct: false }] })} />
@@ -1026,13 +1045,19 @@ function QuestionCard({
               <FieldLabel>Correct answer</FieldLabel>
               <div style={{ display: 'flex', gap: 8 }}>
                 {q.options.map(opt => (
-                  <button key={opt.id} onClick={() => toggleCorrect(opt.id)}
-                    style={{ flex:1, padding:'7px 0', borderRadius:7, border:`2px solid ${opt.correct ? '#059669' : BORDER}`, background: opt.correct ? '#F0FDF4' : '#FAFAFA', fontSize:12, fontWeight: opt.correct ? 600 : 400, color: opt.correct ? '#059669' : '#374151', cursor:'pointer', transition:'all 0.12s' }}>
+                  <button key={opt.id} type="button" aria-pressed={opt.correct} onClick={() => toggleCorrect(opt.id)}
+                    style={{ flex:1, padding:'7px 0', borderRadius:7, border:`2px solid ${opt.correct ? '#047857' : BORDER}`, background: opt.correct ? '#F0FDF4' : '#FAFAFA', fontSize:12, fontWeight: opt.correct ? 600 : 400, color: opt.correct ? '#047857' : '#374151', cursor:'pointer', transition:'all 0.12s' }}>
                     {opt.text}
                   </button>
                 ))}
               </div>
             </div>
+          )}
+
+          {error && (
+            <p id={errorId} role="alert" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: '#B91C1C', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 6, padding: '6px 8px' }}>
+              <AlertCircle size={13} aria-hidden="true" /> {error}
+            </p>
           )}
 
           <div>
