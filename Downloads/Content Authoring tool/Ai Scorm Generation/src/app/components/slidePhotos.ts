@@ -34,3 +34,18 @@ export function resolveImageShape(style: string | undefined, templateId: string 
   return templateShape(templateId);
 }
 export const shapeName = (s: ResolvedShape) => SHAPE_NAMES[s];
+
+/** True for photos from the bundled library (sample or AI-generated), false for author uploads. */
+export const isLibraryPhoto = (url: string | undefined) => !!url && POOL.includes(url);
+
+/**
+ * Demo "Regenerate image with AI": resolves after a short delay with a different library photo
+ * than the ones in `exclude` (the image shown now). Replace with the real image API later.
+ */
+export function generatePhoto(templateId: string | undefined, exclude: (string | undefined)[], delayMs = 1200): Promise<string> {
+  const own = getTemplate(templateId ?? null);
+  const ownPhotos = own ? [own.photos.feature, own.photos.cover].filter((p): p is string => !!p) : [];
+  const choices = [...ownPhotos, ...POOL].filter((p, i, a) => a.indexOf(p) === i && !exclude.includes(p));
+  const pick = choices.length ? choices[Math.floor(Math.random() * choices.length)] : POOL[0];
+  return new Promise(resolve => setTimeout(() => resolve(pick), delayMs));
+}

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { ImageUploadField } from './ImageUploadField';
-import { samplePhoto } from './slidePhotos';
+import { generatePhoto, isLibraryPhoto, samplePhoto } from './slidePhotos';
 
 const meta = {
   title: 'Slides/Settings/ImageUploadField',
@@ -31,3 +31,20 @@ export const KeyboardFocus: Story = {
     await expect(within(canvasElement).getByRole('button', { name: /Upload image/ })).toHaveFocus();
   },
 };
+
+/** "Regenerate with AI": shows a loading overlay, then the new picture with an "AI image" tag. */
+export const WithRegenerate: Story = {
+  args: { onRegenerate: () => generatePhoto('tpl-forest-hexa', [samplePhoto('tpl-forest-hexa', 0)], 600) },
+  render: function Render(args) {
+    const [v, setV] = useState(args.value);
+    return <div style={{ width: 288 }}><ImageUploadField {...args} value={v} generated={isLibraryPhoto(v)} onChange={u => { setV(u); args.onChange(u); }} /></div>;
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole('button', { name: 'Regenerate with AI' }));
+    await expect(await c.findByText('AI image', {}, { timeout: 3000 })).toBeInTheDocument();
+  },
+};
+/** While generating: button disabled, overlay on the picture. */
+export const Generating: Story = { args: { onRegenerate: () => new Promise<string>(() => undefined) },
+  play: async ({ canvasElement }) => { await userEvent.click(within(canvasElement).getByRole('button', { name: 'Regenerate with AI' })); } };

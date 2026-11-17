@@ -10,7 +10,7 @@ import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
 import { ImageUploadField } from './ImageUploadField';
 import { ITEM_LIMITS, TEXT_LIMITS } from './textLimits';
 import { CARD_STYLES, IMAGE_POSITIONS, imageStyleOptions, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
-import { samplePhoto, shapeName, templateShape, useSlideTemplate } from './slidePhotos';
+import { generatePhoto, isLibraryPhoto, samplePhoto, shapeName, templateShape, useSlideTemplate } from './slidePhotos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -227,6 +227,7 @@ function ImageManagement({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => voi
   return (
     <>
       <ImageUploadField field="imageUrl" label="Image" value={imageUrl} sampleSrc={samplePhoto(template, 0)}
+        generated={isLibraryPhoto(imageUrl)} onRegenerate={() => generatePhoto(template, [imageUrl || samplePhoto(template, 0)])}
         onChange={url => { setImageUrl(url); u({ imageUrl: url }); }} />
       <div>
         <FieldLabel>Alt text</FieldLabel>
@@ -667,6 +668,7 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
           {cards.map((card, i) => (
             <ItemCard key={card.id} label={`Card ${i+1}`} onRemove={() => sync(cards.filter((_,j) => j !== i))}>
               <ImageUploadField field={`imageCards.${i}.image`} label={`Card ${i + 1} image`} value={card.image || ''} sampleSrc={samplePhoto(template, i)}
+                generated={isLibraryPhoto(card.image)} onRegenerate={() => generatePhoto(template, [card.image || samplePhoto(template, i)])}
                 onChange={url => sync(cards.map((x,j) => j===i ? {...x,image:url} : x))} />
               <input data-field={`imageCards.${i}.alt`} aria-label={`Card ${i + 1} alt text`} value={card.alt || ''} onChange={e => sync(cards.map((x,j) => j===i ? {...x,alt:e.target.value} : x))} placeholder="Alt text: describe the image…" style={inlineInput} />
               <input data-field={`imageCards.${i}.heading`} aria-label={`Item ${i + 1} heading`} maxLength={TEXT_LIMITS.cardHeading} aria-describedby={`ch-${card.id}`} value={card.heading} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,heading:e.target.value} : x); sync(n); }} placeholder="Heading…" style={inlineInput} />
@@ -761,6 +763,7 @@ function SliderFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }
         ] as const).map(({ side, key, altKey, sample }) => (
           <div key={side} style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
             <ImageUploadField field={key} label={`${side} image`} value={imgs[key]} sampleSrc={samplePhoto(template, sample)}
+              generated={isLibraryPhoto(imgs[key])} onRegenerate={() => generatePhoto(template, [imgs[key] || samplePhoto(template, sample)])}
               onChange={url => { setImgs(v => ({ ...v, [key]: url })); u({ [key]: url }); }} />
             <input aria-label={`${side} image alt text`} value={imgs[altKey]} placeholder="Alt text…" style={inlineInput}
               onChange={e => { const v = e.target.value; setImgs(o => ({ ...o, [altKey]: v })); u({ [altKey]: v }); }} />

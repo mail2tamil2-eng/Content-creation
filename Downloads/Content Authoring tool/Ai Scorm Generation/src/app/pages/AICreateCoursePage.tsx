@@ -963,8 +963,8 @@ export function AICreateCoursePage() {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
                           <div>
                             <label htmlFor="brand-copyright" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Copyright Information</label>
-                            <input id="brand-copyright" style={fieldStyle} value={copyrightText} onChange={e => setCopyrightText(e.target.value)} placeholder="e.g. © 2026 Acme Corp." aria-describedby="brand-copyright-hint" onFocus={focusField} onBlur={blurField} />
-                            <p id="brand-copyright-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Shown in the bottom-left corner of each slide</p>
+                            <input id="brand-copyright" maxLength={20} style={fieldStyle} value={copyrightText} onChange={e => setCopyrightText(e.target.value.slice(0, 20))} placeholder="e.g. © 2026 Acme Corp" aria-describedby="brand-copyright-hint" onFocus={focusField} onBlur={blurField} />
+                            <p id="brand-copyright-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Shown in the bottom-left corner of each slide · {copyrightText.length} / 20 characters</p>
                           </div>
                           <div>
                             <label htmlFor="brand-watermark" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Watermark</label>
