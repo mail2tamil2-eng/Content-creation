@@ -19,6 +19,10 @@ interface EditorTopToolbarProps {
   onApplyTheme: (settings: ThemeSettings) => void;
   currentDesignId?: string;
   onApplyTemplate?: (designId: string) => void;
+  /** Course font (all slides); changed from the Template menu. */
+  font?: string;
+  fonts?: string[];
+  onFontChange?: (font: string) => void;
 }
 
 export function EditorTopToolbar({
@@ -34,6 +38,9 @@ export function EditorTopToolbar({
   onApplyTheme,
   currentDesignId = 'tpl-corporate-navy',
   onApplyTemplate,
+  font,
+  fonts,
+  onFontChange,
 }: EditorTopToolbarProps) {
   const [isDesignOpen, setIsDesignOpen] = useState(false);
   const designButtonRef = useRef<HTMLButtonElement>(null);
@@ -163,6 +170,9 @@ export function EditorTopToolbar({
         anchorEl={designButtonRef.current}
         currentDesignId={currentDesignId}
         onApply={id => { onApplyTemplate?.(id); setIsDesignOpen(false); }}
+        font={font}
+        fonts={fonts}
+        onFontChange={onFontChange}
       />
     </>
   );

@@ -40,7 +40,7 @@
 /* split: left half filled with primary, title in on-primary colour */
 .ts-cover--split { grid-template-columns: 1fr 1fr; margin: -5.5cqw -7cqw; height: calc(100% + 11cqw); gap: 0; }
 .ts-cover--split .ts-cover-text { background: var(--t-primary); color: var(--t-on-primary); height: 100%; padding: 5.5cqw 5cqw 5.5cqw 7cqw; display: flex; flex-direction: column; justify-content: center; }
-.ts-cover--split .ts-cover-text .ts-eyebrow, .ts-cover--split .ts-cover-text .ts-lead { color: var(--t-on-primary); opacity: .9; }
+.ts-cover--split .ts-cover-text .ts-eyebrow, .ts-cover--split .ts-cover-text .ts-lead { color: var(--t-on-primary); } /* full opacity: 0.9 dropped Sunrise Coral to 4.48:1 */
 .ts-cover--split .ts-btn { background: var(--t-on-primary); color: var(--t-primary); }
 .ts-cover--split .ts-cover-image { border-radius: 0; height: 100%; }
 /* full-bleed: image fills the slide, text sits on a solid panel */

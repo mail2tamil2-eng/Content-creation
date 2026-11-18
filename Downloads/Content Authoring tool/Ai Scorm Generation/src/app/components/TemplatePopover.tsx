@@ -27,9 +27,13 @@ interface TemplatePopoverProps {
   anchorEl: HTMLElement | null;
   currentDesignId: string;
   onApply: (designId: string) => void;
+  /** Course font; shown at the top so it can be changed without leaving the editor. */
+  font?: string;
+  fonts?: string[];
+  onFontChange?: (font: string) => void;
 }
 
-export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, onApply }: TemplatePopoverProps) {
+export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, onApply, font, fonts = [], onFontChange }: TemplatePopoverProps) {
   const [pos, setPos] = useState({ top: 60, right: 16 });
   const popoverRef = useRef<HTMLDivElement>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
@@ -65,7 +69,7 @@ export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, on
       ref={popoverRef}
       role="dialog"
       aria-modal="true"
-      aria-label="Template selection"
+      aria-label={font && onFontChange ? "Template and font" : "Template selection"}
       style={{
         position: 'fixed',
         top: pos.top,
@@ -88,9 +92,9 @@ export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, on
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px 14px', borderBottom: '1px solid #F3F4F6' }}>
-        <span style={{ fontSize: 18, fontWeight: 600, color: '#111827' }}>Template</span>
+        <span style={{ fontSize: 18, fontWeight: 600, color: '#111827' }}>{font && onFontChange ? 'Template & Font' : 'Template'}</span>
         <button
-          onClick={onClose}
+          type="button" aria-label="Close" onClick={onClose}
           style={{ width: 28, height: 28, borderRadius: 8, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', color: '#6B7280', transition: 'background 0.15s' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
@@ -101,6 +105,17 @@ export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, on
 
       {/* Design list */}
       <div style={{ maxHeight: 'calc(100vh - 220px)', overflowY: 'auto', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {font && onFontChange && (
+          <div className="mb-3 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] p-3">
+            <label htmlFor="tpl-font" className="block text-[12px] font-bold uppercase tracking-[0.07em] text-[#4B5563]">Font</label>
+            <p id="tpl-font-hint" className="m-0 mb-2 mt-0.5 text-xs text-[#4B5563]">Text font on every slide. Choosing a template resets it to the template’s font.</p>
+            <select id="tpl-font" aria-describedby="tpl-font-hint" value={font} onChange={e => onFontChange(e.target.value)}
+              className="h-9 w-full rounded-lg border border-[#6B7280] bg-white px-2.5 text-[14px] text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-1"
+              style={{ fontFamily: `'${font}', system-ui, sans-serif` }}>
+              {(fonts.includes(font) ? fonts : [font, ...fonts]).map(f => <option key={f} value={f} style={{ fontFamily: `'${f}', system-ui, sans-serif` }}>{f}</option>)}
+            </select>
+          </div>
+        )}
         <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 8px' }}>Choose a Template</p>
         <p style={{ fontSize: 12, color: '#4B5563', margin: '-4px 0 6px' }}>Select a template, or use the eye icon to preview all slide layouts.</p>
         {COURSE_TEMPLATES.map(t => {

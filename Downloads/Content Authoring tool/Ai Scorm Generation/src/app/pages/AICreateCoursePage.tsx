@@ -1183,6 +1183,9 @@ export function AICreateCoursePage() {
             onApplyTheme={handleApplyTheme}
             currentDesignId={designId}
             onApplyTemplate={id => { applyTemplate(id); setSelectedPredefined(id); }}
+            font={customFont}
+            fonts={THEME_FONTS}
+            onFontChange={setCustomFont}
           />
 
           {/* Canvas */}
@@ -1297,6 +1300,7 @@ export function AICreateCoursePage() {
                     onEnhanceWithAI={enhanceWithAI}
                     enhancing={enhancing}
                     onRegenerateSlide={regenerateSlide}
+                    playbackDefaults={{ slideDuration, slideTransition, seekBar, backgroundMusic, backgroundMusicFile: backgroundMusicFile || undefined }}
                   />
                   </SlideTemplateContext.Provider>
                 </div>
@@ -1359,19 +1363,6 @@ export function AICreateCoursePage() {
                 {/* ── Global Settings ── */}
                 <p style={{ fontSize: 13, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 16px' }}>Player Settings</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-                  {/* Font: same setting as Step 1 "Font", changes the text font on every slide */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                    <div>
-                      <label htmlFor="player-font" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Font</label>
-                      <p id="player-font-hint" style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Text font on every slide</p>
-                    </div>
-                    <select id="player-font" aria-describedby="player-font-hint" value={customFont} onChange={e => setCustomFont(e.target.value)}
-                      className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-2"
-                      style={{ border: '1px solid #6B7280', borderRadius: 7, padding: '7px 10px', fontSize: 13, background: '#fff', cursor: 'pointer', maxWidth: 150, fontFamily: `'${customFont}', system-ui, sans-serif` }}>
-                      {(THEME_FONTS.includes(customFont) ? THEME_FONTS : [customFont, ...THEME_FONTS]).map(f => <option key={f} value={f} style={{ fontFamily: `'${f}', system-ui, sans-serif` }}>{f}</option>)}
-                    </select>
-                  </div>
 
                   {/* Navigation Mode */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>

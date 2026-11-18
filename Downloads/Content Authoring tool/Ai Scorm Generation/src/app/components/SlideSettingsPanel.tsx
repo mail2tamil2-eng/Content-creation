@@ -9,6 +9,7 @@ import type { CSTopic } from './CourseSidebar';
 import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
 import { ImageUploadField } from './ImageUploadField';
 import { ITEM_LIMITS, TEXT_LIMITS } from './textLimits';
+import { SlidePlaybackFields, type PlaybackDefaults, type SlidePlayback } from './SlidePlaybackFields';
 import { CARD_STYLES, IMAGE_POSITIONS, imageStyleOptions, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
 import { generatePhoto, isLibraryPhoto, samplePhoto, shapeName, templateShape, useSlideTemplate } from './slidePhotos';
 
@@ -25,6 +26,8 @@ export interface SlideSettingsPanelProps {
   onEnhanceWithAI: () => void;
   enhancing?: boolean;
   onRegenerateSlide?: () => void;
+  /** Course-wide Player Settings; the Playback group lets this slide override them. */
+  playbackDefaults?: PlaybackDefaults;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -1243,6 +1246,7 @@ function TypeFields({ topic, onUpdate, sectionTitle }: { topic: CSTopic; onUpdat
 
 export function SlideSettingsPanel({
   topic, sectionTitle, onUpdate, onClose, onChangeSlideType, onDelete, onEnhanceWithAI, enhancing, onRegenerateSlide,
+  playbackDefaults = { slideDuration: 5, slideTransition: 'none', seekBar: 'enable', backgroundMusic: false },
 }: SlideSettingsPanelProps) {
   const [topicTitle, setTopicTitle] = useState(topic.title);
 
@@ -1313,6 +1317,21 @@ export function SlideSettingsPanel({
             <AudioNarration t={topic} u={onUpdate} />
           </div>
         )}
+
+        {/* Playback for this slide (defaults come from Player Settings) */}
+        <FieldGroup title="Playback">
+          <SlidePlaybackFields
+            value={{
+              slideDuration: topic.slideDuration as number | undefined,
+              slideTransition: topic.slideTransition as string | undefined,
+              seekBar: topic.seekBar as SlidePlayback['seekBar'],
+              backgroundMusic: topic.backgroundMusic as SlidePlayback['backgroundMusic'],
+              backgroundMusicFile: topic.backgroundMusicFile as string | undefined,
+            }}
+            defaults={playbackDefaults}
+            onChange={p => onUpdate(p as Partial<CSTopic>)}
+          />
+        </FieldGroup>
 
       </div>
 
