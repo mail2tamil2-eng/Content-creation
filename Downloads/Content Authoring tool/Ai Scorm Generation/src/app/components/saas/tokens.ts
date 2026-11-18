@@ -16,7 +16,8 @@ export const SAAS = {
   textBody: '#374151',
   textMuted: '#6B7280',
   border: '#E5E7EB',
-  borderField: '#6B7280', // inputs, checkboxes, toggles (4.8:1)
+  borderField: '#6B7280', // checkboxes, toggles (4.8:1)
+  borderInput: '#8B929C', // text inputs, selects, textareas, search (3.1:1, softer)
   surface: '#FFFFFF',
   page: '#F9FAFB',
   chip: '#F3F4F6',

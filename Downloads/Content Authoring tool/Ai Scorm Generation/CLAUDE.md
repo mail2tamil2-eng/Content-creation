@@ -99,7 +99,8 @@ tests/                         # Playwright specs (expect app on :5181, installe
 | Where | Old | New | Ratio |
 |-------|-----|-----|-------|
 | Accent button ("Resume Editing") | white on orange-500 `#F97316` (2.8:1) | white on orange-700 `#C2410C`, hover `#9A3412` | 5.2:1 |
-| Input / select / search / checkbox borders, toggle off track | `#D1D5DB` (1.5:1) | `#6B7280` | 4.8:1 |
+| Input / select / textarea / search borders | `#D1D5DB` (1.5:1) | `#8B929C` (softer, still passes) | 3.1:1 |
+| Checkbox borders, toggle off track | `#D1D5DB` (1.5:1) | `#6B7280` | 4.8:1 |
 | Placeholder text | `#9CA3AF` (2.5:1) | `#6B7280` | 4.8:1 |
 | Text on soft blue (`soft` button, step pill, selected chip) | `#1565F0` (4.5:1) | `#1254C7` | 6.0:1 |
 | Muted text on soft blue / chip grey | `#6B7280` (4.3:1) | `#4B5563` | 6.9:1 |
@@ -123,7 +124,7 @@ Defined in `src/app/components/saas/tokens.ts` (`SAAS`). Use these; don't invent
 | Accent | orange-500 `#F97316` (fills/dots only), buttons `#C2410C`, active nav bg `#FFF3E5` + label `#C2410C` | white on `#C2410C` 5.2:1 ✓ |
 | Brand navy / orange (logo) | `#134780` / `#F48120` | slide "Corporate" design |
 | Text strong / body / muted | `#111827` / `#374151` / `#6B7280` | muted 4.8:1 on white ✓ |
-| Borders | cards/dividers `#E5E7EB` (decorative), fields/controls `#6B7280` | controls 4.8:1 ✓ |
+| Borders | cards/dividers `#E5E7EB` (decorative), text fields/selects `#8B929C`, checkboxes/toggles `#6B7280` | fields 3.1:1 ✓, controls 4.8:1 ✓ |
 | Surfaces | card `#FFFFFF`, page `#F9FAFB`, chip `#F3F4F6` | |
 | Danger | `#DC2626` (text `#B91C1C`) | |
 | Disabled fill | `#C4C4C4` | disabled controls are exempt from contrast |

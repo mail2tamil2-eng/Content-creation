@@ -35,7 +35,7 @@ export const TRANSITIONS = [
 const label = (list: { value: string; label: string }[], v: string) => list.find(o => o.value === v)?.label ?? v;
 const SEEK = [{ value: 'enable', label: 'Shown' }, { value: 'hide', label: 'Hidden' }];
 
-const fieldCls = 'h-9 w-full rounded-lg border border-[#6B7280] bg-white px-2.5 text-[13px] text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-1';
+const fieldCls = 'h-9 w-full rounded-lg border border-[#8B929C] bg-white px-2.5 text-[13px] text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-1';
 const labelCls = 'mb-1 block text-[13px] font-semibold text-[#374151]';
 const DEFAULT = '__default';
 
@@ -102,13 +102,13 @@ export function SlidePlaybackFields({ value, defaults, onChange, className }: Sl
         {value.backgroundMusic === 'custom' && (
           <div className="mt-2 flex items-center gap-2">
             <button type="button" onClick={() => fileRef.current?.click()}
-              className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-lg border border-dashed border-[#6B7280] bg-white px-2.5 text-left text-[13px] text-[#111827] hover:bg-[#F9FAFB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]">
+              className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-lg border border-dashed border-[#8B929C] bg-white px-2.5 text-left text-[13px] text-[#111827] hover:bg-[#F9FAFB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]">
               <Music size={14} aria-hidden="true" className="shrink-0 text-[#1565F0]" />
               <span className="truncate">{value.backgroundMusicFile || 'Upload audio (MP3 or WAV, max 10 MB)'}</span>
             </button>
             {value.backgroundMusicFile && (
               <button type="button" aria-label="Remove slide music" onClick={() => onChange({ backgroundMusicFile: undefined })}
-                className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-[#6B7280] text-[#B91C1C] hover:bg-[#FEF2F2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]">
+                className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-[#8B929C] text-[#B91C1C] hover:bg-[#FEF2F2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]">
                 <X size={14} aria-hidden="true" />
               </button>
             )}

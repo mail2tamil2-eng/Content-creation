@@ -219,9 +219,9 @@ export default function PublishModal({ courseTitle, sections, onClose, onDashboa
                             <input type="number" min="1" max="100" value={quizPassPct}
                               onChange={e => setQuizPassPct(Math.max(1, Math.min(100, Number(e.target.value))))}
                               onClick={e => e.stopPropagation()}
-                              style={{ width: 52, border: '1px solid #6B7280', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: '#1565F0', fontWeight: 600 }}
+                              style={{ width: 52, border: '1px solid #8B929C', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: '#1565F0', fontWeight: 600 }}
                               onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
-                              onBlur={e => { e.currentTarget.style.borderColor = '#6B7280'; }}
+                              onBlur={e => { e.currentTarget.style.borderColor = '#8B929C'; }}
                             />
                             <span style={{ fontSize: 13, fontWeight: 600, color: '#1565F0' }}>%</span>
                           </div>
@@ -250,9 +250,9 @@ export default function PublishModal({ courseTitle, sections, onClose, onDashboa
                             <input type="number" min="1" max="100" value={slideViewPct}
                               onChange={e => setSlideViewPct(Math.max(1, Math.min(100, Number(e.target.value))))}
                               onClick={e => e.stopPropagation()}
-                              style={{ width: 52, border: '1px solid #6B7280', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: '#1565F0', fontWeight: 600 }}
+                              style={{ width: 52, border: '1px solid #8B929C', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center', background: '#fff', color: '#1565F0', fontWeight: 600 }}
                               onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
-                              onBlur={e => { e.currentTarget.style.borderColor = '#6B7280'; }}
+                              onBlur={e => { e.currentTarget.style.borderColor = '#8B929C'; }}
                             />
                             <span style={{ fontSize: 13, fontWeight: 600, color: '#1565F0' }}>%</span>
                           </div>
@@ -347,9 +347,9 @@ export default function PublishModal({ courseTitle, sections, onClose, onDashboa
                           onChange={e => setSearch(e.target.value)}
                           onClick={e => e.stopPropagation()}
                           autoFocus
-                          style={{ width: '100%', boxSizing: 'border-box', padding: '6px 10px 6px 28px', fontSize: 13, color: '#111827', border: '1px solid #6B7280', borderRadius: 8, background: '#fff', outline: 'none', fontFamily: 'inherit' }}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '6px 10px 6px 28px', fontSize: 13, color: '#111827', border: '1px solid #8B929C', borderRadius: 8, background: '#fff', outline: 'none', fontFamily: 'inherit' }}
                           onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; e.currentTarget.style.background = '#fff'; }}
-                          onBlur={e  => { e.currentTarget.style.borderColor = '#6B7280'; e.currentTarget.style.background = '#fff'; }}
+                          onBlur={e  => { e.currentTarget.style.borderColor = '#8B929C'; e.currentTarget.style.background = '#fff'; }}
                         />
                       </div>
                     </div>
