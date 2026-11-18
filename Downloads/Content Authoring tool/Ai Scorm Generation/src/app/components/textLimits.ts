@@ -14,7 +14,7 @@ export const TEXT_LIMITS = {
   /** Body beside the picture on an Image + Text slide. */
   imageBody: 250,
   tableHeading: 25,
-  tableCell: 50,
+  tableCell: 40,
 } as const;
 
 /** Maximum number of items per slide so content always fits. */

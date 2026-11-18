@@ -139,9 +139,9 @@ function SInputBase({ value, onChange, placeholder, rows, field, label, maxLengt
   return <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={inputBase} {...a11y} {...handlers} />;
 }
 
-function SSelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
+function SSelect({ value, onChange, options, label }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; /** Accessible name (the visible FieldLabel is not a <label>). */ label?: string }) {
   return (
-    <select value={value} onChange={e => onChange(e.target.value)} style={{ ...inputBase, cursor: 'pointer', appearance: 'none' as const }}>
+    <select aria-label={label} value={value} onChange={e => onChange(e.target.value)} style={{ ...inputBase, cursor: 'pointer', appearance: 'none' as const }}>
       {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
   );
@@ -390,16 +390,16 @@ function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <div>
               <FieldLabel>Language</FieldLabel>
-              <SSelect value={lang} onChange={v => { setLang(v); u({ narrationLang: v }); }} options={NARRATION_LANGS} />
+              <SSelect label="Narration language" value={lang} onChange={v => { setLang(v); u({ narrationLang: v }); }} options={NARRATION_LANGS} />
             </div>
             <div>
               <FieldLabel>Voice</FieldLabel>
-              <SSelect value={voice} onChange={v => { setVoice(v); u({ narrationVoice: v }); }} options={NARRATION_VOICES} />
+              <SSelect label="Narration voice" value={voice} onChange={v => { setVoice(v); u({ narrationVoice: v }); }} options={NARRATION_VOICES} />
             </div>
           </div>
           <div>
             <FieldLabel>Tone / Style</FieldLabel>
-            <SSelect value={tone} onChange={v => { setTone(v); u({ narrationTone: v }); }} options={NARRATION_TONES} />
+            <SSelect label="Narration tone" value={tone} onChange={v => { setTone(v); u({ narrationTone: v }); }} options={NARRATION_TONES} />
           </div>
 
           {generated ? (
@@ -415,11 +415,11 @@ function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <button onClick={() => setIsPlaying(v => !v)}
+                <button type="button" aria-label={isPlaying ? 'Pause narration' : 'Play narration'} onClick={() => setIsPlaying(v => !v)}
                   style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: '#1565F0', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {isPlaying ? <Pause size={13} /> : <Play size={13} />}
                 </button>
-                <button onClick={() => setIsPlaying(false)}
+                <button type="button" aria-label="Stop narration" onClick={() => setIsPlaying(false)}
                   style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: '#E0F2FE', color: '#1565F0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Square size={11} />
                 </button>
@@ -500,9 +500,9 @@ function SpokespersonFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => 
   return (
     <>
       <div><FieldLabel>Script</FieldLabel><SInput rows={5} field="script" label="Script" value={script} placeholder="What the spokesperson will say…" onChange={v => { setScript(v); u({ script: v }); }} /></div>
-      <div><FieldLabel>Avatar</FieldLabel><SSelect value={avatar} onChange={v => { setAvatar(v); u({ avatar: v }); }} options={[{value:'default',label:'Default'},{value:'formal',label:'Formal'},{value:'casual',label:'Casual'},{value:'custom',label:'Custom'}]} /></div>
-      <div><FieldLabel>Voice</FieldLabel><SSelect value={voice} onChange={v => { setVoice(v); u({ voice: v }); }} options={NARRATION_VOICES} /></div>
-      <div><FieldLabel>Tone</FieldLabel><SSelect value={tone} onChange={v => { setTone(v); u({ tone: v }); }} options={NARRATION_TONES} /></div>
+      <div><FieldLabel>Avatar</FieldLabel><SSelect label="Avatar" value={avatar} onChange={v => { setAvatar(v); u({ avatar: v }); }} options={[{value:'default',label:'Default'},{value:'formal',label:'Formal'},{value:'casual',label:'Casual'},{value:'custom',label:'Custom'}]} /></div>
+      <div><FieldLabel>Voice</FieldLabel><SSelect label="Voice" value={voice} onChange={v => { setVoice(v); u({ voice: v }); }} options={NARRATION_VOICES} /></div>
+      <div><FieldLabel>Tone</FieldLabel><SSelect label="Tone" value={tone} onChange={v => { setTone(v); u({ tone: v }); }} options={NARRATION_TONES} /></div>
       <AiBtn label="Generate AI Spokesperson Video" onClick={() => {}} />
     </>
   );
@@ -526,6 +526,7 @@ function TitleTextFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => voi
           ] as const).map(({ value, Icon }) => (
             <button
               key={value}
+              aria-label={`Align ${value}`} aria-pressed={align === value}
               type="button"
               onClick={() => { setAlign(value); u({ alignment: value }); }}
               style={{
@@ -622,7 +623,7 @@ function ExpandableListFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) =
       </div>
       <div>
         <FieldLabel>Default open</FieldLabel>
-        <SSelect value={String(defOpen)} onChange={v => { const n = parseInt(v); setDefOpen(n); u({ defaultOpenIndex: n }); }}
+        <SSelect label="Open by default" value={String(defOpen)} onChange={v => { const n = parseInt(v); setDefOpen(n); u({ defaultOpenIndex: n }); }}
           options={[{value:'-1',label:'None'}, ...items.map((_,i) => ({value:String(i),label:`Item ${i+1}`}))]} />
       </div>
     </>
@@ -665,7 +666,7 @@ function TableFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
         </div>
         <p id={limitsId} style={{ margin: '6px 0 0', fontSize: 12, color: '#6B7280' }}>Column headings up to {TEXT_LIMITS.tableHeading} characters, cells up to {TEXT_LIMITS.tableCell}.</p>
       </div>
-      <div><FieldLabel>Header style</FieldLabel><SSelect value={hStyle} onChange={v => { setHStyle(v); u({ headerStyle: v }); }} options={[{value:'filled',label:'Filled'},{value:'outlined',label:'Outlined'},{value:'minimal',label:'Minimal'}]} /></div>
+      <div><FieldLabel>Header style</FieldLabel><SSelect label="Header style" value={hStyle} onChange={v => { setHStyle(v); u({ headerStyle: v }); }} options={[{value:'filled',label:'Filled'},{value:'outlined',label:'Outlined'},{value:'minimal',label:'Minimal'}]} /></div>
     </>
   );
 }
@@ -1307,9 +1308,10 @@ export function SlideSettingsPanel({
 
         {/* 13.3 Audio Narration — text slides only */}
         {showNarration && (
-          <FieldGroup title="Audio Narration" open={false}>
+          // No collapsible header: the narration switch is available in one click
+          <div data-group="Audio Narration" style={{ borderBottom: `1px solid ${BORDER}`, padding: '12px 16px 14px' }}>
             <AudioNarration t={topic} u={onUpdate} />
-          </FieldGroup>
+          </div>
         )}
 
       </div>

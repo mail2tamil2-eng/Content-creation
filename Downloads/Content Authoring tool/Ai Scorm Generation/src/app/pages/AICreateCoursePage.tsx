@@ -362,17 +362,29 @@ export function AICreateCoursePage() {
             { id: 's2-2', title: 'Key Principles',  slideType: 'title-bullets' },
             // Basic courses get an Image + Text slide here; richer levels a video
             { id: 's2-3', title: 'Visual Overview', slideType: pick('video', 'image-vertical') },
+            ...(cfg.minTopics < 5 ? [{ id: 's2-4', title: 'Real-World Examples', slideType: 'image-horizontal' }] : []),
           ],
         },
-        {
-          id: 's3', title: 'Practice and Application',
-          description: 'Apply what you have learned', expanded: true,
-          topics: [
-            { id: 's3-1', title: 'Real-World Examples', slideType: pick('scenario', 'image-horizontal') },
-            { id: 's3-2', title: 'Best Practices',      slideType: 'title-bullets' },
-            ...(ids.includes('audio') ? [{ id: 's3-3', title: 'Audio Narration', slideType: 'audio' }] : []),
-          ],
-        },
+        // Practice sections only for richer courses; Basic gets its examples inside Core Concepts
+        ...(cfg.minTopics >= 5 ? [
+          {
+            id: 's3', title: 'Practice and Application',
+            description: 'Apply what you have learned', expanded: true,
+            topics: [
+              { id: 's3-1', title: 'Real-World Examples', slideType: pick('scenario', 'image-horizontal') },
+              { id: 's3-2', title: 'Best Practices',      slideType: 'title-bullets' },
+              ...(ids.includes('audio') ? [{ id: 's3-3', title: 'Audio Narration', slideType: 'audio' }] : []),
+            ],
+          },
+          {
+            id: 's3b', title: 'Common Challenges',
+            description: 'Avoid mistakes and handle difficult situations', expanded: true,
+            topics: [
+              { id: 's3b-1', title: 'Common Mistakes',               slideType: 'title-bullets' },
+              { id: 's3b-2', title: 'Handling Difficult Situations', slideType: pick('simulation', 'title-text') },
+            ],
+          },
+        ] : []),
         {
           id: 's4', title: 'Summary and Assessment',
           description: 'Review and final assessment', expanded: true,
@@ -781,7 +793,7 @@ export function AICreateCoursePage() {
                       <p style={{ fontSize: 12, color: '#4B5563', margin: '0 0 8px', lineHeight: 1.5 }}>{cc.tagline}</p>
                       <div style={{ borderTop: '1px solid #F3F4F6', paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <span style={{ fontSize: 11, fontWeight: 600, color: active ? P : '#6B7280' }}>
-                          Min. {cc.minTopics} topics
+                          {cc.minTopics} sections
                         </span>
                         <span style={{ fontSize: 11, color: '#9CA3AF', lineHeight: 1.4 }}>{cc.contentTypes}</span>
                       </div>
@@ -964,12 +976,12 @@ export function AICreateCoursePage() {
                           <div>
                             <label htmlFor="brand-copyright" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Copyright Information</label>
                             <input id="brand-copyright" maxLength={50} style={fieldStyle} value={copyrightText} onChange={e => setCopyrightText(e.target.value.slice(0, 50))} placeholder="e.g. © 2026 Acme Corp. All rights reserved." aria-describedby="brand-copyright-hint" onFocus={focusField} onBlur={blurField} />
-                            <p id="brand-copyright-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Shown in the bottom-left corner of each slide · {copyrightText.length} / 50 characters</p>
+                            <p id="brand-copyright-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>{copyrightText.length} / 50 characters</p>
                           </div>
                           <div>
                             <label htmlFor="brand-watermark" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Watermark</label>
                             <input id="brand-watermark" maxLength={50} style={fieldStyle} value={watermarkText} onChange={e => setWatermarkText(e.target.value.slice(0, 50))} placeholder="e.g. CONFIDENTIAL" aria-describedby="brand-watermark-hint" onFocus={focusField} onBlur={blurField} />
-                            <p id="brand-watermark-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Large faint text across each slide, like PowerPoint · {watermarkText.length} / 50 characters</p>
+                            <p id="brand-watermark-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>{watermarkText.length} / 50 characters</p>
                           </div>
                         </div>
                       </div>
