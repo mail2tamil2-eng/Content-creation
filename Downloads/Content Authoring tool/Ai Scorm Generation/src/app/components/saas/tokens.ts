@@ -17,7 +17,7 @@ export const SAAS = {
   textMuted: '#6B7280',
   border: '#E5E7EB',
   borderField: '#6B7280', // checkboxes, toggles (4.8:1)
-  borderInput: '#8B929C', // text inputs, selects, textareas, search (3.1:1, softer)
+  borderInput: '#D1D5DB', // text inputs, selects, textareas, search (light grey by design choice; focus ring gives the strong cue)
   surface: '#FFFFFF',
   page: '#F9FAFB',
   chip: '#F3F4F6',

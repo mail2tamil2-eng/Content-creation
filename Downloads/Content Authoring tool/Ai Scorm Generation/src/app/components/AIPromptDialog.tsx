@@ -64,7 +64,7 @@ export function AIPromptDialog({ open, onOpenChange, title, description, placeho
             placeholder={placeholder}
             rows={4}
             disabled={busy}
-            className="mb-5 block w-full resize-y rounded-lg border border-[#8B929C] px-3 py-2.5 text-sm leading-relaxed text-[#111827] placeholder:text-[#6B7280] focus-visible:border-[#1565F0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]/25"
+            className="mb-5 block w-full resize-y rounded-lg border border-[#D1D5DB] px-3 py-2.5 text-sm leading-relaxed text-[#111827] placeholder:text-[#6B7280] focus-visible:border-[#1565F0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0]/25"
           />
           <div className="flex items-center justify-end gap-2">
             <span className="mr-auto text-xs text-[#6B7280]">Ctrl + Enter to generate</span>

@@ -8,7 +8,7 @@ const fieldBase =
   'disabled:cursor-not-allowed disabled:bg-[#F9FAFB] disabled:text-[#9CA3AF]';
 
 const fieldBorder = (invalid?: boolean) =>
-  invalid ? 'border-[#DC2626] focus:border-[#DC2626] focus:shadow-[0_0_0_3px_rgba(220,38,38,0.12)]' : 'border-[#8B929C]'; // ≥3:1 against white (WCAG 1.4.11)
+  invalid ? 'border-[#DC2626] focus:border-[#DC2626] focus:shadow-[0_0_0_3px_rgba(220,38,38,0.12)]' : 'border-[#D1D5DB]'; // ≥3:1 against white (WCAG 1.4.11)
 
 export interface FormFieldProps {
   label: string;

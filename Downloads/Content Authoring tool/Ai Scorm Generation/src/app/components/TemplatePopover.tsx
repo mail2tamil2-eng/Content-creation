@@ -110,7 +110,7 @@ export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, on
             <label htmlFor="tpl-font" className="block text-[12px] font-bold uppercase tracking-[0.07em] text-[#4B5563]">Font</label>
             <p id="tpl-font-hint" className="m-0 mb-2 mt-0.5 text-xs text-[#4B5563]">Text font on every slide. Choosing a template resets it to the template’s font.</p>
             <select id="tpl-font" aria-describedby="tpl-font-hint" value={font} onChange={e => onFontChange(e.target.value)}
-              className="h-9 w-full rounded-lg border border-[#8B929C] bg-white px-2.5 text-[14px] text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-1"
+              className="h-9 w-full rounded-lg border border-[#D1D5DB] bg-white px-2.5 text-[14px] text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-1"
               style={{ fontFamily: `'${font}', system-ui, sans-serif` }}>
               {(fonts.includes(font) ? fonts : [font, ...fonts]).map(f => <option key={f} value={f} style={{ fontFamily: `'${f}', system-ui, sans-serif` }}>{f}</option>)}
             </select>
@@ -123,7 +123,7 @@ export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, on
           return (
             <div
               key={t.id}
-              className={`group relative flex items-center gap-3 rounded-[10px] border p-2 transition-colors ${isSel ? 'border-[#1565F0] bg-[#EBF3FF]' : 'border-[#E5E7EB] bg-white hover:border-[#8B929C]'}`}
+              className={`group relative flex items-center gap-3 rounded-[10px] border p-2 transition-colors ${isSel ? 'border-[#1565F0] bg-[#EBF3FF]' : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'}`}
             >
               <button
                 type="button"

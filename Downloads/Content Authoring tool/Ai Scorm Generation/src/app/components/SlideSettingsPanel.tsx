@@ -96,7 +96,7 @@ function getTypeInfo(st: string, tid?: string) {
 // ── Design tokens ─────────────────────────────────────────────────────────────
 
 const BORDER = '#E5E7EB';  // cards and dividers (decorative)
-const FIELD  = '#8B929C';  // every input / select / textarea border (3.1:1, WCAG 1.4.11)
+const FIELD  = '#D1D5DB';  // every input / select / textarea border (3.1:1, WCAG 1.4.11)
 const P = '#1565F0';
 const font = 'Nunito Sans, system-ui, sans-serif';
 

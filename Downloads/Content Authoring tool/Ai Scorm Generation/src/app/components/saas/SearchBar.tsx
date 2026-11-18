@@ -50,8 +50,8 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(function S
           size === 'md' && 'h-10 rounded-xl pl-10 pr-10',
           size === 'lg' && 'h-12 rounded-xl pl-10 pr-10 text-[15px]',
           variant === 'filled'
-            ? 'border border-[#8B929C] bg-gray-50 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
-            : 'border border-[#8B929C] bg-white focus:border-[#1565F0] focus:shadow-[0_0_0_3px_rgba(21,101,240,0.12)]',
+            ? 'border border-[#D1D5DB] bg-gray-50 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
+            : 'border border-[#D1D5DB] bg-white focus:border-[#1565F0] focus:shadow-[0_0_0_3px_rgba(21,101,240,0.12)]',
         )}
         {...props}
       />

@@ -177,9 +177,9 @@ function EditModal({
           onChange={e => setVal(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && val.trim()) { onSave(val.trim()); onClose(); } }}
           placeholder={placeholder ?? 'Enter title…'}
-          style={{ width: '100%', padding: '10px 12px', border: '1px solid #8B929C', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 16, transition: 'border-color 0.15s' }}
+          style={{ width: '100%', padding: '10px 12px', border: '1px solid #D1D5DB', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 16, transition: 'border-color 0.15s' }}
           onFocus={e => { (e.currentTarget).style.borderColor = P; }}
-          onBlur={e => { (e.currentTarget).style.borderColor = '#8B929C'; }}
+          onBlur={e => { (e.currentTarget).style.borderColor = '#D1D5DB'; }}
         />
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${BORDER}`, background: '#fff', fontSize: 13, cursor: 'pointer', color: '#374151' }}>

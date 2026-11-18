@@ -663,9 +663,9 @@ export function SlideLibraryModal({ isOpen, complexity, onClose, onInsert }: Sli
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search templates…"
                 aria-label="Search slide templates"
-                style={{ width:'100%', padding:'8px 10px 8px 34px', border:'1px solid #8B929C', borderRadius:8, fontSize:13, color:'#111827', background:'#fff', outline:'none', boxSizing:'border-box', fontFamily:'inherit' }}
+                style={{ width:'100%', padding:'8px 10px 8px 34px', border:'1px solid #D1D5DB', borderRadius:8, fontSize:13, color:'#111827', background:'#fff', outline:'none', boxSizing:'border-box', fontFamily:'inherit' }}
                 onFocus={e => { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.background = '#fff'; }}
-                onBlur={e => { (e.currentTarget as HTMLElement).style.borderColor = '#8B929C'; (e.currentTarget as HTMLElement).style.background = '#fff'; }}
+                onBlur={e => { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = '#fff'; }}
               />
               {search && (
                 <button type="button" aria-label="Clear search" onClick={() => { setSearch(''); searchRef.current?.focus(); }}
