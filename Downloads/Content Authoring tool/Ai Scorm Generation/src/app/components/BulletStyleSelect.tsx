@@ -45,7 +45,7 @@ export function BulletStyleSelect({ value, onChange, label = 'Bullet style', id 
       <Select.Trigger
         id={id}
         aria-label={label}
-        className="flex h-9 w-full items-center gap-2 rounded-[7px] border border-[#E5E7EB] bg-[#FAFAFA] px-2.5 text-left text-[13px] text-[#111827] outline-none transition-colors hover:border-[#9CA3AF] focus-visible:border-[#1565F0] focus-visible:ring-2 focus-visible:ring-[#1565F0]/25 data-[state=open]:border-[#1565F0]"
+        className="flex h-9 w-full items-center gap-2 rounded-[7px] border border-[#6B7280] bg-white px-2.5 text-left text-[13px] text-[#111827] outline-none transition-colors hover:border-[#374151] focus-visible:border-[#1565F0] focus-visible:ring-2 focus-visible:ring-[#1565F0]/25 data-[state=open]:border-[#1565F0]"
         style={{ fontFamily: 'Nunito Sans, system-ui, sans-serif' }}
       >
         {current.value !== 'none' && <BulletMarker style={current.value} />}

@@ -95,7 +95,8 @@ function getTypeInfo(st: string, tid?: string) {
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 
-const BORDER = '#E5E7EB';
+const BORDER = '#E5E7EB';  // cards and dividers (decorative)
+const FIELD  = '#6B7280';  // every input / select / textarea border (3:1+, WCAG 1.4.11)
 const P = '#1565F0';
 const font = 'Nunito Sans, system-ui, sans-serif';
 
@@ -111,10 +112,10 @@ function FieldLabel({ children, note }: { children: React.ReactNode; note?: stri
 }
 
 const focusStyle = { borderColor: P, background: '#fff' };
-const blurStyle  = { borderColor: BORDER, background: '#FAFAFA' };
+const blurStyle  = { borderColor: FIELD, background: '#fff' };
 const inputBase: React.CSSProperties = {
-  width: '100%', padding: '8px 10px', border: `1px solid ${BORDER}`,
-  borderRadius: 7, fontSize: 13, color: '#111827', background: '#FAFAFA',
+  width: '100%', padding: '8px 10px', border: `1px solid ${FIELD}`,
+  borderRadius: 7, fontSize: 13, color: '#111827', background: '#fff',
   outline: 'none', boxSizing: 'border-box', fontFamily: font, transition: 'border-color 0.12s',
 };
 
@@ -207,7 +208,7 @@ function AiBtn({ label, onClick, small }: { label: string; onClick: () => void; 
   );
 }
 
-const inlineInput: React.CSSProperties = { flex: 1, padding: '6px 8px', border: `1px solid ${BORDER}`, borderRadius: 6, fontSize: 13, outline: 'none', background: '#FAFAFA', fontFamily: font };
+const inlineInput: React.CSSProperties = { flex: 1, padding: '6px 8px', border: `1px solid ${FIELD}`, borderRadius: 6, fontSize: 13, outline: 'none', background: '#fff', fontFamily: font };
 const inlineTA:    React.CSSProperties = { ...inlineInput, resize: 'none' as const, lineHeight: 1.5 };
 
 function ItemCard({ label, onRemove, children }: { label: string; onRemove: () => void; children: React.ReactNode }) {
@@ -660,7 +661,7 @@ function TableFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
           {rows.map((row, ri) => (
             <div key={ri} style={{ display: 'flex', gap: 3 }}>
               {row.map((cell, ci) => (
-                <input key={ci} data-field={`tableRows.${ri}.${ci}`} aria-label={`Row ${ri + 1} column ${ci + 1}`} maxLength={TEXT_LIMITS.tableCell} aria-describedby={limitsId} value={cell} onChange={e => { const n = rows.map((r,i) => i===ri ? r.map((c,j) => j===ci ? e.target.value : c) : r); uR(n); }} placeholder={headers[ci]||''} style={{ flex:1, minWidth:0, padding:'5px 6px', border:`1px solid ${BORDER}`, borderRadius:5, fontSize:11, outline:'none', background:'#FAFAFA' }} />
+                <input key={ci} data-field={`tableRows.${ri}.${ci}`} aria-label={`Row ${ri + 1} column ${ci + 1}`} maxLength={TEXT_LIMITS.tableCell} aria-describedby={limitsId} value={cell} onChange={e => { const n = rows.map((r,i) => i===ri ? r.map((c,j) => j===ci ? e.target.value : c) : r); uR(n); }} placeholder={headers[ci]||''} style={{ flex:1, minWidth:0, padding:'5px 6px', border:`1px solid ${FIELD}`, borderRadius:5, fontSize:11, outline:'none', background:'#fff' }} />
               ))}
               <RemoveBtn onClick={() => uR(rows.filter((_,i) => i !== ri))} />
             </div>
@@ -815,7 +816,7 @@ function DragDropFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
           {items.map((item, i) => (
             <div key={item.id} style={{ display: 'flex', gap: 4 }}>
               <input data-field={`dragItems.${i}.label`} aria-label={`Item ${i + 1} label`} value={item.label} onChange={e => syncI(items.map((x,j) => j===i ? {...x,label:e.target.value} : x))} placeholder={`Item ${i+1}`} style={{ ...inlineInput, flex: 2 }} />
-              <select value={item.zone} onChange={e => syncI(items.map((x,j) => j===i ? {...x,zone:e.target.value} : x))} style={{ flex:1, padding:'6px 4px', border:`1px solid ${BORDER}`, borderRadius:6, fontSize:11, outline:'none', background:'#FAFAFA' }}>
+              <select value={item.zone} onChange={e => syncI(items.map((x,j) => j===i ? {...x,zone:e.target.value} : x))} style={{ flex:1, padding:'6px 4px', border:`1px solid ${FIELD}`, borderRadius:6, fontSize:11, outline:'none', background:'#FAFAFA' }}>
                 {zones.map(z => <option key={z.id} value={z.id}>{z.label || '(zone)'}</option>)}
               </select>
               <RemoveBtn onClick={() => syncI(items.filter((_,j) => j !== i))} />
@@ -1018,7 +1019,7 @@ function QuestionCard({
         <GripVertical size={13} color="#9CA3AF" style={{ cursor: 'grab', flexShrink: 0 }} />
         <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#374151' }}>Q{index + 1}</span>
         <select aria-label={`Question ${index + 1} type`} value={q.type} onChange={e => { const t = e.target.value as Question['type']; onUpdate({ type: t, options: defaultOptions(t) }); }}
-          style={{ fontSize: 13, border: `1px solid ${BORDER}`, borderRadius: 5, padding: '2px 4px', background: '#fff', outline: 'none', cursor: 'pointer' }}>
+          style={{ fontSize: 13, border: `1px solid ${FIELD}`, borderRadius: 5, padding: '2px 4px', background: '#fff', outline: 'none', cursor: 'pointer' }}>
           <option value="mcq-multi">MCQ (multi)</option>
           <option value="mcq-single">MCQ (single)</option>
           <option value="true-false">True / False</option>
@@ -1051,12 +1052,12 @@ function QuestionCard({
                 {q.options.map((opt, i) => (
                   <div key={opt.id} style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
                     <button type="button" onClick={() => toggleCorrect(opt.id)} aria-pressed={opt.correct} aria-label={`Mark option ${i + 1} as correct`}
-                      style={{ width: 16, height: 16, borderRadius: isMulti ? 3 : '50%', border: `2px solid ${opt.correct ? '#059669' : BORDER}`, background: opt.correct ? '#059669' : '#fff', cursor: 'pointer', flexShrink: 0, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      style={{ width: 16, height: 16, borderRadius: isMulti ? 3 : '50%', border: `2px solid ${opt.correct ? '#047857' : FIELD}`, background: opt.correct ? '#059669' : '#fff', cursor: 'pointer', flexShrink: 0, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {opt.correct && <Check size={9} color="#fff" strokeWidth={3} />}
                     </button>
                     <input data-field={`questions.${index}.options.${i}.text`} aria-label={`Option ${i + 1}`} value={opt.text} onChange={e => onUpdate({ options: q.options.map((o,j) => j===i ? {...o,text:e.target.value} : o) })}
                       placeholder={`Option ${i+1}…`}
-                      style={{ ...inlineInput, background: opt.correct ? '#F0FDF4' : '#FAFAFA', borderColor: opt.correct ? '#D1FAE5' : BORDER }} />
+                      style={{ ...inlineInput, background: opt.correct ? '#F0FDF4' : '#fff', borderColor: opt.correct ? '#047857' : FIELD }} />
                     {q.options.length > 2 && <RemoveBtn label={`Remove option ${i + 1}`} onClick={() => removeOption(i)} />}
                   </div>
                 ))}
@@ -1069,7 +1070,7 @@ function QuestionCard({
               <div style={{ display: 'flex', gap: 8 }}>
                 {q.options.map(opt => (
                   <button key={opt.id} type="button" aria-pressed={opt.correct} onClick={() => toggleCorrect(opt.id)}
-                    style={{ flex:1, padding:'7px 0', borderRadius:7, border:`2px solid ${opt.correct ? '#047857' : BORDER}`, background: opt.correct ? '#F0FDF4' : '#FAFAFA', fontSize:12, fontWeight: opt.correct ? 600 : 400, color: opt.correct ? '#047857' : '#374151', cursor:'pointer', transition:'all 0.12s' }}>
+                    style={{ flex:1, padding:'7px 0', borderRadius:7, border:`2px solid ${opt.correct ? '#047857' : FIELD}`, background: opt.correct ? '#F0FDF4' : '#FAFAFA', fontSize:12, fontWeight: opt.correct ? 600 : 400, color: opt.correct ? '#047857' : '#374151', cursor:'pointer', transition:'all 0.12s' }}>
                     {opt.text}
                   </button>
                 ))}
@@ -1091,8 +1092,8 @@ function QuestionCard({
           {isGraded && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 13, color: '#6B7280' }}>Marks:</span>
-              <input type="number" min={0} value={q.marks} onChange={e => onUpdate({ marks: parseInt(e.target.value)||0 })}
-                style={{ width: 52, padding: '4px 6px', border: `1px solid ${BORDER}`, borderRadius: 5, fontSize: 13, outline: 'none' }} />
+              <input type="number" min={0} value={q.marks} aria-label={`Question ${index + 1} marks`} onChange={e => onUpdate({ marks: parseInt(e.target.value)||0 })}
+                style={{ width: 52, padding: '4px 6px', border: `1px solid ${FIELD}`, borderRadius: 5, fontSize: 13, outline: 'none', background: '#fff' }} />
             </div>
           )}
         </div>

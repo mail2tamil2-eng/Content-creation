@@ -52,7 +52,7 @@ export default function TranslatedCoursePreview({ course, language, languageLabe
     <nav aria-label="Translated slide navigation" className="flex flex-wrap items-center gap-3 border-t border-gray-200 p-3">
       <button type="button" aria-label="Previous translated slide" disabled={index === 0} onClick={() => setIndex(i => Math.max(0, i - 1))} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm text-gray-700 enabled:hover:bg-gray-50 disabled:opacity-40"><ChevronLeft size={16} />Previous</button>
       <label className="flex min-w-0 flex-1 items-center gap-2 text-sm text-gray-600">Slide
-        <select aria-label="Translated slide" value={index} onChange={event => setIndex(Number(event.target.value))} className="min-w-0 w-full rounded-lg border border-gray-200 p-2">
+        <select aria-label="Translated slide" value={index} onChange={event => setIndex(Number(event.target.value))} className="min-w-0 w-full rounded-lg border border-[#6B7280] bg-white p-2">
           {slides.map((slide, i) => <option key={slide.topic.id} value={i}>{i + 1}. {slide.topic.title}</option>)}
         </select>
       </label>

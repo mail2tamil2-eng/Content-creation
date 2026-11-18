@@ -1,2 +1,10 @@
 *, *::before, *::after { box-sizing: border-box; }
 body { font-family: 'Nunito Sans', system-ui, sans-serif; }
+
+/* Form fields: one focus style everywhere (border colour #6B7280 at rest is set per component).
+   !important so it also wins over inline border colours. */
+:is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]), select, textarea):focus-visible {
+  border-color: #1565F0 !important;
+  box-shadow: 0 0 0 3px rgba(21, 101, 240, .25);
+  outline: none;
+}

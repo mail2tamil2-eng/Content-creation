@@ -96,7 +96,7 @@ function ToggleSwitch({ enabled, onChange, labelledBy }: { enabled: boolean; onC
   return (
     <button
       type="button" role="switch" aria-checked={enabled} aria-labelledby={labelledBy} onClick={() => onChange(!enabled)}
-      className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${enabled ? 'bg-[#2D74FA] focus:ring-blue-400' : 'bg-gray-300 focus:ring-gray-400'}`}
+      className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${enabled ? 'bg-[#2D74FA] focus:ring-blue-400' : 'bg-[#6B7280] focus:ring-gray-400'}`}
     >
       <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${enabled ? 'translate-x-5' : 'translate-x-0'}`} />
     </button>
@@ -565,16 +565,16 @@ export function AICreateCoursePage() {
     const PL = '#EBF3FF';
 
     const fieldStyle: React.CSSProperties = {
-      width: '100%', border: '1px solid #D1D5DB', borderRadius: 8,
+      width: '100%', border: '1px solid #6B7280', borderRadius: 8, background: '#fff',
       padding: '9px 12px', fontSize: 13, outline: 'none',
       boxSizing: 'border-box', fontFamily: 'inherit',
     };
     const focusField = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       e.currentTarget.style.borderColor = P;
-      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(79,70,229,0.1)';
+      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(21,101,240,0.25)';
     };
     const blurField = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      e.currentTarget.style.borderColor = '#D1D5DB';
+      e.currentTarget.style.borderColor = '#6B7280';
       e.currentTarget.style.boxShadow = 'none';
     };
 
@@ -730,17 +730,17 @@ export function AICreateCoursePage() {
                       value={obj}
                       onChange={e => { const n = [...objectives]; n[i] = e.target.value; setObjectives(n); }}
                       placeholder={`Course outcome ${i + 1}`}
-                      style={{ flex: 1, border: '1px solid #D1D5DB', borderRadius: 8, padding: '9px 12px', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
-                      onFocus={e => { e.currentTarget.style.borderColor = P; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(79,70,229,0.1)'; }}
-                      onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; e.currentTarget.style.boxShadow = 'none'; }}
+                      style={{ flex: 1, border: '1px solid #6B7280', borderRadius: 8, padding: '9px 12px', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: '#fff' }}
+                      onFocus={e => { e.currentTarget.style.borderColor = P; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(21,101,240,0.25)'; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = '#6B7280'; e.currentTarget.style.boxShadow = 'none'; }}
                     />
                     {objectives.length > 1 && (
                       <button
                         type="button"
                         onClick={() => setObjectives(prev => prev.filter((_, idx) => idx !== i))}
-                        style={{ width: 30, height: 30, border: 'none', background: 'none', cursor: 'pointer', color: '#D1D5DB', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, flexShrink: 0, transition: 'all 0.12s' }}
+                        style={{ width: 30, height: 30, border: 'none', background: 'none', cursor: 'pointer', color: '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, flexShrink: 0, transition: 'all 0.12s' }}
                         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#DC2626'; (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = 'none'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#6B7280'; (e.currentTarget as HTMLElement).style.background = 'none'; }}
                       ><X size={14} /></button>
                     )}
                   </div>
@@ -814,9 +814,9 @@ export function AICreateCoursePage() {
                       <span style={{ fontSize: 12, color: '#6B7280' }}>Questions</span>
                       <input type="number" min="1" max="50" value={addQuizQuestions}
                         onChange={e => setAddQuizQuestions(Math.max(1, Math.min(50, Number(e.target.value))))}
-                        style={{ width: 52, border: '1px solid #D1D5DB', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center' }}
+                        style={{ width: 52, border: '1px solid #6B7280', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center' }}
                         onFocus={e => { e.currentTarget.style.borderColor = P; }}
-                        onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />
+                        onBlur={e => { e.currentTarget.style.borderColor = '#6B7280'; }} />
                     </label>
                   )}
                   <ToggleSwitch enabled={addQuiz} onChange={setAddQuiz} labelledBy="assess-quiz-label" />
@@ -828,9 +828,9 @@ export function AICreateCoursePage() {
                       <span style={{ fontSize: 12, color: '#6B7280' }}>Questions</span>
                       <input type="number" min="1" max="20" value={knowledgeCheckQuestions}
                         onChange={e => setKnowledgeCheckQuestions(Math.max(1, Math.min(20, Number(e.target.value))))}
-                        style={{ width: 52, border: '1px solid #D1D5DB', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center' }}
+                        style={{ width: 52, border: '1px solid #6B7280', borderRadius: 6, padding: '4px 8px', fontSize: 13, outline: 'none', fontFamily: 'inherit', textAlign: 'center' }}
                         onFocus={e => { e.currentTarget.style.borderColor = P; }}
-                        onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }} />
+                        onBlur={e => { e.currentTarget.style.borderColor = '#6B7280'; }} />
                     </label>
                   )}
                   <ToggleSwitch enabled={knowledgeCheck} onChange={setKnowledgeCheck} labelledBy="assess-kc-label" />
@@ -887,7 +887,7 @@ export function AICreateCoursePage() {
                             onClick={() => { setSelectedPredefined('blank'); setAiTemplate(false); setCustomBgStyle('light'); }}
                             className={`group flex flex-col rounded-xl border-2 bg-white text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-2 ${selectedPredefined === 'blank' ? 'border-[#1565F0] shadow-[0_0_0_3px_#EBF3FF]' : 'border-[#E5E7EB] hover:border-[#6B7280]'}`}
                           >
-                            <span className="flex aspect-video w-full flex-col items-center justify-center gap-1 rounded-t-[10px] border-b border-dashed border-[#D1D5DB] bg-[#FAFAFA] text-[#4B5563]">
+                            <span className="flex aspect-video w-full flex-col items-center justify-center gap-1 rounded-t-[10px] border-b border-dashed border-[#6B7280] bg-[#FAFAFA] text-[#4B5563]">
                               <FileText size={20} aria-hidden="true" />
                               <span className="text-xs">Start from scratch</span>
                             </span>
@@ -924,7 +924,7 @@ export function AICreateCoursePage() {
                             <span id="style-font" style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font</span>
                             <div style={{ position: 'relative' }}>
                               <select aria-labelledby="style-font" value={customFont} onChange={e => setCustomFont(e.target.value)}
-                                style={{ border: '1px solid #E5E7EB', borderRadius: 7, padding: '5px 28px 5px 10px', fontSize: 13, color: '#111827', background: '#fff', appearance: 'none', cursor: 'pointer', outline: 'none' }}>
+                                style={{ border: '1px solid #6B7280', borderRadius: 7, padding: '5px 28px 5px 10px', fontSize: 13, color: '#111827', background: '#fff', appearance: 'none', cursor: 'pointer', outline: 'none' }}>
                                 {THEME_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                               </select>
                               <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
@@ -949,7 +949,7 @@ export function AICreateCoursePage() {
                             <span id="style-font" style={{ fontSize: 13, color: '#374151', flex: 1 }}>Font</span>
                             <div style={{ position: 'relative' }}>
                               <select aria-labelledby="style-font" value={customFont} onChange={e => setCustomFont(e.target.value)}
-                                style={{ border: '1px solid #E5E7EB', borderRadius: 7, padding: '5px 28px 5px 10px', fontSize: 13, color: '#111827', background: '#fff', appearance: 'none', cursor: 'pointer', outline: 'none' }}>
+                                style={{ border: '1px solid #6B7280', borderRadius: 7, padding: '5px 28px 5px 10px', fontSize: 13, color: '#111827', background: '#fff', appearance: 'none', cursor: 'pointer', outline: 'none' }}>
                                 {THEME_FONTS.map(f => <option key={f} value={f}>{f}</option>)}
                               </select>
                               <ChevronDown size={13} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none' }} />
@@ -964,9 +964,9 @@ export function AICreateCoursePage() {
                         <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>Logo, Copyright &amp; Watermark</p>
                         <div>
                           <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Organization Logo</label>
-                          <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', border: `2px dashed ${customLogoPreview ? P : '#D1D5DB'}`, borderRadius: 8, cursor: 'pointer', background: customLogoPreview ? PL : '#FAFAFA', transition: 'all 0.13s' }}
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', border: `2px dashed ${customLogoPreview ? P : '#6B7280'}`, borderRadius: 8, cursor: 'pointer', background: customLogoPreview ? PL : '#FAFAFA', transition: 'all 0.13s' }}
                             onMouseEnter={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = P; (e.currentTarget as HTMLElement).style.background = PL; } }}
-                            onMouseLeave={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; } }}>
+                            onMouseLeave={e => { if (!customLogoPreview) { (e.currentTarget as HTMLElement).style.borderColor = '#6B7280'; (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; } }}>
                             <input type="file" accept=".png,.jpg,.jpeg,.svg" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f && f.size <= 5 * 1024 * 1024) setCustomLogoPreview(URL.createObjectURL(f)); }} />
                             {customLogoPreview ? <><img src={customLogoPreview} alt="Organization logo preview" style={{ height: 28, objectFit: 'contain', maxWidth: 80 }} /><span style={{ fontSize: 13, color: P, fontWeight: 500 }}>Logo uploaded</span><button type="button" onClick={e => { e.preventDefault(); setCustomLogoPreview(''); }} style={{ marginLeft: 'auto', fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer' }}>Remove</button></> : <><Upload size={15} color="#6B7280" /><span style={{ fontSize: 13, color: '#4B5563' }}>Upload logo</span></>}
                           </label>
@@ -1371,7 +1371,7 @@ export function AICreateCoursePage() {
                       <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>How learners move through slides</p>
                     </div>
                     <select value={navMode} onChange={e => setNavMode(e.target.value as NavigationMode)}
-                      style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
+                      style={{ border: '1px solid #6B7280', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
                       <option value="free">Free navigation</option>
                       <option value="linear">Linear</option>
                     </select>
@@ -1386,9 +1386,9 @@ export function AICreateCoursePage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <input type="number" min="0" max="300" value={slideDuration}
                         onChange={e => setSlideDuration(Math.max(0, Math.min(300, Number(e.target.value))))}
-                        style={{ width: 60, border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', textAlign: 'center', fontFamily: 'inherit' }}
+                        style={{ width: 60, border: '1px solid #6B7280', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', textAlign: 'center', fontFamily: 'inherit' }}
                         onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
-                        onBlur={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }}
+                        onBlur={e => { e.currentTarget.style.borderColor = '#6B7280'; }}
                       />
                       <span style={{ fontSize: 13, color: '#6B7280' }}>sec</span>
                     </div>
@@ -1401,7 +1401,7 @@ export function AICreateCoursePage() {
                       <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Animation between slides</p>
                     </div>
                     <select value={slideTransition} onChange={e => setSlideTransition(e.target.value)}
-                      style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
+                      style={{ border: '1px solid #6B7280', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
                       <option value="none">None</option>
                       <option value="fade">Fade</option>
                       <option value="slide">Slide</option>
@@ -1436,7 +1436,7 @@ export function AICreateCoursePage() {
                       <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Learner can scrub through slide media</p>
                     </div>
                     <select value={seekBar} onChange={e => setSeekBar(e.target.value as SeekBarControl)}
-                      style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
+                      style={{ border: '1px solid #6B7280', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
                       <option value="enable">Enabled</option>
                       <option value="hide">Hidden</option>
                     </select>
@@ -1454,9 +1454,9 @@ export function AICreateCoursePage() {
                     <AnimatePresence initial={false}>
                       {backgroundMusic && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.18 }} style={{ overflow: 'hidden' }}>
-                          <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, padding: '10px 12px', border: `2px dashed ${backgroundMusicFile ? '#93C5FD' : '#D1D5DB'}`, borderRadius: 10, cursor: 'pointer', background: backgroundMusicFile ? '#EBF3FF' : 'transparent', transition: 'all 0.13s' }}
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, padding: '10px 12px', border: `2px dashed ${backgroundMusicFile ? '#93C5FD' : '#6B7280'}`, borderRadius: 10, cursor: 'pointer', background: backgroundMusicFile ? '#EBF3FF' : 'transparent', transition: 'all 0.13s' }}
                             onMouseEnter={e => { if (!backgroundMusicFile) { (e.currentTarget as HTMLElement).style.borderColor = '#1565F0'; (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; } }}
-                            onMouseLeave={e => { if (!backgroundMusicFile) { (e.currentTarget as HTMLElement).style.borderColor = '#D1D5DB'; (e.currentTarget as HTMLElement).style.background = 'transparent'; } }}>
+                            onMouseLeave={e => { if (!backgroundMusicFile) { (e.currentTarget as HTMLElement).style.borderColor = '#6B7280'; (e.currentTarget as HTMLElement).style.background = 'transparent'; } }}>
                             <div style={{ width: 28, height: 28, borderRadius: 6, background: backgroundMusicFile ? '#E0E7FF' : '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                               <Volume2 size={13} style={{ color: backgroundMusicFile ? '#1565F0' : '#9CA3AF' }} />
                             </div>

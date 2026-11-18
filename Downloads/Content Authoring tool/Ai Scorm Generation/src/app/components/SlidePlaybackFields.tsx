@@ -94,9 +94,11 @@ export function SlidePlaybackFields({ value, defaults, onChange, className }: Sl
             onChange({ backgroundMusic: v, ...(v !== 'custom' ? { backgroundMusicFile: undefined } : {}) });
           }}>
           <option value={DEFAULT}>Default ({musicDefault})</option>
-          <option value="off">Off on this slide</option>
-          <option value="custom">Different track for this slide</option>
+          {/* "Off" only differs from the default when the course has music */}
+          {(defaults.backgroundMusic || value.backgroundMusic === 'off') && <option value="off">No music on this slide</option>}
+          <option value="custom">{defaults.backgroundMusic ? 'Different track for this slide' : 'Add a track to this slide'}</option>
         </select>
+        <p className="mt-1 text-xs text-[#4B5563]">Default follows Player Settings.</p>
         {value.backgroundMusic === 'custom' && (
           <div className="mt-2 flex items-center gap-2">
             <button type="button" onClick={() => fileRef.current?.click()}
