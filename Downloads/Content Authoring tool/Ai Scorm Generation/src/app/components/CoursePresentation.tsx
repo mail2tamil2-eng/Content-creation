@@ -1,3 +1,4 @@
+import { TEXT_LIMITS } from './textLimits';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import type { CourseTopic } from '../courseContent';
 import CourseSlideContent from './CourseSlideContent';
@@ -76,7 +77,7 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
 
   // Auto-fit: if the content is taller than the slide, shrink it in 5% steps (down to 80%) before it would scroll.
   // Re-measured whenever the content or the slide size changes. Runs before paint, so there is no flicker.
-  const mainRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState(1);
   const [measure, setMeasure] = useState(0); // bumps when the content's size changes (fonts/images loading)
   const fitKey = `${settings.template}|${settings.font}|${settings.headingFont}|${settings.background}|${editing}`;
@@ -139,7 +140,7 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
   // Image + Text puts the title and rule in the text column, beside the picture
   const titleInContent = topic.slideType === 'image-vertical' || topic.slideType === 'image-visual';
   const heading = <>
-    <EditableText as="h2" k="title" label="Title" value={topic.title} placeholder="Add a title" />
+    <EditableText as="h2" k="title" label="Title" maxLength={TEXT_LIMITS.title} value={topic.title} placeholder="Add a title" />
     <div className="course-slide-rule" />
   </>;
   const showHeader  = settings.showHeader  !== false;
@@ -171,10 +172,7 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
       </div>
       {/* Watermark: large faint diagonal text behind the content (decorative, like PowerPoint) */}
       {settings.footerWatermark && (
-        <svg className="course-slide-watermark" aria-hidden="true" viewBox="0 0 1000 562" preserveAspectRatio="xMidYMid meet">
-          <text x="500" y="281" textAnchor="middle" dominantBaseline="middle" transform="rotate(-28 500 281)"
-            textLength={Math.min(900, settings.footerWatermark.length * 70)} lengthAdjust="spacingAndGlyphs">{settings.footerWatermark}</text>
-        </svg>
+        <Watermark text={settings.footerWatermark} />
       )}
       {/* Organization logo: top-right corner of every slide */}
       {settings.logo && <img className="course-slide-logo" src={settings.logo} alt="Organization logo" />}
@@ -204,4 +202,33 @@ export default function CoursePresentation({ topic, courseTitle, sectionTitle, i
       )}
     </div>
   </article></SlideTemplateContext.Provider></SlideEditContext.Provider>;
+}
+
+/** Split long watermark text into two lines at the space nearest the middle (max 50 characters). */
+function watermarkLines(text: string): string[] {
+  const t = text.trim();
+  if (t.length <= 18) return [t];
+  const mid = t.length / 2;
+  let best = -1;
+  for (let i = 0; i < t.length; i++) if (t[i] === ' ' && (best < 0 || Math.abs(i - mid) < Math.abs(best - mid))) best = i;
+  if (best < 0) best = Math.ceil(mid); // one long word: break in the middle
+  return [t.slice(0, best).trim(), t.slice(best).trim()];
+}
+
+/** Large faint diagonal text behind the content (decorative, like PowerPoint). Font size shrinks to fit. */
+function Watermark({ text }: { text: string }) {
+  const lines = watermarkLines(text);
+  const longest = Math.max(...lines.map(l => l.length));
+  // ~0.76em per uppercase character incl. letter-spacing; the line fits in ~900 of the 1000-wide slide
+  const size = Math.min(110, Math.floor(900 / (longest * 0.76)));
+  const gap = size * 1.1;
+  return (
+    <svg className="course-slide-watermark" aria-hidden="true" viewBox="0 0 1000 562" preserveAspectRatio="xMidYMid meet">
+      <g transform="rotate(-28 500 281)">
+        {lines.map((l, i) => (
+          <text key={i} x="500" y={281 + (i - (lines.length - 1) / 2) * gap} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: size }}>{l}</text>
+        ))}
+      </g>
+    </svg>
+  );
 }

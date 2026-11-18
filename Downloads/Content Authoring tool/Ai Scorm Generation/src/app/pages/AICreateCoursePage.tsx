@@ -223,7 +223,7 @@ export function AICreateCoursePage() {
   const themeBgColor      = customBgStyle === 'dark' ? '#111827' : customBgStyle === 'warm' ? '#FEF9EE' : '#FFFFFF';
   const autoFontColor     = customBgStyle === 'dark' ? '#FFFFFF' : '#172033';
   const baseSettings: PresentationSettings = aiTemplate
-    ? { template: 'vivid-blue', primary: '#134780', accent: '#F48120', background: '#111C2D', foreground: '#FFFFFF', font: 'Inter', buttonStyle: 'rounded', layout: 'single', logo: customLogoPreview || logoPreview || undefined }
+    ? { template: 'vivid-blue', primary: '#134780', accent: '#F48120', background: '#111C2D', foreground: '#FFFFFF', font: customFont, buttonStyle: 'rounded', layout: 'single', logo: customLogoPreview || logoPreview || undefined }
     : selectedPredefined === 'blank'
     // Blank: everything comes from Colours & Style (primary, secondary, font, background)
     ? { template: 'elevate-white', primary: customPrimary, accent: customSecondary, background: themeBgColor, foreground: autoFontColor, font: customFont, buttonStyle: customButtonStyle, layout: 'single', logo: customLogoPreview || logoPreview || undefined }
@@ -963,13 +963,13 @@ export function AICreateCoursePage() {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
                           <div>
                             <label htmlFor="brand-copyright" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Copyright Information</label>
-                            <input id="brand-copyright" maxLength={20} style={fieldStyle} value={copyrightText} onChange={e => setCopyrightText(e.target.value.slice(0, 20))} placeholder="e.g. © 2026 Acme Corp" aria-describedby="brand-copyright-hint" onFocus={focusField} onBlur={blurField} />
-                            <p id="brand-copyright-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Shown in the bottom-left corner of each slide · {copyrightText.length} / 20 characters</p>
+                            <input id="brand-copyright" maxLength={50} style={fieldStyle} value={copyrightText} onChange={e => setCopyrightText(e.target.value.slice(0, 50))} placeholder="e.g. © 2026 Acme Corp. All rights reserved." aria-describedby="brand-copyright-hint" onFocus={focusField} onBlur={blurField} />
+                            <p id="brand-copyright-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Shown in the bottom-left corner of each slide · {copyrightText.length} / 50 characters</p>
                           </div>
                           <div>
                             <label htmlFor="brand-watermark" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Watermark</label>
-                            <input id="brand-watermark" maxLength={15} style={fieldStyle} value={watermarkText} onChange={e => setWatermarkText(e.target.value.slice(0, 15))} placeholder="e.g. CONFIDENTIAL" aria-describedby="brand-watermark-hint" onFocus={focusField} onBlur={blurField} />
-                            <p id="brand-watermark-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Large faint text across each slide, like PowerPoint · {watermarkText.length} / 15 characters</p>
+                            <input id="brand-watermark" maxLength={50} style={fieldStyle} value={watermarkText} onChange={e => setWatermarkText(e.target.value.slice(0, 50))} placeholder="e.g. CONFIDENTIAL" aria-describedby="brand-watermark-hint" onFocus={focusField} onBlur={blurField} />
+                            <p id="brand-watermark-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>Large faint text across each slide, like PowerPoint · {watermarkText.length} / 50 characters</p>
                           </div>
                         </div>
                       </div>
@@ -1347,6 +1347,19 @@ export function AICreateCoursePage() {
                 {/* ── Global Settings ── */}
                 <p style={{ fontSize: 13, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 16px' }}>Player Settings</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                  {/* Font: same setting as Step 1 "Font", changes the text font on every slide */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                    <div>
+                      <label htmlFor="player-font" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Font</label>
+                      <p id="player-font-hint" style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Text font on every slide</p>
+                    </div>
+                    <select id="player-font" aria-describedby="player-font-hint" value={customFont} onChange={e => setCustomFont(e.target.value)}
+                      className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-2"
+                      style={{ border: '1px solid #6B7280', borderRadius: 7, padding: '7px 10px', fontSize: 13, background: '#fff', cursor: 'pointer', maxWidth: 150, fontFamily: `'${customFont}', system-ui, sans-serif` }}>
+                      {(THEME_FONTS.includes(customFont) ? THEME_FONTS : [customFont, ...THEME_FONTS]).map(f => <option key={f} value={f} style={{ fontFamily: `'${f}', system-ui, sans-serif` }}>{f}</option>)}
+                    </select>
+                  </div>
 
                   {/* Navigation Mode */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>

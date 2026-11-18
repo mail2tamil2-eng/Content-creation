@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useId, useRef, useState } from 'react';
 import {
   X, Sparkles, Trash2, Plus, ChevronDown, ChevronUp, RefreshCw, Upload,
   Play, Pause, Square, Mic, Globe, Wand2, FolderOpen, Crop, Move,
@@ -115,12 +115,26 @@ const inputBase: React.CSSProperties = {
   outline: 'none', boxSizing: 'border-box', fontFamily: font, transition: 'border-color 0.12s',
 };
 
-function SInput({ value, onChange, placeholder, rows, field, label }: { value: string; onChange: (v: string) => void; placeholder?: string; rows?: number; /** Slide field key (data-field) for click-to-edit. */ field?: string; label?: string }) {
+function SInput({ value, onChange, placeholder, rows, field, label, max }: { value: string; onChange: (v: string) => void; placeholder?: string; rows?: number; /** Slide field key (data-field) for click-to-edit. */ field?: string; label?: string; /** Character limit: enforced, with a live counter. */ max?: number }) {
+  const countId = useId();
+  if (max) {
+    const limited = (v: string) => onChange(v.slice(0, max));
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <SInputBase value={value} onChange={limited} placeholder={placeholder} rows={rows} field={field} label={label} maxLength={max} describedBy={countId} />
+        <CharCount id={countId} value={value} max={max} />
+      </div>
+    );
+  }
+  return <SInputBase value={value} onChange={onChange} placeholder={placeholder} rows={rows} field={field} label={label} />;
+}
+
+function SInputBase({ value, onChange, placeholder, rows, field, label, maxLength, describedBy }: { value: string; onChange: (v: string) => void; placeholder?: string; rows?: number; field?: string; label?: string; maxLength?: number; describedBy?: string }) {
   const handlers = {
     onFocus: (e: React.FocusEvent<HTMLElement>) => Object.assign((e.currentTarget as HTMLElement).style, focusStyle),
     onBlur:  (e: React.FocusEvent<HTMLElement>) => Object.assign((e.currentTarget as HTMLElement).style, blurStyle),
   };
-  const a11y = { 'data-field': field, 'aria-label': label };
+  const a11y = { 'data-field': field, 'aria-label': label, maxLength, 'aria-describedby': describedBy };
   if (rows) return <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows} style={{ ...inputBase, resize: 'vertical', lineHeight: 1.6 }} {...a11y} {...handlers} />;
   return <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={inputBase} {...a11y} {...handlers} />;
 }
@@ -501,7 +515,7 @@ function TitleTextFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => voi
   const [align, setAlign] = useState((t.alignment as string) || 'left');
   return (
     <>
-      <div><FieldLabel>Body</FieldLabel><SInput rows={5} field="content" label="Body" value={body} placeholder="Enter body text…" onChange={v => { setBody(v); u({ content: v }); }} /></div>
+      <div><FieldLabel>Body</FieldLabel><SInput rows={5} max={TEXT_LIMITS.body} field="content" label="Body" value={body} placeholder="Enter body text…" onChange={v => { setBody(v); u({ content: v }); }} /></div>
       <div>
         <FieldLabel>Alignment</FieldLabel>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -621,6 +635,7 @@ function TableFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
   const [hStyle, setHStyle]   = useState((t.headerStyle as string) || 'filled');
   const uH = (n: string[]) => { setHeaders(n); u({ tableHeaders: n }); };
   const uR = (n: string[][]) => { setRows(n); u({ tableRows: n }); };
+  const limitsId = useId();
   return (
     <>
       <div>
@@ -628,7 +643,7 @@ function TableFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {headers.map((h, i) => (
             <div key={i} style={{ display: 'flex', gap: 5 }}>
-              <input data-field={`tableHeaders.${i}`} aria-label={`Column ${i + 1} heading`} value={h} onChange={e => { const n = [...headers]; n[i] = e.target.value; uH(n); }} placeholder={`Col ${i+1}`} style={inlineInput} />
+              <input data-field={`tableHeaders.${i}`} aria-label={`Column ${i + 1} heading`} maxLength={TEXT_LIMITS.tableHeading} aria-describedby={limitsId} value={h} onChange={e => { const n = [...headers]; n[i] = e.target.value; uH(n); }} placeholder={`Col ${i+1}`} style={inlineInput} />
               {headers.length > 1 && <RemoveBtn onClick={() => uH(headers.filter((_,j) => j !== i))} />}
             </div>
           ))}
@@ -641,13 +656,14 @@ function TableFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
           {rows.map((row, ri) => (
             <div key={ri} style={{ display: 'flex', gap: 3 }}>
               {row.map((cell, ci) => (
-                <input key={ci} data-field={`tableRows.${ri}.${ci}`} aria-label={`Row ${ri + 1} column ${ci + 1}`} value={cell} onChange={e => { const n = rows.map((r,i) => i===ri ? r.map((c,j) => j===ci ? e.target.value : c) : r); uR(n); }} placeholder={headers[ci]||''} style={{ flex:1, minWidth:0, padding:'5px 6px', border:`1px solid ${BORDER}`, borderRadius:5, fontSize:11, outline:'none', background:'#FAFAFA' }} />
+                <input key={ci} data-field={`tableRows.${ri}.${ci}`} aria-label={`Row ${ri + 1} column ${ci + 1}`} maxLength={TEXT_LIMITS.tableCell} aria-describedby={limitsId} value={cell} onChange={e => { const n = rows.map((r,i) => i===ri ? r.map((c,j) => j===ci ? e.target.value : c) : r); uR(n); }} placeholder={headers[ci]||''} style={{ flex:1, minWidth:0, padding:'5px 6px', border:`1px solid ${BORDER}`, borderRadius:5, fontSize:11, outline:'none', background:'#FAFAFA' }} />
               ))}
               <RemoveBtn onClick={() => uR(rows.filter((_,i) => i !== ri))} />
             </div>
           ))}
           <LimitedAdd label="Add row" noun="rows" count={rows.length} max={ITEM_LIMITS.tableRows} onClick={() => uR([...rows, new Array(headers.length).fill('')])} />
         </div>
+        <p id={limitsId} style={{ margin: '6px 0 0', fontSize: 12, color: '#6B7280' }}>Column headings up to {TEXT_LIMITS.tableHeading} characters, cells up to {TEXT_LIMITS.tableCell}.</p>
       </div>
       <div><FieldLabel>Header style</FieldLabel><SSelect value={hStyle} onChange={v => { setHStyle(v); u({ headerStyle: v }); }} options={[{value:'filled',label:'Filled'},{value:'outlined',label:'Outlined'},{value:'minimal',label:'Minimal'}]} /></div>
     </>
@@ -694,9 +710,9 @@ function ImageTextFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => voi
   return (
     <>
       <LayoutOptionPicker label="Image position" field="imagePosition" value={position} options={IMAGE_POSITIONS} onChange={v => { setPosition(v); u({ imagePosition: v }); }} />
-      <LayoutOptionPicker label="Image style" field="imageStyle" value={imageStyle} options={imageStyleOptions(tShape, shapeName(tShape))} onChange={v => { setImageStyle(v); u({ imageStyle: v }); }} />
+      <LayoutOptionPicker label="Image style" field="imageStyle" value={imageStyle === tShape ? 'template' : imageStyle} options={imageStyleOptions(tShape, shapeName(tShape))} onChange={v => { setImageStyle(v); u({ imageStyle: v }); }} />
       <ImageManagement t={t} u={u} />
-      <div><FieldLabel>Body text</FieldLabel><SInput rows={5} field="content" label="Body text" value={body} placeholder="Text shown beside the image…" onChange={v => { setBody(v); u({ content: v }); }} /></div>
+      <div><FieldLabel>Body text</FieldLabel><SInput rows={5} max={TEXT_LIMITS.imageBody} field="content" label="Body text" value={body} placeholder="Text shown beside the image…" onChange={v => { setBody(v); u({ content: v }); }} /></div>
     </>
   );
 }
@@ -1083,8 +1099,8 @@ function QuestionCard({
 
 function QuizEditor({ t, u, templateId, sectionTitle }: { t: CSTopic; u: (x: Partial<CSTopic>) => void; templateId?: string; sectionTitle?: string }) {
   // Graded = any Quiz slide (generated Final Assessment or a quiz template); knowledge checks are ungraded
-  const isGraded = (t.slideType as string) === 'quiz' || (templateId?.startsWith('quiz-') ?? false);
-  const [passScore, setPassScore] = useState((t.passingScore as number) ?? 70);
+  // (KC library slides saved before they had their own type are still slideType 'quiz' with a 'kc-' template id)
+  const isGraded = !templateId?.startsWith('kc-') && ((t.slideType as string) === 'quiz' || (templateId?.startsWith('quiz-') ?? false));
   const [allowReveal, setAllowReveal] = useState(!!t.allowReveal);
 
   const initQuestions = (): Question[] => {
@@ -1170,14 +1186,8 @@ function QuizEditor({ t, u, templateId, sectionTitle }: { t: CSTopic; u: (x: Par
         </div>
       </div>
 
-      {/* Quiz: pass mark only. Knowledge check: optional Reveal answer button. Changes save automatically. */}
-      {isGraded ? (
-        <div style={{ maxWidth: 140 }}>
-          <FieldLabel>Pass %</FieldLabel>
-          <input type="number" min={0} max={100} value={passScore} aria-label="Pass percentage"
-            onChange={e => { const n = Math.max(0, Math.min(100, parseInt(e.target.value) || 0)); setPassScore(n); u({ passingScore: n }); }} style={{ ...inputBase }} />
-        </div>
-      ) : (
+      {/* Knowledge check: optional Reveal answer button. Changes save automatically. */}
+      {!isGraded && (
         <div>
           <Toggle value={allowReveal} label="Show “Reveal answer” button" onChange={v => { setAllowReveal(v); u({ allowReveal: v }); }} />
           <p style={{ margin: '4px 0 0', fontSize: 12, color: '#6B7280' }}>Learners can see the correct answer and explanation for each question.</p>
@@ -1286,7 +1296,7 @@ export function SlideSettingsPanel({
         <FieldGroup title="Content">
           <div>
             <FieldLabel>Topic title</FieldLabel>
-            <SInput field="title" label="Topic title" value={topicTitle} placeholder="Enter topic title…" onChange={v => { setTopicTitle(v); onUpdate({ title: v }); }} />
+            <SInput max={TEXT_LIMITS.title} field="title" label="Topic title" value={topicTitle} placeholder="Enter topic title…" onChange={v => { setTopicTitle(v); onUpdate({ title: v }); }} />
           </div>
         </FieldGroup>
 

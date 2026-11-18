@@ -57,7 +57,7 @@
 .course-slide-main--split > .course-slide-body > * { width:100%; }
 
 /* Copyright (bottom-left) and watermark */
-.course-slide-copyright { position:absolute; left:3cqw; bottom:1.6cqw; z-index:2; margin:0; font-size:clamp(9px,1.25cqw,13px); line-height:1.3; color:var(--slide-text); max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.course-slide-copyright { position:absolute; left:3cqw; bottom:1.6cqw; z-index:2; margin:0; font-size:clamp(9px,1.25cqw,13px); line-height:1.3; color:var(--slide-text); max-width:62%; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow-wrap:anywhere; }
 .course-slide-watermark { position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; user-select:none; }
 .course-slide-watermark text { font-size:110px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; fill:var(--slide-text); opacity:.15; font-family:inherit; }
 .course-slide-main { z-index:1; }

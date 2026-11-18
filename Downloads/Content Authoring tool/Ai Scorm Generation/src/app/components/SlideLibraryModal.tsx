@@ -70,9 +70,9 @@ export const SLIDE_TEMPLATES: SlideTemplate[] = [
   { id: 'branching-scenario', name: 'Branching Scenario',     category: 'interactive', description: 'Decision tree with branching paths and outcomes',         minComplexity: 'advanced',     slideType: 'branching-scenario' },
   { id: 'simulation',         name: 'Simulation',             category: 'interactive', description: 'Interactive step-by-step software simulation',            minComplexity: 'advanced',     slideType: 'simulation'         },
   // QUIZ
-  { id: 'kc-mcq',             name: 'KC – Multiple Choice',   category: 'quiz',        description: 'Unscored check with multiple correct answers',            minComplexity: 'basic',        slideType: 'quiz'               },
-  { id: 'kc-mcq-single',      name: 'KC – Single Answer',     category: 'quiz',        description: 'Unscored check with one correct answer',                  minComplexity: 'basic',        slideType: 'quiz'               },
-  { id: 'kc-tf',              name: 'KC – True / False',      category: 'quiz',        description: 'Unscored true or false knowledge check',                  minComplexity: 'basic',        slideType: 'quiz'               },
+  { id: 'kc-mcq',             name: 'KC – Multiple Choice',   category: 'quiz',        description: 'Unscored check with multiple correct answers',            minComplexity: 'basic',        slideType: 'knowledge-check'               },
+  { id: 'kc-mcq-single',      name: 'KC – Single Answer',     category: 'quiz',        description: 'Unscored check with one correct answer',                  minComplexity: 'basic',        slideType: 'knowledge-check'               },
+  { id: 'kc-tf',              name: 'KC – True / False',      category: 'quiz',        description: 'Unscored true or false knowledge check',                  minComplexity: 'basic',        slideType: 'knowledge-check'               },
   { id: 'quiz-mcq',           name: 'Quiz – Multiple Choice', category: 'quiz',        description: 'Scored quiz with multiple correct answers',               minComplexity: 'basic',        slideType: 'quiz'               },
   { id: 'quiz-mcq-single',    name: 'Quiz – Single Answer',   category: 'quiz',        description: 'Scored quiz with one correct answer',                     minComplexity: 'basic',        slideType: 'quiz'               },
   { id: 'quiz-tf',            name: 'Quiz – True / False',    category: 'quiz',        description: 'Scored true or false quiz question',                      minComplexity: 'basic',        slideType: 'quiz'               },

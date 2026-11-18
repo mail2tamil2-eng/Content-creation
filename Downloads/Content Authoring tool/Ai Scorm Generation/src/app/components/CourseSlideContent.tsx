@@ -51,7 +51,7 @@ function TitleText({ topic }: { topic: CourseTopic }) {
   const align = (g<string>(topic, 'alignment') || 'left') as React.CSSProperties['textAlign'];
   const edit  = useSlideEdit();
   const pStyle: React.CSSProperties = { margin: 0, fontSize: fs.md, lineHeight: 1.7, textAlign: align, whiteSpace: 'pre-wrap', color: 'var(--slide-text)' };
-  if (edit?.editable) return <EditableText as="p" k="content" label="Body text" multiline value={body || ''} placeholder="Add body text" style={pStyle} />;
+  if (edit?.editable) return <EditableText as="p" k="content" label="Body text" multiline maxLength={TEXT_LIMITS.body} value={body || ''} placeholder="Add body text" style={pStyle} />;
   return <p style={pStyle}>{empty(body) ? <Dim>Add body text in Slide Settings</Dim> : body}</p>;
 }
 
@@ -188,7 +188,7 @@ function Table({ topic }: { topic: CourseTopic }) {
           <tr>
             {headers.map((h, i) => (
               <th key={i} style={{ ...cell, background: thBg, color: thColor, border: thBdr, fontWeight: 700 }}>
-                <E k={`tableHeaders.${i}`} label={`Column ${i + 1} heading`} value={h} placeholder={`Col ${i + 1}`} source={headers} />
+                <E maxLength={TEXT_LIMITS.tableHeading} k={`tableHeaders.${i}`} label={`Column ${i + 1} heading`} value={h} placeholder={`Col ${i + 1}`} source={headers} />
               </th>
             ))}
           </tr>
@@ -196,7 +196,7 @@ function Table({ topic }: { topic: CourseTopic }) {
         <tbody>
           {rows.length ? rows.map((row, ri) => (
             <tr key={ri} style={{ background: ri % 2 ? 'var(--slide-panel)' : 'transparent' }}>
-              {headers.map((_, ci) => <td key={ci} style={cell}><E k={`tableRows.${ri}.${ci}`} label={`Row ${ri + 1}, ${headers[ci] || `column ${ci + 1}`}`} value={row[ci] || ''} placeholder="–" /></td>)}
+              {headers.map((_, ci) => <td key={ci} style={cell}><E maxLength={TEXT_LIMITS.tableCell} k={`tableRows.${ri}.${ci}`} label={`Row ${ri + 1}, ${headers[ci] || `column ${ci + 1}`}`} value={row[ci] || ''} placeholder="–" /></td>)}
             </tr>
           )) : (
             <tr><td colSpan={headers.length} style={{ ...cell, textAlign: 'center', opacity: 0.4, fontStyle: 'italic' }}>Add rows in Slide Settings</td></tr>
@@ -259,7 +259,7 @@ function ImageText({ topic, header }: { topic: CourseTopic; header?: React.React
       </figure>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         {header}
-        <E as="p" multiline k="content" label="Body text" value={body} placeholder="Add body text" style={{ margin: 0, fontSize: fs.md, lineHeight: 1.7, whiteSpace: 'pre-wrap' }} />
+        <E as="p" multiline maxLength={TEXT_LIMITS.imageBody} k="content" label="Body text" value={body} placeholder="Add body text" style={{ margin: 0, fontSize: fs.md, lineHeight: 1.7, whiteSpace: 'pre-wrap' }} />
       </div>
     </div>
   );
@@ -565,7 +565,7 @@ function Quiz({ topic }: { topic: CourseTopic }) {
   const list = g<Q[]>(topic, 'questions') || [];
   const fromQuestions = list.length > 0;
   const total = fromQuestions ? list.length : 1;
-  const isQuiz = topic.slideType === 'quiz';
+  const isQuiz = topic.slideType === 'quiz' && !g<string>(topic, 'templateId')?.startsWith('kc-');
   const passMark = g<number>(topic, 'passingScore') ?? 70;
   const editable = useEditable();
   const [stage, setStage] = useState<'intro' | 'questions' | 'results'>('intro');
@@ -632,7 +632,7 @@ function Quiz({ topic }: { topic: CourseTopic }) {
   const icon = (big = false) => (
     <span aria-hidden="true" style={{ width: big ? 'clamp(30px,4.4cqw,44px)' : 'clamp(22px,3cqw,30px)', height: big ? 'clamp(30px,4.4cqw,44px)' : 'clamp(22px,3cqw,30px)', borderRadius: big ? 10 : 7, background: 'var(--slide-primary)', color: 'var(--slide-on-primary, #fff)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: big ? fs.lg : fs.sm, fontWeight: 800, flexShrink: 0 }}>{isQuiz ? '?' : '✓'}</span>
   );
-  const titleEl = (style: React.CSSProperties) => <E as="h2" k="title" label="Title" value={topic.title || label} placeholder={label} style={{ margin: 0, fontFamily: 'inherit', lineHeight: 1.3, ...style }} />;
+  const titleEl = (style: React.CSSProperties) => <E as="h2" maxLength={TEXT_LIMITS.title} k="title" label="Title" value={topic.title || label} placeholder={label} style={{ margin: 0, fontFamily: 'inherit', lineHeight: 1.3, ...style }} />;
 
   // ── Start screen (learner only) ──
   if (view === 'intro') {

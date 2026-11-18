@@ -7,6 +7,14 @@ export const TEXT_LIMITS = {
   seriesDescription: 140,
   cardHeading: 40,
   cardDescription: 110,
+  /** Slide (topic) title. */
+  title: 60,
+  /** Body of a Title + Text slide. */
+  body: 500,
+  /** Body beside the picture on an Image + Text slide. */
+  imageBody: 250,
+  tableHeading: 25,
+  tableCell: 50,
 } as const;
 
 /** Maximum number of items per slide so content always fits. */

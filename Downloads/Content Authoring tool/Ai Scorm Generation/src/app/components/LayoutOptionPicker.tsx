@@ -120,13 +120,17 @@ export const VERTICAL_SERIES_LAYOUTS: LayoutOption[] = [
   { value: 'grid', label: 'Two columns', icon: LAYOUT_ICONS.twoColumns },
 ];
 
-/** Image style options; the first ("Template") shows the current template's own shape. */
+/** Image style options; the first ("Template") shows the current template's own shape, and that shape isn't repeated. */
 export function imageStyleOptions(templateShape: 'rect' | 'square' | 'circle' | 'arch' | 'hex', templateShapeName: string): LayoutOption[] {
   const icon = { rect: LAYOUT_ICONS.shapeRect, square: LAYOUT_ICONS.shapeSquare, circle: LAYOUT_ICONS.shapeCircle, arch: LAYOUT_ICONS.shapeArch, hex: LAYOUT_ICONS.shapeHex }[templateShape];
-  return [
-    { value: 'template', label: `Template (${templateShapeName})`, icon },
+  // The template's own shape is already the first option, so it isn't listed a second time
+  const others: LayoutOption[] = [
     { value: 'circle', label: 'Circle', icon: LAYOUT_ICONS.shapeCircle },
     { value: 'square', label: 'Square', icon: LAYOUT_ICONS.shapeSquare },
     { value: 'rect', label: 'Rectangle', icon: LAYOUT_ICONS.shapeRect },
+  ];
+  return [
+    { value: 'template', label: `Template (${templateShapeName})`, icon },
+    ...others.filter(o => o.value !== templateShape),
   ];
 }
