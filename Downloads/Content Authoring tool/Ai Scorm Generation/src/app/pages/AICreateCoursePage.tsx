@@ -882,6 +882,7 @@ export function AICreateCoursePage() {
                       </div>
                       {/* Design grid — real template thumbnails, hover to preview */}
                       <div>
+                        <p style={{ fontSize: 12, color: '#4B5563', margin: '0 0 12px' }}>Hover a template and select Preview to see every slide layout.</p>
                         <TemplateGallery
                           columns={4}
                           selectedId={!aiTemplate && selectedPredefined !== 'blank' ? selectedPredefined : null}
