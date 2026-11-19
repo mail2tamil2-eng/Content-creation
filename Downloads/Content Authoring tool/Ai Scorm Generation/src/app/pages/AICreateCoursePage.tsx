@@ -1369,9 +1369,9 @@ export function AICreateCoursePage() {
 
                   {/* Font (all slides) */}
                   <div>
-                    <label htmlFor="global-font" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111827' }}>Font</label>
-                    <p id="global-font-hint" style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 8px' }}>Text font on every slide. Choosing a template resets it to the template’s font.</p>
-                    <select id="global-font" aria-describedby="global-font-hint" value={customFont} onChange={e => setCustomFont(e.target.value)}
+                    <label htmlFor="global-font" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111827', marginBottom: 6 }}>Font</label>
+                    
+                    <select id="global-font" value={customFont} onChange={e => setCustomFont(e.target.value)}
                       style={{ width: '100%', border: '1px solid #D1D5DB', borderRadius: 7, padding: '8px 10px', fontSize: 13, background: '#fff', cursor: 'pointer', fontFamily: `'${customFont}', system-ui, sans-serif` }}>
                       {(THEME_FONTS.includes(customFont) ? THEME_FONTS : [customFont, ...THEME_FONTS]).map(f => <option key={f} value={f} style={{ fontFamily: `'${f}', system-ui, sans-serif` }}>{f}</option>)}
                     </select>
