@@ -19,7 +19,7 @@ interface EditorTopToolbarProps {
   onApplyTheme: (settings: ThemeSettings) => void;
   currentDesignId?: string;
   onApplyTemplate?: (designId: string) => void;
-  /** Course font (all slides); changed from the Template menu. */
+  /** Course font (all slides); shown in the Template menu when passed. Course editor sets it in Global Settings. */
   font?: string;
   fonts?: string[];
   onFontChange?: (font: string) => void;

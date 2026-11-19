@@ -93,10 +93,10 @@ const COMPLEXITY_CONFIG: Record<Complexity, {
 };
 
 // -- Helpers --
-function ToggleSwitch({ enabled, onChange, labelledBy }: { enabled: boolean; onChange: (v: boolean) => void; labelledBy?: string }) {
+function ToggleSwitch({ enabled, onChange, labelledBy, label }: { enabled: boolean; onChange: (v: boolean) => void; labelledBy?: string; label?: string }) {
   return (
     <button
-      type="button" role="switch" aria-checked={enabled} aria-labelledby={labelledBy} onClick={() => onChange(!enabled)}
+      type="button" role="switch" aria-checked={enabled} aria-labelledby={labelledBy} aria-label={label} onClick={() => onChange(!enabled)}
       className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${enabled ? 'bg-[#2D74FA] focus:ring-blue-400' : 'bg-[#6B7280] focus:ring-gray-400'}`}
     >
       <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${enabled ? 'translate-x-5' : 'translate-x-0'}`} />
@@ -1191,9 +1191,6 @@ export function AICreateCoursePage() {
             onApplyTheme={handleApplyTheme}
             currentDesignId={designId}
             onApplyTemplate={id => { applyTemplate(id); setSelectedPredefined(id); }}
-            font={customFont}
-            fonts={THEME_FONTS}
-            onFontChange={setCustomFont}
           />
 
           {/* Canvas */}
@@ -1356,7 +1353,7 @@ export function AICreateCoursePage() {
                   </div>
                   <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>Global Settings</h2>
                 </div>
-                <button onClick={() => setShowCourseSettings(false)} style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280' }}
+                <button type="button" aria-label="Close Global Settings" onClick={() => setShowCourseSettings(false)} style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#374151'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF'; }}>
                   <X size={15} />
@@ -1366,11 +1363,19 @@ export function AICreateCoursePage() {
               {/* Drawer body */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-                <div style={{ height: 1, background: '#F3F4F6', marginBottom: 24 }} />
-
                 {/* ── Global Settings ── */}
                 <p style={{ fontSize: 13, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 16px' }}>Applies to every slide</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                  {/* Font (all slides) */}
+                  <div>
+                    <label htmlFor="global-font" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111827' }}>Font</label>
+                    <p id="global-font-hint" style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 8px' }}>Text font on every slide. Choosing a template resets it to the template’s font.</p>
+                    <select id="global-font" aria-describedby="global-font-hint" value={customFont} onChange={e => setCustomFont(e.target.value)}
+                      style={{ width: '100%', border: '1px solid #D1D5DB', borderRadius: 7, padding: '8px 10px', fontSize: 13, background: '#fff', cursor: 'pointer', fontFamily: `'${customFont}', system-ui, sans-serif` }}>
+                      {(THEME_FONTS.includes(customFont) ? THEME_FONTS : [customFont, ...THEME_FONTS]).map(f => <option key={f} value={f} style={{ fontFamily: `'${f}', system-ui, sans-serif` }}>{f}</option>)}
+                    </select>
+                  </div>
 
                   {/* Navigation Mode */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
@@ -1378,7 +1383,7 @@ export function AICreateCoursePage() {
                       <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Navigation Mode</p>
                       <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>How learners move through slides</p>
                     </div>
-                    <select value={navMode} onChange={e => setNavMode(e.target.value as NavigationMode)}
+                    <select aria-label="Navigation Mode" value={navMode} onChange={e => setNavMode(e.target.value as NavigationMode)}
                       style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
                       <option value="free">Free navigation</option>
                       <option value="linear">Linear</option>
@@ -1392,7 +1397,7 @@ export function AICreateCoursePage() {
                       <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Auto-advance (0 = manual)</p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <input type="number" min="0" max="300" value={slideDuration}
+                      <input type="number" min="0" max="300" aria-label="Slide Duration in seconds" value={slideDuration}
                         onChange={e => setSlideDuration(Math.max(0, Math.min(300, Number(e.target.value))))}
                         style={{ width: 60, border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', textAlign: 'center', fontFamily: 'inherit' }}
                         onFocus={e => { e.currentTarget.style.borderColor = '#1565F0'; }}
@@ -1408,7 +1413,7 @@ export function AICreateCoursePage() {
                       <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Slide Transition</p>
                       <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Animation between slides</p>
                     </div>
-                    <select value={slideTransition} onChange={e => setSlideTransition(e.target.value)}
+                    <select aria-label="Slide Transition" value={slideTransition} onChange={e => setSlideTransition(e.target.value)}
                       style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
                       <option value="none">None</option>
                       <option value="fade">Fade</option>
@@ -1425,7 +1430,7 @@ export function AICreateCoursePage() {
                       <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Transcript</p>
                       <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Show text transcript alongside slides</p>
                     </div>
-                    <ToggleSwitch enabled={transcript} onChange={setTranscript} />
+                    <ToggleSwitch label="Transcript" enabled={transcript} onChange={setTranscript} />
                   </div>
 
                   {/* Bookmarking */}
@@ -1434,7 +1439,7 @@ export function AICreateCoursePage() {
                       <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Bookmarking</p>
                       <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Resume from last viewed slide</p>
                     </div>
-                    <ToggleSwitch enabled={bookmarking} onChange={setBookmarking} />
+                    <ToggleSwitch label="Bookmarking" enabled={bookmarking} onChange={setBookmarking} />
                   </div>
 
                   {/* Seek Bar */}
@@ -1444,7 +1449,7 @@ export function AICreateCoursePage() {
                       <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Seek Bar</p>
                       <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Learner can scrub through slide media</p>
                     </div>
-                    <select value={seekBar} onChange={e => setSeekBar(e.target.value as SeekBarControl)}
+                    <select aria-label="Seek Bar" value={seekBar} onChange={e => setSeekBar(e.target.value as SeekBarControl)}
                       style={{ border: '1px solid #D1D5DB', borderRadius: 7, padding: '7px 10px', fontSize: 13, outline: 'none', background: '#fff', cursor: 'pointer' }}>
                       <option value="enable">Enabled</option>
                       <option value="hide">Hidden</option>
@@ -1468,7 +1473,7 @@ export function AICreateCoursePage() {
                         <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Background Music</p>
                         <p style={{ fontSize: 13, color: '#6B7280', margin: '2px 0 0' }}>Play ambient audio throughout the course</p>
                       </div>
-                      <ToggleSwitch enabled={backgroundMusic} onChange={v => { setBackgroundMusic(v); if (!v) setBackgroundMusicFile(''); }} />
+                      <ToggleSwitch label="Background Music" enabled={backgroundMusic} onChange={v => { setBackgroundMusic(v); if (!v) setBackgroundMusicFile(''); }} />
                     </div>
                     <AnimatePresence initial={false}>
                       {backgroundMusic && (
