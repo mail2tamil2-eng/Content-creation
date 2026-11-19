@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { ChevronDown, Music, Play, Square, Upload, X } from 'lucide-react';
 import { cn } from './ui/utils';
 
-export type SlideAudioSource = 'ai' | 'upload' | 'tts';
+export type SlideAudioSource = 'none' | 'ai' | 'upload' | 'tts';
 export type TtsVoice = 'female' | 'male';
 
 export interface SlideAudioValue {
@@ -29,6 +29,7 @@ export const TTS_VOICES: { value: TtsVoice; label: string }[] = [
 ];
 
 const OPTIONS: { value: SlideAudioSource; title: string; hint: string }[] = [
+  { value: 'none', title: 'No audio', hint: 'This slide plays without audio' },
   { value: 'ai', title: 'AI Audio Narration', hint: 'AI reads the slide content aloud' },
   { value: 'upload', title: 'Slide Audio', hint: 'Upload MP3 audio for this slide' },
   { value: 'tts', title: 'Text-to-Speech', hint: 'Generate audio from text transcript' },
@@ -46,7 +47,8 @@ function pickVoice(type: TtsVoice): SpeechSynthesisVoice | undefined {
 
 /**
  * Slide Settings › Slide Audio: choose how this slide gets its audio.
- * Radio cards; the selected card expands to show its own controls.
+ * Radio cards; the selected card expands to show its own controls. "No audio" keeps any
+ * transcript or uploaded file, so switching back restores it.
  */
 export function SlideAudioOptions({ value, onChange, slideTitle = 'this slide', aiContent, className }: SlideAudioOptionsProps) {
   const id = useId();

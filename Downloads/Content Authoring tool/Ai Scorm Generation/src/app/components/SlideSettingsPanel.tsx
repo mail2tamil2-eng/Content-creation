@@ -385,7 +385,7 @@ function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
   const [isPlaying, setIsPlaying] = useState(false);
 
   const [audio, setAudio] = useState<SlideAudioValue>({
-    source: (t.audioSource as SlideAudioSource) || 'ai',
+    source: (t.audioSource as SlideAudioSource) || (t.narrationGenerated ? 'ai' : 'none'),
     audioFile: t.slideAudioFile as string | undefined,
     ttsVoice: t.ttsVoice as TtsVoice | undefined,
     ttsText: t.ttsText as string | undefined,

@@ -22,6 +22,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** New slide: no audio until the author picks a source. */
+export const NoAudio: Story = { args: { value: { source: 'none' } } };
 export const AINarration: Story = {};
 export const SlideAudio: Story = { args: { value: { source: 'upload' } } };
 export const SlideAudioUploaded: Story = { args: { value: { source: 'upload', audioFile: 'key-concepts.mp3' } } };
