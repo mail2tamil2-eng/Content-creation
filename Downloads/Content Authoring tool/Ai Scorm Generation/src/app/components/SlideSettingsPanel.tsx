@@ -259,7 +259,7 @@ function ImageManagement({ t, u, size }: { t: CSTopic; u: (x: Partial<CSTopic>) 
   const [caption, setCaption]   = useState((t.caption as string) || '');
   return (
     <>
-      <ImageUploadField field="imageUrl" label="Image" value={imageUrl} sampleSrc={samplePhoto(template, 0)}
+      <ImageUploadField compact field="imageUrl" label="Image" value={imageUrl} sampleSrc={samplePhoto(template, 0)}
         generated={isLibraryPhoto(imageUrl)} onRegenerate={() => generatePhoto(template, [imageUrl || samplePhoto(template, 0)])} recommendedSize={size}
         onChange={url => { setImageUrl(url); u({ imageUrl: url }); }} />
       <div>
@@ -738,7 +738,7 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
                   {cards.length > 1 && <RemoveBtn onClick={() => sync(cards.filter((_, j) => j !== i))} label={`Remove ${name.toLowerCase()}`} />}
                 </div>
                 <div id={`card-body-${card.id}`} hidden={!open} style={{ padding: '2px 8px 10px', display: open ? 'flex' : 'none', flexDirection: 'column', gap: 8 }}>
-                  <ImageUploadField compact field={`imageCards.${i}.image`} label={`${name} image`} value={card.image || ''} sampleSrc={samplePhoto(template, i)}
+                  <ImageUploadField compact hideLabel field={`imageCards.${i}.image`} label={`${name} image`} value={card.image || ''} sampleSrc={samplePhoto(template, i)}
                     generated={isLibraryPhoto(card.image)} onRegenerate={() => generatePhoto(template, [card.image || samplePhoto(template, i)])} recommendedSize={gallerySize(cards.length)}
                     onChange={url => patch(i, { image: url })} />
                   <CardField label="Heading" field={`imageCards.${i}.heading`} id={`ch-${card.id}`} value={card.heading} max={TEXT_LIMITS.cardHeading} placeholder="Card heading" onChange={v => patch(i, { heading: v })} />
@@ -847,14 +847,14 @@ function SliderFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }
   });
   return (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {([
           { side: 'Before', key: 'beforeImage', altKey: 'beforeAlt', sample: 0 },
           { side: 'After',  key: 'afterImage',  altKey: 'afterAlt',  sample: 1 },
         ] as const).map(({ side, key, altKey, sample }) => (
           <div key={side} style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
-            <ImageUploadField field={key} label={`${side} image`} value={imgs[key]} sampleSrc={samplePhoto(template, sample)}
-              generated={isLibraryPhoto(imgs[key])} onRegenerate={() => generatePhoto(template, [imgs[key] || samplePhoto(template, sample)])} recommendedSize="1920 × 520 px" 
+            <ImageUploadField compact field={key} label={`${side} image`} value={imgs[key]} sampleSrc={samplePhoto(template, sample)}
+              generated={isLibraryPhoto(imgs[key])} onRegenerate={() => generatePhoto(template, [imgs[key] || samplePhoto(template, sample)])} recommendedSize="1920 × 520 px"
               onChange={url => { setImgs(v => ({ ...v, [key]: url })); u({ [key]: url }); }} />
             <input aria-label={`${side} image alt text`} value={imgs[altKey]} placeholder="Alt text…" style={inlineInput}
               onChange={e => { const v = e.target.value; setImgs(o => ({ ...o, [altKey]: v })); u({ [altKey]: v }); }} />

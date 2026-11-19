@@ -6,6 +6,8 @@ export interface LayoutOption {
   label: string;
   /** Small picture of the layout (see LAYOUT_ICONS). */
   icon: ReactNode;
+  /** Extra words for screen readers and the tooltip, e.g. "template default". */
+  hint?: string;
 }
 
 export interface LayoutOptionPickerProps {
@@ -19,7 +21,7 @@ export interface LayoutOptionPickerProps {
 }
 
 /**
- * Choose a layout by picture: each option shows a mini diagram plus its name.
+ * Compact segmented control: each option is a small layout icon plus a short name, all in one row.
  * Native radio buttons underneath, so Tab enters the group and arrow keys move the choice.
  */
 export function LayoutOptionPicker({ label, value, options, onChange, field, className }: LayoutOptionPickerProps) {
@@ -27,22 +29,23 @@ export function LayoutOptionPicker({ label, value, options, onChange, field, cla
   return (
     <fieldset className={cn('m-0 min-w-0 border-0 p-0', className)} data-field={field}>
       <legend className="mb-1.5 p-0 text-[13px] font-semibold text-[#374151]">{label}</legend>
-      <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
+      <div className="flex gap-0.5 rounded-lg bg-[#F3F4F6] p-0.5">
         {options.map(o => {
           const on = o.value === value;
           return (
             <label
               key={o.value}
+              title={o.hint ? `${o.label} (${o.hint})` : undefined}
               className={cn(
                 // `relative` anchors the visually-hidden radio inside the label, so focusing it doesn't scroll the panel away
-                'relative flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 px-1 pb-1.5 pt-2 text-center text-xs transition-colors',
-                'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#1565F0] has-[:focus-visible]:ring-offset-2',
-                on ? 'border-[#1565F0] bg-[#EBF3FF] font-semibold text-[#1254C7]' : 'border-[#E5E7EB] bg-white text-[#374151] hover:border-[#6B7280]',
+                'relative flex h-8 min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-1.5 text-xs transition-colors',
+                'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#1565F0]',
+                on ? 'bg-white font-semibold text-[#1254C7] shadow-[0_1px_2px_rgba(0,0,0,.12)] ring-1 ring-[#93C5FD]' : 'text-[#374151] hover:bg-white/70',
               )}
             >
               <input type="radio" name={name} value={o.value} checked={on} onChange={() => onChange(o.value)} className="sr-only" />
-              <span aria-hidden="true" className={on ? 'text-[#1565F0]' : 'text-[#6B7280]'}>{o.icon}</span>
-              <span className="leading-tight">{o.label}</span>
+              <span aria-hidden="true" className={cn('flex shrink-0 [&>svg]:h-3.5 [&>svg]:w-5', on ? 'text-[#1565F0]' : 'text-[#6B7280]')}>{o.icon}</span>
+              <span className="truncate">{o.label}{o.hint && <span className="sr-only"> ({o.hint})</span>}</span>
             </label>
           );
         })}
@@ -106,8 +109,8 @@ export const CARD_STYLES: LayoutOption[] = [
 ];
 
 export const IMAGE_POSITIONS: LayoutOption[] = [
-  { value: 'left', label: 'Image left', icon: LAYOUT_ICONS.imageLeft },
-  { value: 'right', label: 'Image right', icon: LAYOUT_ICONS.imageRight },
+  { value: 'left', label: 'Left', icon: LAYOUT_ICONS.imageLeft, hint: 'image left' },
+  { value: 'right', label: 'Right', icon: LAYOUT_ICONS.imageRight, hint: 'image right' },
 ];
 
 export const HORIZONTAL_SERIES_LAYOUTS: LayoutOption[] = [
@@ -130,7 +133,7 @@ export function imageStyleOptions(templateShape: 'rect' | 'square' | 'circle' | 
     { value: 'rect', label: 'Rectangle', icon: LAYOUT_ICONS.shapeRect },
   ];
   return [
-    { value: 'template', label: `Template (${templateShapeName})`, icon },
+    { value: 'template', label: templateShapeName, icon, hint: 'template default' },
     ...others.filter(o => o.value !== templateShape),
   ];
 }

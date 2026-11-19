@@ -25,10 +25,12 @@ export interface ImageUploadFieldProps {
   /** Recommended image size for this slot, e.g. "1200 × 960 px (5:4)". */
   recommendedSize?: string;
   /**
-   * Compact layout for repeated items (gallery cards): the label is hidden, Upload / Library / AI
-   * sit in one row, Remove sits on the picture and the hint is one line.
+   * Compact layout: Upload / Library / AI sit in one row, Remove sits on the picture and the
+   * hint is one line.
    */
   compact?: boolean;
+  /** Compact only: hide the label visually (e.g. inside a titled card). */
+  hideLabel?: boolean;
   /** Max size in MB (default 10). */
   maxMb?: number;
   className?: string;
@@ -42,7 +44,7 @@ const ACCEPT = 'image/png,image/jpeg,image/webp,image/svg+xml,image/gif';
  * Errors (wrong type, too large) are announced.
  */
 export const ImageUploadField = forwardRef<HTMLButtonElement, ImageUploadFieldProps>(function ImageUploadField(
-  { label, value, sampleSrc, onChange, onRegenerate, generated, field, library = true, recommendedSize, compact = false, maxMb = 10, className }, ref,
+  { label, value, sampleSrc, onChange, onRegenerate, generated, field, library = true, recommendedSize, compact = false, hideLabel = false, maxMb = 10, className }, ref,
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
@@ -113,7 +115,7 @@ export const ImageUploadField = forwardRef<HTMLButtonElement, ImageUploadFieldPr
 
   if (compact) return (
     <div className={cn('flex flex-col gap-1.5', className)} role="group" aria-labelledby={`${id}-label`}>
-      <span id={`${id}-label`} className="sr-only">{label}</span>
+      <span id={`${id}-label`} className={hideLabel ? 'sr-only' : 'text-[13px] font-semibold text-[#374151]'}>{label}</span>
       {preview}
       <div className="flex gap-1.5">
         <button ref={ref} type="button" data-field={field} className={btn}
