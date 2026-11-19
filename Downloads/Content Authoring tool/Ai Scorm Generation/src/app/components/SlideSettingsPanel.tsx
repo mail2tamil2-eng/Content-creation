@@ -1337,7 +1337,7 @@ export function SlideSettingsPanel({
         </div>
         {/* Enhance with AI — quiz slides use the single "Generate questions with AI" button instead */}
         {onRegenerateSlide && !isQuiz && (
-          <button onClick={onRegenerateSlide} title="Improve this slide with AI" aria-label="Improve this slide with AI"
+          <button onClick={onRegenerateSlide} title="Improve with AI" aria-label="Improve with AI"
             style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${BORDER}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', flexShrink: 0 }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; (e.currentTarget as HTMLElement).style.color = P; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; (e.currentTarget as HTMLElement).style.color = '#6B7280'; }}

@@ -107,6 +107,17 @@ function ToggleSwitch({ enabled, onChange, labelledBy, label }: { enabled: boole
 function uid() { return Math.random().toString(36).slice(2, 10); }
 
 // -- Main component --
+/** "12 / 150 characters", shown only near the limit (80%) so the form stays quiet; screen readers always get it. */
+function CharCount({ id, value, max }: { id: string; value: string; max: number }) {
+  const n = value.length;
+  return (
+    <p id={id} className={n >= max * 0.8 ? undefined : 'sr-only'}
+      style={{ fontSize: 12, color: n >= max ? '#B91C1C' : '#4B5563', margin: '4px 0 0', textAlign: 'right' }}>
+      {n} / {max} characters
+    </p>
+  );
+}
+
 export function AICreateCoursePage() {
   const navigate = useNavigate();
   const { createDraft } = useCourseContext();
@@ -646,7 +657,7 @@ export function AICreateCoursePage() {
                   onChange={e => setTitle(e.target.value.slice(0, 150))}
                   onFocus={focusField} onBlur={blurField}
                 />
-                <p id="course-title-count" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>{title.length} / 150 characters</p>
+                <CharCount id="course-title-count" value={title} max={150} />
               </div>
 
                 <div>
@@ -709,7 +720,7 @@ export function AICreateCoursePage() {
                   onChange={e => setObjective(e.target.value.slice(0, 2000))}
                   onFocus={focusField} onBlur={blurField}
                 />
-                <p id="course-objective-count" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>{objective.length} / 2000 characters</p>
+                <CharCount id="course-objective-count" value={objective} max={2000} />
               </div>
 
               {/* — Course Outcome — */}
@@ -774,7 +785,7 @@ export function AICreateCoursePage() {
                   onChange={e => setAudience(e.target.value.slice(0, 500))}
                   onFocus={focusField} onBlur={blurField}
                 />
-                <p id="course-audience-count" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>{audience.length} / 500 characters</p>
+                <CharCount id="course-audience-count" value={audience} max={500} />
               </div>
 
               {/* — Course Complexity — */}
@@ -983,12 +994,12 @@ export function AICreateCoursePage() {
                           <div>
                             <label htmlFor="brand-copyright" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Copyright Information</label>
                             <input id="brand-copyright" maxLength={50} style={fieldStyle} value={copyrightText} onChange={e => setCopyrightText(e.target.value.slice(0, 50))} placeholder="e.g. © 2026 Acme Corp. All rights reserved." aria-describedby="brand-copyright-hint" onFocus={focusField} onBlur={blurField} />
-                            <p id="brand-copyright-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>{copyrightText.length} / 50 characters</p>
+                            <CharCount id="brand-copyright-hint" value={copyrightText} max={50} />
                           </div>
                           <div>
                             <label htmlFor="brand-watermark" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>Watermark</label>
                             <input id="brand-watermark" maxLength={50} style={fieldStyle} value={watermarkText} onChange={e => setWatermarkText(e.target.value.slice(0, 50))} placeholder="e.g. CONFIDENTIAL" aria-describedby="brand-watermark-hint" onFocus={focusField} onBlur={blurField} />
-                            <p id="brand-watermark-hint" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>{watermarkText.length} / 50 characters</p>
+                            <CharCount id="brand-watermark-hint" value={watermarkText} max={50} />
                           </div>
                         </div>
                       </div>
