@@ -171,7 +171,7 @@ function FieldGroup({ title, children, open: defaultOpen = true }: { title: stri
       <button type="button" aria-expanded={isOpen} data-group-toggle={title} onClick={() => setIsOpen(v => !v)}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 16px', minHeight: 40, background: 'none', border: 'none', cursor: 'pointer' }}>
         <span style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>{title}</span>
-        {isOpen ? <ChevronUp size={14} color="#9CA3AF" /> : <Plus size={14} color="#9CA3AF" />}
+        <ChevronDown size={16} color="#6B7280" aria-hidden="true" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }} />
       </button>
       {isOpen && <div data-group-body={title} style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>{children}</div>}
     </div>
@@ -1295,8 +1295,12 @@ export function SlideSettingsPanel({
       <div style={{ padding: '12px 16px', borderBottom: `1px solid ${BORDER}`, flexShrink: 0, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
         <div style={{ minWidth: 0, flex: 1 }}>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#111827' }}>Slide Settings</p>
-          <p style={{ margin: '2px 0 0', fontSize: 13, color: '#6B7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
-            {topic.title || 'New topic'}
+          {/* Slide type, kept to one short line */}
+          <p title={`${info.displayName} · ${info.category.toLowerCase()} slide`}
+            style={{ margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#4B5563', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+            <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: info.color, flexShrink: 0 }} />
+            <span className="sr-only">Slide type: </span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{info.displayName}</span>
           </p>
         </div>
         {/* Enhance with AI — quiz slides use the single "Generate questions with AI" button instead */}
@@ -1317,39 +1321,25 @@ export function SlideSettingsPanel({
       {/* Scrollable body */}
       <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, scrollbarWidth: 'thin', scrollbarColor: `${BORDER} transparent` }}>
 
-        {/* Slide type chip */}
-        <div style={{ padding: '12px 16px', borderBottom: `1px solid ${BORDER}` }}>
-          <p style={{ margin: '0 0 7px', fontSize: 13, fontWeight: 500, color: '#374151' }}>Slide Type</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 12px', background: info.bg, borderRadius: 8, border: `1px solid ${info.color}33` }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: info.color, flexShrink: 0 }} />
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#111827' }}>{info.displayName}</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: info.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{info.category}</span>
-          </div>
-        </div>
-
-        {/* Content: Title + Objective */}
-        <FieldGroup title="Content">
+        {/* Type-specific content */}
+        <FieldGroup title={isQuiz ? 'Quiz Settings' : 'Slide Content'}>
           <div>
             <FieldLabel>Topic title</FieldLabel>
             <SInput max={TEXT_LIMITS.title} field="title" label="Topic title" value={topicTitle} placeholder="Enter topic title…" onChange={v => { setTopicTitle(v); onUpdate({ title: v }); }} />
           </div>
-        </FieldGroup>
-
-        {/* Type-specific content */}
-        <FieldGroup title={isQuiz ? 'Quiz Settings' : 'Slide Content'}>
           <TypeFields topic={topic} onUpdate={onUpdate} sectionTitle={sectionTitle} />
         </FieldGroup>
 
         {/* 13.3 Slide Audio — text slides only */}
         {showNarration && (
           // Same collapsible section as the others; the audio options show straight away
-          <FieldGroup title="Audio for this slide">
+          <FieldGroup title="Audio for this slide" open={false}>
             <AudioNarration t={topic} u={onUpdate} />
           </FieldGroup>
         )}
 
         {/* Playback for this slide (defaults come from Global Settings) */}
-        <FieldGroup title="Playback">
+        <FieldGroup title="Playback" open={false}>
           <SlidePlaybackFields
             value={{
               slideDuration: topic.slideDuration as number | undefined,

@@ -1,6 +1,6 @@
 /**
  * Scrolls the Slide Settings panel to the field for `key`, flashes it and (optionally) focuses it.
- * Opens a collapsed Content / Slide Content group first. Used by click-to-edit on the slide.
+ * Opens a collapsed Slide Content (or Quiz Settings) group first. Used by click-to-edit on the slide.
  */
 export function focusSlideField(key: string, focus = true, attempt = 0): void {
   const panel = document.querySelector<HTMLElement>('[data-slide-settings]');
@@ -12,11 +12,10 @@ export function focusSlideField(key: string, focus = true, attempt = 0): void {
     : panel.querySelector<HTMLElement>(`[data-field="${CSS.escape(key)}"]`);
 
   if (!el) {
-    // Field may sit in a collapsed group: open the content groups and try again
-    const group = key === 'title' ? 'Content' : null;
+    // Field may sit in a collapsed group: open the content group and try again
     panel.querySelectorAll<HTMLButtonElement>('[data-group-toggle][aria-expanded="false"]').forEach(b => {
       const g = b.dataset.groupToggle;
-      if (group ? g === group : g === 'Slide Content' || g === 'Quiz Settings') b.click();
+      if (g === 'Slide Content' || g === 'Quiz Settings') b.click();
     });
     return retry();
   }
