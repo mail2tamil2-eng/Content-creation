@@ -378,14 +378,12 @@ function VideoFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
 
 function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [enabled, setEnabled]     = useState((t.narrationEnabled as boolean) ?? false);
   const [generated, setGenerated] = useState((t.narrationGenerated as boolean) ?? false);
   const [lang, setLang]           = useState((t.narrationLang as string) || 'en');
   const [voice, setVoice]         = useState((t.narrationVoice as string) || 'female-en');
   const [tone, setTone]           = useState((t.narrationTone as string) || 'professional');
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const handleEnable = (v: boolean) => { setEnabled(v); u({ narrationEnabled: v }); };
   const [audio, setAudio] = useState<SlideAudioValue>({
     source: (t.audioSource as SlideAudioSource) || 'ai',
     audioFile: t.slideAudioFile as string | undefined,
@@ -468,10 +466,7 @@ function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
 
   return (
     <div>
-      <Toggle value={enabled} label="Audio for this slide" onChange={handleEnable} />
-      {enabled && (
-        <SlideAudioOptions className="mt-2.5" value={audio} onChange={patchAudio} slideTitle={(t.title as string) || 'this slide'} aiContent={aiControls} />
-      )}
+      <SlideAudioOptions value={audio} onChange={patchAudio} slideTitle={(t.title as string) || 'this slide'} aiContent={aiControls} />
     </div>
   );
 }
@@ -1333,8 +1328,8 @@ export function SlideSettingsPanel({
 
         {/* 13.3 Slide Audio — text slides only */}
         {showNarration && (
-          // Same collapsible section as the others; open by default so the switch is still one click
-          <FieldGroup title="Audio">
+          // Same collapsible section as the others; the audio options show straight away
+          <FieldGroup title="Audio for this slide">
             <AudioNarration t={topic} u={onUpdate} />
           </FieldGroup>
         )}
