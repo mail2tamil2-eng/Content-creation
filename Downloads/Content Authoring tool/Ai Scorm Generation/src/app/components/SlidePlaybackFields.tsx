@@ -1,5 +1,6 @@
 import { useId, useRef } from 'react';
-import { Music, X } from 'lucide-react';
+import { ChevronDown, Music, X } from 'lucide-react';
+import type { SelectHTMLAttributes } from 'react';
 import { cn } from './ui/utils';
 
 /** Course-wide values from Global Settings; each slide can override them. */
@@ -48,6 +49,16 @@ const fieldCls = 'h-9 w-full rounded-lg border border-[#D1D5DB] bg-white px-2.5 
 const labelCls = 'mb-1 block text-[13px] font-semibold text-[#374151]';
 const DEFAULT = '__default';
 
+/** Select with the same custom chevron as the other panel dropdowns. */
+function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <div className={cn('relative', className)}>
+      <select {...props} className={cn(fieldCls, 'cursor-pointer appearance-none pr-8')} />
+      <ChevronDown size={14} aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6B7280]" />
+    </div>
+  );
+}
+
 /**
  * Slide Settings › Playback: duration, transition, seek bar and background music for this slide.
  * Every field starts on "Default (…)" so Global Settings stays the single place for course-wide values.
@@ -65,7 +76,7 @@ export function SlidePlaybackFields({ value, defaults, onChange, className }: Sl
           <div className="relative">
             <input
               id={`${id}-dur`} type="number" min={0} max={300} inputMode="numeric"
-              value={value.slideDuration ?? ''} placeholder={String(defaults.slideDuration)}
+              value={value.slideDuration ?? ''} placeholder={`Default (${defaults.slideDuration})`}
               onChange={e => onChange({ slideDuration: e.target.value === '' ? undefined : Math.max(0, Math.min(300, Number(e.target.value))) })}
               className={cn(fieldCls, 'pr-9')}
             />
@@ -74,35 +85,35 @@ export function SlidePlaybackFields({ value, defaults, onChange, className }: Sl
         </div>
         <div>
           <label htmlFor={`${id}-tr`} className={labelCls}>Transition</label>
-          <select id={`${id}-tr`} value={value.slideTransition ?? DEFAULT} className={fieldCls}
+          <Select id={`${id}-tr`} value={value.slideTransition ?? DEFAULT}
             onChange={e => onChange({ slideTransition: e.target.value === DEFAULT ? undefined : e.target.value })}>
             <option value={DEFAULT}>Default ({label(TRANSITIONS, defaults.slideTransition)})</option>
             {TRANSITIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
+          </Select>
         </div>
       </div>
       <div>
         <label htmlFor={`${id}-seek`} className={labelCls}>Seek bar</label>
-        <select id={`${id}-seek`} value={value.seekBar ?? DEFAULT} className={fieldCls}
+        <Select id={`${id}-seek`} value={value.seekBar ?? DEFAULT}
           onChange={e => onChange({ seekBar: e.target.value === DEFAULT ? undefined : e.target.value as 'enable' | 'hide' })}>
           <option value={DEFAULT}>Default ({label(SEEK, defaults.seekBar)})</option>
           {SEEK.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
+        </Select>
         {(value.seekBar ?? defaults.seekBar) === 'enable' && (
           <>
-            <label htmlFor={`${id}-seekopt`} className="sr-only">Seek bar control</label>
-            <select id={`${id}-seekopt`} value={value.seekBarOption ?? DEFAULT} className={cn(fieldCls, 'mt-2')}
+            <label htmlFor={`${id}-seekopt`} className={cn(labelCls, 'mt-2.5')}>Seek bar control</label>
+            <Select id={`${id}-seekopt`} value={value.seekBarOption ?? DEFAULT}
               onChange={e => onChange({ seekBarOption: e.target.value === DEFAULT ? undefined : e.target.value as SeekBarOption })}>
               <option value={DEFAULT}>Default ({label(SEEK_OPTIONS, defaults.seekBarOption ?? 'allowDrag')})</option>
               {SEEK_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
+            </Select>
           </>
         )}
       </div>
 
       <div>
         <label htmlFor={`${id}-music`} className={labelCls}>Background music</label>
-        <select id={`${id}-music`} value={value.backgroundMusic ?? DEFAULT} className={fieldCls}
+        <Select id={`${id}-music`} value={value.backgroundMusic ?? DEFAULT}
           onChange={e => {
             const v = e.target.value === DEFAULT ? undefined : e.target.value as 'off' | 'custom';
             onChange({ backgroundMusic: v, ...(v !== 'custom' ? { backgroundMusicFile: undefined } : {}) });
@@ -111,7 +122,7 @@ export function SlidePlaybackFields({ value, defaults, onChange, className }: Sl
           {/* "Off" only differs from the default when the course has music */}
           {(defaults.backgroundMusic || value.backgroundMusic === 'off') && <option value="off">No music on this slide</option>}
           <option value="custom">{defaults.backgroundMusic ? 'Different track for this slide' : 'Add a track to this slide'}</option>
-        </select>
+        </Select>
         {value.backgroundMusic === 'custom' && (
           <div className="mt-2 flex items-center gap-2">
             <button type="button" onClick={() => fileRef.current?.click()}

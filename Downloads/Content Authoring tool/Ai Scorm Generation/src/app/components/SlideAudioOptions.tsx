@@ -88,14 +88,14 @@ export function SlideAudioOptions({ value, onChange, slideTitle = 'this slide', 
         const optId = `${id}-${o.value}`;
         return (
           <div key={o.value}
-            className={cn('rounded-[10px] border bg-white px-3 py-2.5 transition-colors', on ? 'border-[#1E3A8A] shadow-[0_0_0_1px_#1E3A8A]' : 'border-[#E5E7EB] hover:border-[#D1D5DB]')}>
-            <label htmlFor={optId} className="flex cursor-pointer items-start gap-2.5">
+            className={cn('rounded-[10px] border bg-white px-3 py-2 transition-colors', on ? 'border-[#1565F0] shadow-[0_0_0_1px_#1565F0]' : 'border-[#E5E7EB] hover:border-[#D1D5DB]')}>
+            <label htmlFor={optId} className="flex cursor-pointer items-start gap-2.5" title={on ? undefined : o.hint}>
               <input id={optId} type="radio" name={`${id}-src`} value={o.value} checked={on} onChange={() => onChange({ source: o.value })}
-                aria-describedby={`${optId}-hint`}
-                className="mt-0.5 size-[18px] shrink-0 cursor-pointer accent-[#1E3A8A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-2" />
+                aria-describedby={on ? `${optId}-hint` : undefined}
+                className="mt-0.5 size-[18px] shrink-0 cursor-pointer accent-[#1565F0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-2" />
               <span className="min-w-0">
                 <span className="block text-[13px] font-semibold text-[#111827]">{o.title}</span>
-                <span id={`${optId}-hint`} className="block text-[13px] text-[#4B5563]">{o.hint}</span>
+                {on && <span id={`${optId}-hint`} className="block text-[13px] text-[#4B5563]">{o.hint}</span>}
               </span>
             </label>
 

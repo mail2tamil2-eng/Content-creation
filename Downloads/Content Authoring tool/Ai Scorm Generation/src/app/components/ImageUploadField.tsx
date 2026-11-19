@@ -88,8 +88,8 @@ export const ImageUploadField = forwardRef<HTMLButtonElement, ImageUploadFieldPr
       onDrop={e => { e.preventDefault(); pick(e.dataTransfer.files?.[0]); }}
     >
       {shown
-        ? <img src={shown} alt="" className={cn('block w-full object-cover', compact ? 'aspect-[16/8]' : 'aspect-video')} />
-        : <div className={cn('flex items-center justify-center text-[#6B7280]', compact ? 'aspect-[16/8]' : 'aspect-video')}><ImagePlus className="size-6" aria-hidden="true" /></div>}
+        ? <img src={shown} alt="" className={cn('block w-full object-cover', compact ? 'aspect-[16/7]' : 'aspect-video')} />
+        : <div className={cn('flex items-center justify-center text-[#6B7280]', compact ? 'aspect-[16/7]' : 'aspect-video')}><ImagePlus className="size-6" aria-hidden="true" /></div>}
       {!value && sampleSrc && !busy && (
         <span className="absolute left-2 top-2 rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-semibold text-white">{compact ? 'Sample' : 'Sample image'}</span>
       )}

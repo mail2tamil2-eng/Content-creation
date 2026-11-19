@@ -5,6 +5,7 @@ import {
   Maximize2, GripVertical, RotateCcw, Image as ImageIcon, Video as VideoIcon,
   Check, AlertCircle, PanelRightClose, AlignLeft, AlignCenter, AlignRight,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import type { CSTopic } from './CourseSidebar';
 import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
 import { ImageUploadField } from './ImageUploadField';
@@ -164,14 +165,15 @@ function Toggle({ value, onChange, label }: { value: boolean; onChange: (v: bool
   );
 }
 
-function FieldGroup({ title, children, open: defaultOpen = true }: { title: string; children: React.ReactNode; open?: boolean }) {
+function FieldGroup({ title, children, open: defaultOpen = true, summary }: { title: string; children: React.ReactNode; open?: boolean; /** Current setting, shown on the header while closed (e.g. "None"). */ summary?: string }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
     <div style={{ borderBottom: `1px solid ${BORDER}` }} data-group={title}>
       <button type="button" aria-expanded={isOpen} data-group-toggle={title} onClick={() => setIsOpen(v => !v)}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 16px', minHeight: 40, background: 'none', border: 'none', cursor: 'pointer' }}>
-        <span style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>{title}</span>
-        <ChevronDown size={16} color="#6B7280" aria-hidden="true" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }} />
+        <span style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>{title}</span>
+        {!isOpen && summary && <span style={{ marginLeft: 'auto', marginRight: 8, fontSize: 12, color: '#4B5563', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{summary}</span>}
+        <ChevronDown size={16} color="#6B7280" aria-hidden="true" style={{ flexShrink: 0, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }} />
       </button>
       {isOpen && <div data-group-body={title} style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>{children}</div>}
     </div>
@@ -180,13 +182,17 @@ function FieldGroup({ title, children, open: defaultOpen = true }: { title: stri
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
+/** Short values shown on closed section headers. */
+const AUDIO_SUMMARY: Record<string, string> = { none: 'None', ai: 'AI narration', upload: 'Slide audio', tts: 'Text-to-speech' };
+const PLAYBACK_KEYS = ['slideDuration', 'slideTransition', 'seekBar', 'seekBarOption', 'backgroundMusic'] as const;
+
 function RemoveBtn({ onClick, label = 'Remove' }: { onClick: () => void; label?: string }) {
   return (
     <button type="button" onClick={onClick} aria-label={label} title={label}
-      style={{ width: 20, height: 20, borderRadius: 4, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', flexShrink: 0 }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2'; (e.currentTarget as HTMLElement).style.color = '#DC2626'; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#9CA3AF'; }}
-    ><X size={11} /></button>
+      style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', flexShrink: 0 }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2'; (e.currentTarget as HTMLElement).style.color = '#B91C1C'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = '#6B7280'; }}
+    ><X size={14} aria-hidden="true" /></button>
   );
 }
 
@@ -224,10 +230,11 @@ function ItemCard({ label, onRemove, children }: { label: string; onRemove: () =
   );
 }
 
-/** "12 / 40" under a length-limited field; turns red at the limit. */
+/** "12 / 40" under a length-limited field near its limit; turns red at the limit. */
 function CharCount({ id, value, max }: { id: string; value: string; max: number }) {
   const n = value?.length ?? 0;
-  return <span id={id} style={{ alignSelf: 'flex-end', marginTop: -2, fontSize: 11, color: n >= max ? '#B91C1C' : '#6B7280' }}>{n} / {max} characters</span>;
+  // Shown only near the limit (80%) to keep the panel quiet; screen readers always get it
+  return <span id={id} className={n >= max * 0.8 ? undefined : 'sr-only'} style={{ alignSelf: 'flex-end', marginTop: -2, fontSize: 12, color: n >= max ? '#B91C1C' : '#4B5563' }}>{n} / {max} characters</span>;
 }
 
 /** "+ Add … (n/max)" until the maximum is reached, then a short note instead. */
@@ -549,31 +556,11 @@ function TitleTextFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => voi
   return (
     <>
       <div><FieldLabel>Body</FieldLabel><SInput rows={5} max={TEXT_LIMITS.body} field="content" label="Body" value={body} placeholder="Enter body text…" onChange={v => { setBody(v); u({ content: v }); }} /></div>
-      <div>
-        <FieldLabel>Alignment</FieldLabel>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {([
-            { value: 'left',   Icon: AlignLeft   },
-            { value: 'center', Icon: AlignCenter  },
-            { value: 'right',  Icon: AlignRight   },
-          ] as const).map(({ value, Icon }) => (
-            <button
-              key={value}
-              aria-label={`Align ${value}`} aria-pressed={align === value}
-              type="button"
-              onClick={() => { setAlign(value); u({ alignment: value }); }}
-              style={{
-                flex: 1, height: 34, borderRadius: 7, border: `1px solid ${align === value ? P : BORDER}`,
-                background: align === value ? '#EBF3FF' : '#fff',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transition: 'all 0.12s',
-              }}
-            >
-              <Icon size={15} color={align === value ? P : '#9CA3AF'} />
-            </button>
-          ))}
-        </div>
-      </div>
+      <LayoutOptionPicker label="Alignment" field="alignment" value={align} onChange={v => { setAlign(v); u({ alignment: v }); }} options={[
+        { value: 'left', label: 'Left', icon: <AlignLeft />, hint: 'align left' },
+        { value: 'center', label: 'Center', icon: <AlignCenter />, hint: 'align center' },
+        { value: 'right', label: 'Right', icon: <AlignRight />, hint: 'align right' },
+      ]} />
     </>
   );
 }
@@ -730,12 +717,16 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
                     style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, padding: 6, minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: font }}>
                     <img src={card.image || samplePhoto(template, i)} alt="" style={{ width: 40, height: 28, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
                     <span style={{ minWidth: 0, flex: 1 }}>
-                      <span style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6B7280' }}>{name}</span>
+                      <span style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#4B5563' }}>{name}</span>
                       <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: card.heading ? '#111827' : '#6B7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.heading || 'Untitled'}</span>
                     </span>
                     <ChevronDown size={16} color="#6B7280" aria-hidden="true" style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }} />
                   </button>
-                  {cards.length > 1 && <RemoveBtn onClick={() => sync(cards.filter((_, j) => j !== i))} label={`Remove ${name.toLowerCase()}`} />}
+                  {cards.length > 1 && <RemoveBtn label={`Remove ${name.toLowerCase()}`} onClick={() => {
+                    const before = cards;
+                    sync(cards.filter((_, j) => j !== i));
+                    toast(`${name} removed`, { action: { label: 'Undo', onClick: () => sync(before) } });
+                  }} />}
                 </div>
                 <div id={`card-body-${card.id}`} hidden={!open} style={{ padding: '2px 8px 10px', display: open ? 'flex' : 'none', flexDirection: 'column', gap: 8 }}>
                   <ImageUploadField compact hideLabel field={`imageCards.${i}.image`} label={`${name} image`} value={card.image || ''} sampleSrc={samplePhoto(template, i)}
@@ -1346,7 +1337,7 @@ export function SlideSettingsPanel({
         </div>
         {/* Enhance with AI — quiz slides use the single "Generate questions with AI" button instead */}
         {onRegenerateSlide && !isQuiz && (
-          <button onClick={onRegenerateSlide} title="Enhance with AI"
+          <button onClick={onRegenerateSlide} title="Improve this slide with AI" aria-label="Improve this slide with AI"
             style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${BORDER}`, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280', flexShrink: 0 }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EBF3FF'; (e.currentTarget as HTMLElement).style.color = P; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; (e.currentTarget as HTMLElement).style.color = '#6B7280'; }}
@@ -1374,13 +1365,13 @@ export function SlideSettingsPanel({
         {/* 13.3 Slide Audio — text slides only */}
         {showNarration && (
           // Same collapsible section as the others; the audio options show straight away
-          <FieldGroup title="Audio for this slide" open={false}>
+          <FieldGroup title="Audio for this slide" open={false} summary={AUDIO_SUMMARY[(topic.audioSource as string) || (topic.narrationGenerated ? 'ai' : 'none')] ?? 'None'}>
             <AudioNarration t={topic} u={onUpdate} />
           </FieldGroup>
         )}
 
         {/* Playback for this slide (defaults come from Global Settings) */}
-        <FieldGroup title="Playback" open={false}>
+        <FieldGroup title="Playback" open={false} summary={PLAYBACK_KEYS.some(k => topic[k] !== undefined && topic[k] !== '') ? 'Custom' : 'Default'}>
           <SlidePlaybackFields
             value={{
               slideDuration: topic.slideDuration as number | undefined,
