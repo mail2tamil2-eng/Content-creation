@@ -617,9 +617,6 @@ export function AICreateCoursePage() {
                 <ArrowLeft size={15} />
               </button>
               <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.2 }}>Create Course</h1>
-              <span style={{ fontSize: 13, fontWeight: 600, padding: '3px 9px', borderRadius: 20, background: '#EBF3FF', color: P, border: `1px solid #93C5FD`, whiteSpace: 'nowrap' as const }}>
-                Step 1 of 2 · Course Details
-              </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#6B7280', paddingLeft: 40 }}>
               <span style={{ cursor: 'pointer' }} onClick={() => navigate('/dashboard')}>Home</span>
