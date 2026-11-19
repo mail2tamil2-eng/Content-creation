@@ -133,6 +133,7 @@ export function AICreateCoursePage() {
   const [objective, setObjective] = useState('');
   const [objectives, setObjectives] = useState<string[]>(['']);
   const [generatingObj, setGeneratingObj] = useState(false);
+  const [generatingDesc, setGeneratingDesc] = useState(false);
 
   // Assessment Settings
   const [addQuiz, setAddQuiz] = useState(false);
@@ -332,6 +333,19 @@ export function AICreateCoursePage() {
   const goToSlide = (idx: number) => {
     const s = allSlides[Math.max(0, Math.min(idx, allSlides.length - 1))];
     if (s) selectSlide(s.si, s.ti);
+  };
+
+  const generateCourseObjective = () => {
+    if (!title.trim()) { toast.error('Enter a course title first'); return; }
+    setGeneratingDesc(true);
+    setTimeout(() => {
+      const who = audience.trim() ? ` for ${audience.trim()}` : '';
+      setObjective(
+        `This course introduces ${title.trim()}${who}. Learners will explore the key concepts, see how they apply in everyday work, and practise with realistic examples so they can use what they learn with confidence.`.slice(0, 2000),
+      );
+      setGeneratingDesc(false);
+      toast('Course objective generated', { description: 'Review and edit it to fit your course.' });
+    }, 1200);
   };
 
   const generateObjective = () => {
@@ -703,9 +717,19 @@ export function AICreateCoursePage() {
               </div>
               </div>
               <div>
-                <label htmlFor="course-objective" style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
-                  Course Objective <span aria-hidden="true" style={{ color: '#DC2626' }}>*</span>
-                </label>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 6 }}>
+                  <label htmlFor="course-objective" style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
+                    Course Objective <span aria-hidden="true" style={{ color: '#DC2626' }}>*</span>
+                  </label>
+                  <button
+                    type="button" onClick={generateCourseObjective} disabled={generatingDesc}
+                    aria-label={generatingDesc ? 'Generating course objective' : 'AI Generate course objective'}
+                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-1 hover:bg-[#E0E7FF]"
+                    style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 500, color: '#1254C7', background: PL, border: 'none', borderRadius: 7, padding: '4px 10px', minHeight: 28, cursor: generatingDesc ? 'wait' : 'pointer', opacity: generatingDesc ? 0.6 : 1, whiteSpace: 'nowrap' as const, flexShrink: 0 }}
+                  >
+                    <Sparkles size={12} aria-hidden="true" /> {generatingDesc ? 'Generating...' : 'AI Generate'}
+                  </button>
+                </div>
                 <textarea
                   id="course-objective"
                   required aria-required="true"
