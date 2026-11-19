@@ -8,6 +8,7 @@ import {
 import type { CSTopic } from './CourseSidebar';
 import { BulletMarker, BulletStyleSelect } from './BulletStyleSelect';
 import { ImageUploadField } from './ImageUploadField';
+import { SlideAudioOptions, type SlideAudioSource, type SlideAudioValue, type TtsVoice } from './SlideAudioOptions';
 import { ITEM_LIMITS, TEXT_LIMITS } from './textLimits';
 import { SlidePlaybackFields, type PlaybackDefaults, type SlidePlayback } from './SlidePlaybackFields';
 import { CARD_STYLES, IMAGE_POSITIONS, imageStyleOptions, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
@@ -26,7 +27,7 @@ export interface SlideSettingsPanelProps {
   onEnhanceWithAI: () => void;
   enhancing?: boolean;
   onRegenerateSlide?: () => void;
-  /** Course-wide Player Settings; the Playback group lets this slide override them. */
+  /** Course-wide Global Settings; the Playback group lets this slide override them. */
   playbackDefaults?: PlaybackDefaults;
 }
 
@@ -385,12 +386,24 @@ function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
   const [isPlaying, setIsPlaying] = useState(false);
 
   const handleEnable = (v: boolean) => { setEnabled(v); u({ narrationEnabled: v }); };
+  const [audio, setAudio] = useState<SlideAudioValue>({
+    source: (t.audioSource as SlideAudioSource) || 'ai',
+    audioFile: t.slideAudioFile as string | undefined,
+    ttsVoice: t.ttsVoice as TtsVoice | undefined,
+    ttsText: t.ttsText as string | undefined,
+  });
+  const patchAudio = (p: Partial<SlideAudioValue>) => {
+    setAudio(a => ({ ...a, ...p }));
+    const out: Partial<CSTopic> = {};
+    if ('source' in p) out.audioSource = p.source;
+    if ('audioFile' in p) out.slideAudioFile = p.audioFile;
+    if ('ttsVoice' in p) out.ttsVoice = p.ttsVoice;
+    if ('ttsText' in p) out.ttsText = p.ttsText;
+    u(out);
+  };
 
-  return (
-    <div>
-      <Toggle value={enabled} label="AI Audio Narration" onChange={handleEnable} />
-      {enabled && (
-        <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 9 }}>
+  const aiControls = (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <div>
               <FieldLabel>Language</FieldLabel>
@@ -451,6 +464,13 @@ function AudioNarration({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void
           <input ref={fileRef} type="file" accept=".mp3,.wav,.aac" style={{ display: 'none' }}
             onChange={e => { const f = e.target.files?.[0]; if (f) { setGenerated(true); u({ narrationGenerated: true }); } }} />
         </div>
+  );
+
+  return (
+    <div>
+      <Toggle value={enabled} label="Audio for this slide" onChange={handleEnable} />
+      {enabled && (
+        <SlideAudioOptions className="mt-2.5" value={audio} onChange={patchAudio} slideTitle={(t.title as string) || 'this slide'} aiContent={aiControls} />
       )}
     </div>
   );
@@ -1311,21 +1331,22 @@ export function SlideSettingsPanel({
           <TypeFields topic={topic} onUpdate={onUpdate} sectionTitle={sectionTitle} />
         </FieldGroup>
 
-        {/* 13.3 Audio Narration — text slides only */}
+        {/* 13.3 Slide Audio — text slides only */}
         {showNarration && (
           // No collapsible header: the narration switch is available in one click
-          <div data-group="Audio Narration" style={{ borderBottom: `1px solid ${BORDER}`, padding: '12px 16px 14px' }}>
+          <div data-group="Slide Audio" style={{ borderBottom: `1px solid ${BORDER}`, padding: '12px 16px 14px' }}>
             <AudioNarration t={topic} u={onUpdate} />
           </div>
         )}
 
-        {/* Playback for this slide (defaults come from Player Settings) */}
+        {/* Playback for this slide (defaults come from Global Settings) */}
         <FieldGroup title="Playback">
           <SlidePlaybackFields
             value={{
               slideDuration: topic.slideDuration as number | undefined,
               slideTransition: topic.slideTransition as string | undefined,
               seekBar: topic.seekBar as SlidePlayback['seekBar'],
+              seekBarOption: topic.seekBarOption as SlidePlayback['seekBarOption'],
               backgroundMusic: topic.backgroundMusic as SlidePlayback['backgroundMusic'],
               backgroundMusicFile: topic.backgroundMusicFile as string | undefined,
             }}

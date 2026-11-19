@@ -29,6 +29,8 @@ export const Overridden: Story = { args: { value: { slideDuration: 12, slideTran
 export const CustomMusic: Story = { args: { value: { backgroundMusic: 'custom', backgroundMusicFile: 'intro-theme.mp3' } } };
 /** Course has no music and manual advance. */
 export const NoCourseMusic: Story = { args: { defaults: { slideDuration: 0, slideTransition: 'none', seekBar: 'hide', backgroundMusic: false } } };
+/** Seek bar shown: pick what the learner can do with it. */
+export const SeekBarReadOnly: Story = { args: { value: { seekBar: 'enable', seekBarOption: 'readOnly' } } };
 
 /** Keyboard: Tab reaches Duration first. */
 export const KeyboardFocus: Story = {

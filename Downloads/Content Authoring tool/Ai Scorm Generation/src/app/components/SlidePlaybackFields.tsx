@@ -2,11 +2,12 @@ import { useId, useRef } from 'react';
 import { Music, X } from 'lucide-react';
 import { cn } from './ui/utils';
 
-/** Course-wide values from Player Settings; each slide can override them. */
+/** Course-wide values from Global Settings; each slide can override them. */
 export interface PlaybackDefaults {
   slideDuration: number;
   slideTransition: string;
   seekBar: 'enable' | 'hide';
+  seekBarOption?: SeekBarOption;
   backgroundMusic: boolean;
   backgroundMusicFile?: string;
 }
@@ -16,6 +17,7 @@ export interface SlidePlayback {
   slideDuration?: number;
   slideTransition?: string;
   seekBar?: 'enable' | 'hide';
+  seekBarOption?: SeekBarOption;
   /** 'off' = no music on this slide, 'custom' = this slide's own track */
   backgroundMusic?: 'off' | 'custom';
   backgroundMusicFile?: string;
@@ -33,6 +35,13 @@ export const TRANSITIONS = [
   { value: 'push', label: 'Push' }, { value: 'wipe', label: 'Wipe' }, { value: 'zoom', label: 'Zoom' },
 ];
 const label = (list: { value: string; label: string }[], v: string) => list.find(o => o.value === v)?.label ?? v;
+export type SeekBarOption = 'allowDrag' | 'afterCompletion' | 'readOnly';
+/** What the learner can do with the seek bar when it is shown. */
+export const SEEK_OPTIONS: { value: SeekBarOption; label: string }[] = [
+  { value: 'allowDrag', label: 'Allow user to drag Seek Bar' },
+  { value: 'afterCompletion', label: 'Allow drag after completion' },
+  { value: 'readOnly', label: 'Seek bar is read only' },
+];
 const SEEK = [{ value: 'enable', label: 'Shown' }, { value: 'hide', label: 'Hidden' }];
 
 const fieldCls = 'h-9 w-full rounded-lg border border-[#D1D5DB] bg-white px-2.5 text-[13px] text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-1';
@@ -41,7 +50,7 @@ const DEFAULT = '__default';
 
 /**
  * Slide Settings › Playback: duration, transition, seek bar and background music for this slide.
- * Every field starts on "Course default (…)" so Player Settings stays the single place for course-wide values.
+ * Every field starts on "Default (…)" so Global Settings stays the single place for course-wide values.
  */
 export function SlidePlaybackFields({ value, defaults, onChange, className }: SlidePlaybackFieldsProps) {
   const id = useId();
@@ -57,7 +66,6 @@ export function SlidePlaybackFields({ value, defaults, onChange, className }: Sl
             <input
               id={`${id}-dur`} type="number" min={0} max={300} inputMode="numeric"
               value={value.slideDuration ?? ''} placeholder={String(defaults.slideDuration)}
-              aria-describedby={`${id}-dur-hint`}
               onChange={e => onChange({ slideDuration: e.target.value === '' ? undefined : Math.max(0, Math.min(300, Number(e.target.value))) })}
               className={cn(fieldCls, 'pr-9')}
             />
@@ -73,10 +81,6 @@ export function SlidePlaybackFields({ value, defaults, onChange, className }: Sl
           </select>
         </div>
       </div>
-      <p id={`${id}-dur-hint`} className="-mt-2 text-xs text-[#4B5563]">
-        Empty = course setting ({defaults.slideDuration ? `${defaults.slideDuration} s` : 'manual'}). 0 = learner moves on manually.
-      </p>
-
       <div>
         <label htmlFor={`${id}-seek`} className={labelCls}>Seek bar</label>
         <select id={`${id}-seek`} value={value.seekBar ?? DEFAULT} className={fieldCls}
@@ -84,6 +88,16 @@ export function SlidePlaybackFields({ value, defaults, onChange, className }: Sl
           <option value={DEFAULT}>Default ({label(SEEK, defaults.seekBar)})</option>
           {SEEK.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
+        {(value.seekBar ?? defaults.seekBar) === 'enable' && (
+          <>
+            <label htmlFor={`${id}-seekopt`} className="sr-only">Seek bar control</label>
+            <select id={`${id}-seekopt`} value={value.seekBarOption ?? DEFAULT} className={cn(fieldCls, 'mt-2')}
+              onChange={e => onChange({ seekBarOption: e.target.value === DEFAULT ? undefined : e.target.value as SeekBarOption })}>
+              <option value={DEFAULT}>Default ({label(SEEK_OPTIONS, defaults.seekBarOption ?? 'allowDrag')})</option>
+              {SEEK_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </>
+        )}
       </div>
 
       <div>
@@ -98,7 +112,6 @@ export function SlidePlaybackFields({ value, defaults, onChange, className }: Sl
           {(defaults.backgroundMusic || value.backgroundMusic === 'off') && <option value="off">No music on this slide</option>}
           <option value="custom">{defaults.backgroundMusic ? 'Different track for this slide' : 'Add a track to this slide'}</option>
         </select>
-        <p className="mt-1 text-xs text-[#4B5563]">Default follows Player Settings.</p>
         {value.backgroundMusic === 'custom' && (
           <div className="mt-2 flex items-center gap-2">
             <button type="button" onClick={() => fileRef.current?.click()}

@@ -1,5 +1,6 @@
 import { forwardRef, useId, useRef, useState } from 'react';
-import { ImagePlus, Loader2, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
+import { ImagePlus, Images, Loader2, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
+import { AssetLibraryDialog } from './AssetLibraryDialog';
 import { cn } from './ui/utils';
 
 export interface ImageUploadFieldProps {
@@ -19,6 +20,8 @@ export interface ImageUploadFieldProps {
   onRegenerate?: () => Promise<string>;
   /** Marks the current value as an AI image ("AI image" tag instead of nothing). */
   generated?: boolean;
+  /** Show "Choose from Asset Library" (default true). */
+  library?: boolean;
   /** Max size in MB (default 10). */
   maxMb?: number;
   className?: string;
@@ -32,12 +35,16 @@ const ACCEPT = 'image/png,image/jpeg,image/webp,image/svg+xml,image/gif';
  * Errors (wrong type, too large) are announced.
  */
 export const ImageUploadField = forwardRef<HTMLButtonElement, ImageUploadFieldProps>(function ImageUploadField(
-  { label, value, sampleSrc, onChange, onRegenerate, generated, field, maxMb = 10, className }, ref,
+  { label, value, sampleSrc, onChange, onRegenerate, generated, field, library = true, maxMb = 10, className }, ref,
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
+  const [libOpen, setLibOpen] = useState(false);
+  const libBtn = useRef<HTMLButtonElement>(null);
+  /** URL last picked from the Asset Library (so it isn't tagged as an AI image). */
+  const [libPick, setLibPick] = useState('');
   const id = useId();
   const shown = value || sampleSrc;
 
@@ -78,7 +85,7 @@ export const ImageUploadField = forwardRef<HTMLButtonElement, ImageUploadFieldPr
         {!value && sampleSrc && !busy && (
           <span className="absolute left-2 top-2 rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-semibold text-white">Sample image</span>
         )}
-        {value && generated && !busy && (
+        {value && generated && value !== libPick && !busy && (
           <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-semibold text-white">
             <Sparkles className="size-3" aria-hidden="true" />AI image
           </span>
@@ -113,6 +120,19 @@ export const ImageUploadField = forwardRef<HTMLButtonElement, ImageUploadFieldPr
           </button>
         )}
       </div>
+      {library && (
+        <button
+          ref={libBtn}
+          type="button"
+          onClick={() => setLibOpen(true)}
+          aria-haspopup="dialog"
+          aria-describedby={`${id}-label`}
+          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[7px] border border-[#6B7280] bg-white px-3 text-[13px] font-semibold text-[#111827] hover:bg-[#F9FAFB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-2"
+        >
+          <Images className="size-3.5" aria-hidden="true" />
+          Choose from Asset Library
+        </button>
+      )}
       {onRegenerate && (
         <button
           type="button"
@@ -130,6 +150,10 @@ export const ImageUploadField = forwardRef<HTMLButtonElement, ImageUploadFieldPr
       <p className="m-0 text-xs text-[#6B7280]">PNG, JPG, WebP, SVG or GIF · max {maxMb} MB · or drop a file on the preview</p>
       <p role="status" className="sr-only">{status}</p>
       {error && <p id={`${id}-err`} role="alert" className="m-0 text-xs font-semibold text-[#B91C1C]">{error}</p>}
+      {library && (
+        <AssetLibraryDialog returnFocusRef={libBtn} open={libOpen} onOpenChange={setLibOpen} current={value || undefined}
+          onSelect={src => { setError(''); setLibPick(src); onChange(src); setStatus('Image added from the Asset Library.'); }} />
+      )}
       <input ref={inputRef} type="file" accept={ACCEPT} tabIndex={-1} aria-hidden="true" className="sr-only"
         onChange={e => { pick(e.target.files?.[0]); e.target.value = ''; }} />
     </div>

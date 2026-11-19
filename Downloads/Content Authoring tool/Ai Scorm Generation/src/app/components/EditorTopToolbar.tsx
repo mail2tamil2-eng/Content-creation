@@ -73,7 +73,7 @@ export function EditorTopToolbar({
         {/* Settings gear */}
         <button
           onClick={onOpenCourseSettings}
-          title="Player settings"
+          title="Global settings" aria-label="Global settings"
           className="hidden sm:flex w-8 h-8 rounded-lg items-center justify-center transition-colors hover:bg-gray-100 text-gray-700"
         >
           <Settings size={18} />

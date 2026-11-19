@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
+import { SEEK_OPTIONS, type SeekBarOption } from '../components/SlidePlaybackFields';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft, Check, ChevronDown, ChevronRight, ChevronLeft,
@@ -159,6 +160,7 @@ export function AICreateCoursePage() {
   const [bookmarking, setBookmarking] = useState(true);
   const [transcript, setTranscript] = useState(false);
   const [seekBar, setSeekBar] = useState<SeekBarControl>('enable');
+  const [seekBarOption, setSeekBarOption] = useState<SeekBarOption>('allowDrag');
   const [slideDuration, setSlideDuration] = useState(5);
   const [slideTransition, setSlideTransition] = useState('none');
   const [backgroundMusic, setBackgroundMusic] = useState(false);
@@ -640,9 +642,11 @@ export function AICreateCoursePage() {
                   style={fieldStyle}
                   placeholder="e.g. Introduction to Machine Learning"
                   value={title}
-                  onChange={e => setTitle(e.target.value)}
+                  maxLength={150} aria-describedby="course-title-count"
+                  onChange={e => setTitle(e.target.value.slice(0, 150))}
                   onFocus={focusField} onBlur={blurField}
                 />
+                <p id="course-title-count" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>{title.length} / 150 characters</p>
               </div>
 
                 <div>
@@ -701,9 +705,11 @@ export function AICreateCoursePage() {
                   style={{ ...fieldStyle, resize: 'vertical' as const, lineHeight: 1.6 }}
                   placeholder="Describe what this course is about"
                   value={objective}
-                  onChange={e => setObjective(e.target.value)}
+                  maxLength={2000} aria-describedby="course-objective-count"
+                  onChange={e => setObjective(e.target.value.slice(0, 2000))}
                   onFocus={focusField} onBlur={blurField}
                 />
+                <p id="course-objective-count" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>{objective.length} / 2000 characters</p>
               </div>
 
               {/* — Course Outcome — */}
@@ -764,9 +770,11 @@ export function AICreateCoursePage() {
                   style={fieldStyle}
                   placeholder="e.g. Marketing professionals, entry-level managers"
                   value={audience}
-                  onChange={e => setAudience(e.target.value)}
+                  maxLength={500} aria-describedby="course-audience-count"
+                  onChange={e => setAudience(e.target.value.slice(0, 500))}
                   onFocus={focusField} onBlur={blurField}
                 />
+                <p id="course-audience-count" style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0' }}>{audience.length} / 500 characters</p>
               </div>
 
               {/* — Course Complexity — */}
@@ -1300,7 +1308,7 @@ export function AICreateCoursePage() {
                     onEnhanceWithAI={enhanceWithAI}
                     enhancing={enhancing}
                     onRegenerateSlide={regenerateSlide}
-                    playbackDefaults={{ slideDuration, slideTransition, seekBar, backgroundMusic, backgroundMusicFile: backgroundMusicFile || undefined }}
+                    playbackDefaults={{ slideDuration, slideTransition, seekBar, seekBarOption, backgroundMusic, backgroundMusicFile: backgroundMusicFile || undefined }}
                   />
                   </SlideTemplateContext.Provider>
                 </div>
@@ -1333,12 +1341,12 @@ export function AICreateCoursePage() {
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setShowCourseSettings(false)}
-              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.18)', zIndex: 60, backdropFilter: 'blur(2px)' }}
+              style={{ position: 'fixed', inset: 0, top: 80, background: 'rgba(0,0,0,0.18)', zIndex: 60, backdropFilter: 'blur(2px)' }}
             />
             <motion.div
               initial={{ x: 340 }} animate={{ x: 0 }} exit={{ x: 340 }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: 340, background: '#fff', zIndex: 61, boxShadow: '-6px 0 32px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', fontFamily: 'Nunito Sans, system-ui, sans-serif' }}
+              style={{ position: 'fixed', right: 0, top: 80, bottom: 0, width: 340, background: '#fff', zIndex: 61, boxShadow: '-6px 0 32px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', fontFamily: 'Nunito Sans, system-ui, sans-serif' }}
             >
               {/* Drawer header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: '1px solid #E5E7EB', flexShrink: 0 }}>
@@ -1346,7 +1354,7 @@ export function AICreateCoursePage() {
                   <div style={{ width: 28, height: 28, borderRadius: 7, background: '#EBF3FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Settings size={14} style={{ color: '#1565F0' }} />
                   </div>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>Player Settings</h2>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>Global Settings</h2>
                 </div>
                 <button onClick={() => setShowCourseSettings(false)} style={{ width: 28, height: 28, borderRadius: 6, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B7280' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; (e.currentTarget as HTMLElement).style.color = '#374151'; }}
@@ -1361,7 +1369,7 @@ export function AICreateCoursePage() {
                 <div style={{ height: 1, background: '#F3F4F6', marginBottom: 24 }} />
 
                 {/* ── Global Settings ── */}
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 16px' }}>Player Settings</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 16px' }}>Applies to every slide</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
                   {/* Navigation Mode */}
@@ -1430,6 +1438,7 @@ export function AICreateCoursePage() {
                   </div>
 
                   {/* Seek Bar */}
+                  <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                     <div>
                       <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0 }}>Seek Bar</p>
@@ -1440,6 +1449,16 @@ export function AICreateCoursePage() {
                       <option value="enable">Enabled</option>
                       <option value="hide">Hidden</option>
                     </select>
+                  </div>
+                  {seekBar === 'enable' && (
+                    <>
+                      <label htmlFor="global-seek-option" className="sr-only">Seek bar control</label>
+                      <select id="global-seek-option" value={seekBarOption} onChange={e => setSeekBarOption(e.target.value as SeekBarOption)}
+                        style={{ width: '100%', marginTop: 10, border: '1px solid #D1D5DB', borderRadius: 7, padding: '8px 10px', fontSize: 13, background: '#fff', cursor: 'pointer' }}>
+                        {SEEK_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </>
+                  )}
                   </div>
 
                   {/* Background Music */}
