@@ -22,6 +22,8 @@ export interface ImageUploadFieldProps {
   generated?: boolean;
   /** Show "Choose from Asset Library" (default true). */
   library?: boolean;
+  /** Recommended image size for this slot, e.g. "1200 × 960 px (5:4)". */
+  recommendedSize?: string;
   /** Max size in MB (default 10). */
   maxMb?: number;
   className?: string;
@@ -35,7 +37,7 @@ const ACCEPT = 'image/png,image/jpeg,image/webp,image/svg+xml,image/gif';
  * Errors (wrong type, too large) are announced.
  */
 export const ImageUploadField = forwardRef<HTMLButtonElement, ImageUploadFieldProps>(function ImageUploadField(
-  { label, value, sampleSrc, onChange, onRegenerate, generated, field, library = true, maxMb = 10, className }, ref,
+  { label, value, sampleSrc, onChange, onRegenerate, generated, field, library = true, recommendedSize, maxMb = 10, className }, ref,
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
@@ -102,7 +104,7 @@ export const ImageUploadField = forwardRef<HTMLButtonElement, ImageUploadFieldPr
           ref={ref}
           type="button"
           data-field={field}
-          aria-describedby={`${id}-label${error ? ` ${id}-err` : ''}`}
+          aria-describedby={`${id}-label${recommendedSize ? ` ${id}-size` : ''}${error ? ` ${id}-err` : ''}`}
           onClick={() => inputRef.current?.click()}
           className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-[7px] border border-[#6B7280] bg-white px-3 text-[13px] font-semibold text-[#111827] hover:bg-[#F9FAFB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1565F0] focus-visible:ring-offset-2"
         >
@@ -146,6 +148,11 @@ export const ImageUploadField = forwardRef<HTMLButtonElement, ImageUploadFieldPr
             : <Sparkles className="size-3.5" aria-hidden="true" />}
           {busy ? 'Generating…' : 'Regenerate with AI'}
         </button>
+      )}
+      {recommendedSize && (
+        <p id={`${id}-size`} className="m-0 text-xs text-[#374151]">
+          <span className="font-semibold">Recommended size:</span> {recommendedSize}
+        </p>
       )}
       <p className="m-0 text-xs text-[#6B7280]">PNG, JPG, WebP, SVG or GIF · max {maxMb} MB · or drop a file on the preview</p>
       <p role="status" className="sr-only">{status}</p>

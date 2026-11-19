@@ -23,6 +23,7 @@ export const SampleImage: Story = {};
 /** An uploaded image: Replace + Remove. */
 export const Uploaded: Story = { args: { value: samplePhoto('tpl-tech-grid', 0) } };
 export const NoSample: Story = { args: { sampleSrc: undefined } };
+export const WithRecommendedSize: Story = { args: { recommendedSize: '1200 × 960 px (5:4)' } };
 
 /** Keyboard: Tab reaches the Upload button. */
 export const KeyboardFocus: Story = {

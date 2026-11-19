@@ -1247,19 +1247,19 @@ export function AICreateCoursePage() {
                     {/* Slide navigation */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
                       <button
-                        onClick={() => goToSlide(globalIdx - 1)} disabled={globalIdx === 0}
+                        onClick={() => goToSlide(globalIdx - 1)} disabled={globalIdx === 0} aria-label="Previous slide"
                         className="w-9 h-9 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all"
                       >
-                        <ChevronLeft className="w-4 h-4 text-gray-600" />
+                        <ChevronLeft className="w-4 h-4 text-gray-600" aria-hidden="true" />
                       </button>
-                      <span className="text-sm font-medium text-gray-500 min-w-[4rem] text-center">
+                      <span className="text-sm font-medium text-[#4B5563] min-w-[4rem] text-center">
                         {globalIdx + 1} / {allSlides.length}
                       </span>
                       <button
-                        onClick={() => goToSlide(globalIdx + 1)} disabled={globalIdx === allSlides.length - 1}
+                        onClick={() => goToSlide(globalIdx + 1)} disabled={globalIdx === allSlides.length - 1} aria-label="Next slide"
                         className="w-9 h-9 rounded-full bg-white shadow-sm border border-gray-200 flex items-center justify-center disabled:opacity-30 hover:bg-gray-50 transition-all"
                       >
-                        <ChevronRight className="w-4 h-4 text-gray-600" />
+                        <ChevronRight className="w-4 h-4 text-gray-600" aria-hidden="true" />
                       </button>
                     </div>
 

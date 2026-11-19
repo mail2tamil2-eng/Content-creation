@@ -116,8 +116,6 @@ export function TemplatePopover({ isOpen, onClose, anchorEl, currentDesignId, on
             </select>
           </div>
         )}
-        <p style={{ fontSize: 12, fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0 0 8px' }}>Choose a Template</p>
-        <p style={{ fontSize: 12, color: '#4B5563', margin: '-4px 0 6px' }}>Select a template, or use the eye icon to preview all slide layouts.</p>
         {COURSE_TEMPLATES.map(t => {
           const isSel = currentDesignId === t.id;
           return (

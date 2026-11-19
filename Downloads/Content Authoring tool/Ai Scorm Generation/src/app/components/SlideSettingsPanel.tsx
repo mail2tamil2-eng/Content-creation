@@ -12,7 +12,7 @@ import { SlideAudioOptions, type SlideAudioSource, type SlideAudioValue, type Tt
 import { ITEM_LIMITS, TEXT_LIMITS } from './textLimits';
 import { SlidePlaybackFields, type PlaybackDefaults, type SlidePlayback } from './SlidePlaybackFields';
 import { CARD_STYLES, IMAGE_POSITIONS, imageStyleOptions, LayoutOptionPicker, VERTICAL_SERIES_LAYOUTS } from './LayoutOptionPicker';
-import { generatePhoto, isLibraryPhoto, samplePhoto, shapeName, templateShape, useSlideTemplate } from './slidePhotos';
+import { generatePhoto, isLibraryPhoto, samplePhoto, shapeName, templateShape, useSlideTemplate, type ResolvedShape } from './slidePhotos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -238,7 +238,21 @@ function LimitedAdd({ label, count, max, noun, onClick }: { label: string; count
 
 // ── 13.1 Image Management ─────────────────────────────────────────────────────
 
-function ImageManagement({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }) {
+/**
+ * Recommended upload sizes, from the image frame on each slide layout (about 2× the frame size in
+ * the editor, so photos stay sharp full screen). Photos are cropped to fill the frame.
+ */
+const IMAGE_SIZES: Record<ResolvedShape, string> = {
+  rect: '1200 × 960 px (5:4)',
+  arch: '1200 × 960 px (5:4)',
+  square: '1000 × 1000 px (1:1)',
+  circle: '1000 × 1000 px (1:1)',
+  hex: '1100 × 1000 px',
+};
+/** Image Gallery: cards share one row, so the frame gets narrower as cards are added. */
+const gallerySize = (n: number) => n <= 1 ? '1920 × 440 px' : n === 2 ? '1000 × 460 px' : '1000 × 700 px (10:7)';
+
+function ImageManagement({ t, u, size }: { t: CSTopic; u: (x: Partial<CSTopic>) => void; size?: string }) {
   const template = useSlideTemplate();
   const [imageUrl, setImageUrl] = useState((t.imageUrl as string) || '');
   const [alt, setAlt]           = useState((t.alt as string) || '');
@@ -246,7 +260,7 @@ function ImageManagement({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => voi
   return (
     <>
       <ImageUploadField field="imageUrl" label="Image" value={imageUrl} sampleSrc={samplePhoto(template, 0)}
-        generated={isLibraryPhoto(imageUrl)} onRegenerate={() => generatePhoto(template, [imageUrl || samplePhoto(template, 0)])}
+        generated={isLibraryPhoto(imageUrl)} onRegenerate={() => generatePhoto(template, [imageUrl || samplePhoto(template, 0)])} recommendedSize={size}
         onChange={url => { setImageUrl(url); u({ imageUrl: url }); }} />
       <div>
         <FieldLabel>Alt text</FieldLabel>
@@ -704,7 +718,7 @@ function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => v
           {cards.map((card, i) => (
             <ItemCard key={card.id} label={`Card ${i+1}`} onRemove={() => sync(cards.filter((_,j) => j !== i))}>
               <ImageUploadField field={`imageCards.${i}.image`} label={`Card ${i + 1} image`} value={card.image || ''} sampleSrc={samplePhoto(template, i)}
-                generated={isLibraryPhoto(card.image)} onRegenerate={() => generatePhoto(template, [card.image || samplePhoto(template, i)])}
+                generated={isLibraryPhoto(card.image)} onRegenerate={() => generatePhoto(template, [card.image || samplePhoto(template, i)])} recommendedSize={gallerySize(cards.length)}
                 onChange={url => sync(cards.map((x,j) => j===i ? {...x,image:url} : x))} />
               <input data-field={`imageCards.${i}.alt`} aria-label={`Card ${i + 1} alt text`} value={card.alt || ''} onChange={e => sync(cards.map((x,j) => j===i ? {...x,alt:e.target.value} : x))} placeholder="Alt text: describe the image…" style={inlineInput} />
               <input data-field={`imageCards.${i}.heading`} aria-label={`Item ${i + 1} heading`} maxLength={TEXT_LIMITS.cardHeading} aria-describedby={`ch-${card.id}`} value={card.heading} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,heading:e.target.value} : x); sync(n); }} placeholder="Heading…" style={inlineInput} />
@@ -731,7 +745,7 @@ function ImageTextFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => voi
     <>
       <LayoutOptionPicker label="Image position" field="imagePosition" value={position} options={IMAGE_POSITIONS} onChange={v => { setPosition(v); u({ imagePosition: v }); }} />
       <LayoutOptionPicker label="Image style" field="imageStyle" value={imageStyle === tShape ? 'template' : imageStyle} options={imageStyleOptions(tShape, shapeName(tShape))} onChange={v => { setImageStyle(v); u({ imageStyle: v }); }} />
-      <ImageManagement t={t} u={u} />
+      <ImageManagement t={t} u={u} size={IMAGE_SIZES[imageStyle === 'template' ? tShape : imageStyle as ResolvedShape] ?? IMAGE_SIZES.rect} />
       <div><FieldLabel>Body text</FieldLabel><SInput rows={5} max={TEXT_LIMITS.imageBody} field="content" label="Body text" value={body} placeholder="Text shown beside the image…" onChange={v => { setBody(v); u({ content: v }); }} /></div>
     </>
   );
@@ -745,7 +759,7 @@ function HotspotFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void 
   const sync = (next: Spot[]) => { setSpots(next); u({ hotspots: next }); };
   return (
     <>
-      <ImageManagement t={t} u={u} />
+      <ImageManagement t={t} u={u} size="1920 × 480 px (4:1)" />
       <div>
         <FieldLabel>Hotspots</FieldLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -799,7 +813,7 @@ function SliderFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }
         ] as const).map(({ side, key, altKey, sample }) => (
           <div key={side} style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
             <ImageUploadField field={key} label={`${side} image`} value={imgs[key]} sampleSrc={samplePhoto(template, sample)}
-              generated={isLibraryPhoto(imgs[key])} onRegenerate={() => generatePhoto(template, [imgs[key] || samplePhoto(template, sample)])}
+              generated={isLibraryPhoto(imgs[key])} onRegenerate={() => generatePhoto(template, [imgs[key] || samplePhoto(template, sample)])} recommendedSize="1920 × 520 px" 
               onChange={url => { setImgs(v => ({ ...v, [key]: url })); u({ [key]: url }); }} />
             <input aria-label={`${side} image alt text`} value={imgs[altKey]} placeholder="Alt text…" style={inlineInput}
               onChange={e => { const v = e.target.value; setImgs(o => ({ ...o, [altKey]: v })); u({ [altKey]: v }); }} />
