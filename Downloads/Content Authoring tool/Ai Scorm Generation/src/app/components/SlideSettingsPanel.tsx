@@ -250,7 +250,7 @@ const IMAGE_SIZES: Record<ResolvedShape, string> = {
   hex: '1100 × 1000 px',
 };
 /** Image Gallery: cards share one row, so the frame gets narrower as cards are added. */
-const gallerySize = (n: number) => n <= 1 ? '1920 × 440 px' : n === 2 ? '1000 × 460 px' : '1000 × 700 px (10:7)';
+const gallerySize = (n: number) => n <= 1 ? '1920 × 440 px' : n === 2 ? '1000 × 460 px' : '1000 × 700 px';
 
 function ImageManagement({ t, u, size }: { t: CSTopic; u: (x: Partial<CSTopic>) => void; size?: string }) {
   const template = useSlideTemplate();
@@ -707,31 +707,72 @@ function TableFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void })
 function ImageSeriesFields({ t, u }: { t: CSTopic; u: (x: Partial<CSTopic>) => void }) {
   type Card = { id: string; heading: string; description: string; image?: string; alt?: string };
   const template = useSlideTemplate();
-  const [cards, setCards]   = useState<Card[]>(() => (t.imageCards as Card[])?.length ? (t.imageCards as Card[]) : [{ id: uid(), heading: '', description: '' }]);
+  const [cards, setCards]   = useState<Card[]>(() => (t.imageCards as Card[])?.length ? (t.imageCards as Card[]).slice(0, ITEM_LIMITS.imageCards) : [{ id: uid(), heading: '', description: '' }]);
   const [cardStyle, setCardStyle] = useState((t.cardStyle as string) === 'plain' ? 'plain' : 'boxed');
+  /** One card open at a time keeps the list short. */
+  const [openId, setOpenId] = useState<string | null>(() => cards[0]?.id ?? null);
   const sync = (next: Card[]) => { setCards(next); u({ imageCards: next }); };
+  const patch = (i: number, x: Partial<Card>) => sync(cards.map((c, j) => j === i ? { ...c, ...x } : c));
+  const add = () => { const c = { id: uid(), heading: '', description: '' }; sync([...cards, c]); setOpenId(c.id); };
   return (
     <>
       <div>
         <FieldLabel>Cards</FieldLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {cards.map((card, i) => (
-            <ItemCard key={card.id} label={`Card ${i+1}`} onRemove={() => sync(cards.filter((_,j) => j !== i))}>
-              <ImageUploadField field={`imageCards.${i}.image`} label={`Card ${i + 1} image`} value={card.image || ''} sampleSrc={samplePhoto(template, i)}
-                generated={isLibraryPhoto(card.image)} onRegenerate={() => generatePhoto(template, [card.image || samplePhoto(template, i)])} recommendedSize={gallerySize(cards.length)}
-                onChange={url => sync(cards.map((x,j) => j===i ? {...x,image:url} : x))} />
-              <input data-field={`imageCards.${i}.alt`} aria-label={`Card ${i + 1} alt text`} value={card.alt || ''} onChange={e => sync(cards.map((x,j) => j===i ? {...x,alt:e.target.value} : x))} placeholder="Alt text: describe the image…" style={inlineInput} />
-              <input data-field={`imageCards.${i}.heading`} aria-label={`Item ${i + 1} heading`} maxLength={TEXT_LIMITS.cardHeading} aria-describedby={`ch-${card.id}`} value={card.heading} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,heading:e.target.value} : x); sync(n); }} placeholder="Heading…" style={inlineInput} />
-              <CharCount id={`ch-${card.id}`} value={card.heading} max={TEXT_LIMITS.cardHeading} />
-              <textarea data-field={`imageCards.${i}.description`} aria-label={`Item ${i + 1} description`} maxLength={TEXT_LIMITS.cardDescription} aria-describedby={`cd-${card.id}`} value={card.description} onChange={e => { const n = cards.map((x,j) => j===i ? {...x,description:e.target.value} : x); sync(n); }} placeholder="Description…" rows={2} style={inlineTA} />
-              <CharCount id={`cd-${card.id}`} value={card.description} max={TEXT_LIMITS.cardDescription} />
-            </ItemCard>
-          ))}
-          <LimitedAdd label="Add card" noun="cards" count={cards.length} max={ITEM_LIMITS.imageCards} onClick={() => sync([...cards, { id: uid(), heading: '', description: '' }])} />
+          {cards.map((card, i) => {
+            const open = openId === card.id;
+            const name = `Card ${i + 1}`;
+            return (
+              <div key={card.id} data-collapsible="" data-open={open} style={{ border: `1px solid ${open ? '#BFDBFE' : BORDER}`, borderRadius: 8, background: '#fff' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, paddingRight: 4 }}>
+                  <button type="button" data-collapsible-toggle="" aria-expanded={open} aria-controls={`card-body-${card.id}`}
+                    onClick={() => setOpenId(open ? null : card.id)}
+                    style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8, padding: 6, minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: font }}>
+                    <img src={card.image || samplePhoto(template, i)} alt="" style={{ width: 40, height: 28, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                    <span style={{ minWidth: 0, flex: 1 }}>
+                      <span style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6B7280' }}>{name}</span>
+                      <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: card.heading ? '#111827' : '#6B7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.heading || 'Untitled'}</span>
+                    </span>
+                    <ChevronDown size={16} color="#6B7280" aria-hidden="true" style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }} />
+                  </button>
+                  {cards.length > 1 && <RemoveBtn onClick={() => sync(cards.filter((_, j) => j !== i))} label={`Remove ${name.toLowerCase()}`} />}
+                </div>
+                <div id={`card-body-${card.id}`} hidden={!open} style={{ padding: '2px 8px 10px', display: open ? 'flex' : 'none', flexDirection: 'column', gap: 8 }}>
+                  <ImageUploadField compact field={`imageCards.${i}.image`} label={`${name} image`} value={card.image || ''} sampleSrc={samplePhoto(template, i)}
+                    generated={isLibraryPhoto(card.image)} onRegenerate={() => generatePhoto(template, [card.image || samplePhoto(template, i)])} recommendedSize={gallerySize(cards.length)}
+                    onChange={url => patch(i, { image: url })} />
+                  <CardField label="Heading" field={`imageCards.${i}.heading`} id={`ch-${card.id}`} value={card.heading} max={TEXT_LIMITS.cardHeading} placeholder="Card heading" onChange={v => patch(i, { heading: v })} />
+                  <CardField label="Description" multiline field={`imageCards.${i}.description`} id={`cd-${card.id}`} value={card.description} max={TEXT_LIMITS.cardDescription} placeholder="One or two short sentences" onChange={v => patch(i, { description: v })} />
+                  <CardField label="Alt text" field={`imageCards.${i}.alt`} id={`ca-${card.id}`} value={card.alt || ''} placeholder="Describe the image" onChange={v => patch(i, { alt: v })} />
+                </div>
+              </div>
+            );
+          })}
+          <LimitedAdd label="Add card" noun="cards" count={cards.length} max={ITEM_LIMITS.imageCards} onClick={add} />
         </div>
       </div>
       <LayoutOptionPicker label="Card style" field="cardStyle" value={cardStyle} options={CARD_STYLES} onChange={v => { setCardStyle(v); u({ cardStyle: v }); }} />
     </>
+  );
+}
+
+/** Small labelled field inside a gallery card; the character count shows only near the limit. */
+function CardField({ label, field, id, value, max, placeholder, multiline, onChange }: {
+  label: string; field: string; id: string; value: string; max?: number; placeholder?: string; multiline?: boolean; onChange: (v: string) => void;
+}) {
+  const near = max != null && value.length >= max * 0.8;
+  const common = { id, 'data-field': field, value, maxLength: max, placeholder, 'aria-describedby': max ? `${id}-count` : undefined,
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value) };
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <label htmlFor={id} style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{label}</label>
+      {multiline ? <textarea {...common} rows={2} style={inlineTA} /> : <input {...common} style={inlineInput} />}
+      {max != null && (
+        <span id={`${id}-count`} className={near ? undefined : 'sr-only'} style={{ alignSelf: 'flex-end', fontSize: 11, color: value.length >= max ? '#B91C1C' : '#6B7280' }}>
+          {value.length} / {max} characters
+        </span>
+      )}
+    </div>
   );
 }
 

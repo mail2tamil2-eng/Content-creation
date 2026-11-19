@@ -20,7 +20,7 @@ export const TEXT_LIMITS = {
 /** Maximum number of items per slide so content always fits. */
 export const ITEM_LIMITS = {
   seriesItems: 4,
-  imageCards: 4,
+  imageCards: 3,
   tableColumns: 5,
   tableRows: 5,
 } as const;

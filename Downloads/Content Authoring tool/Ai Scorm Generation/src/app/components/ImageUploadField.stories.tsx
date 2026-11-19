@@ -24,6 +24,7 @@ export const SampleImage: Story = {};
 export const Uploaded: Story = { args: { value: samplePhoto('tpl-tech-grid', 0) } };
 export const NoSample: Story = { args: { sampleSrc: undefined } };
 export const WithRecommendedSize: Story = { args: { recommendedSize: '1200 × 960 px (5:4)' } };
+export const Compact: Story = { args: { compact: true, recommendedSize: '1000 × 700 px', onRegenerate: () => generatePhoto('tpl-forest-hexa', [samplePhoto('tpl-forest-hexa', 0)], 600) } };
 
 /** Keyboard: Tab reaches the Upload button. */
 export const KeyboardFocus: Story = {

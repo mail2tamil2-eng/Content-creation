@@ -20,6 +20,10 @@ export function focusSlideField(key: string, focus = true, attempt = 0): void {
     return retry();
   }
 
+  // Field inside a closed card (e.g. Image Gallery): open that card first
+  const closed = el.closest<HTMLElement>('[data-collapsible][data-open="false"]');
+  if (closed) { closed.querySelector<HTMLButtonElement>('[data-collapsible-toggle]')?.click(); return retry(); }
+
   const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
   el.classList.remove('se-flash');

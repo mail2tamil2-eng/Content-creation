@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { CourseTopic } from '../courseContent';
 import { EditableText, EditableText as E, useSlideEdit } from './slideEdit';
 import { SlideImage } from './SlideImage';
-import { TEXT_LIMITS } from './textLimits';
+import { ITEM_LIMITS, TEXT_LIMITS } from './textLimits';
 import { resolveImageShape, useSlideTemplate } from './slidePhotos';
 
 const useEditable = () => !!useSlideEdit()?.editable;
@@ -208,18 +208,17 @@ function Table({ topic }: { topic: CourseTopic }) {
 }
 
 function ImageCards({ topic }: { topic: CourseTopic }) {
-  const cards = useSeeded(g<ImageCard[]>(topic, 'imageCards'), { id: '', heading: '', description: '' });
+  const cards = useSeeded(g<ImageCard[]>(topic, 'imageCards'), { id: '', heading: '', description: '' }).slice(0, ITEM_LIMITS.imageCards);
   // Card style: 'boxed' = bordered card (default); 'plain' = no box, rounded picture, left-aligned text without padding
   const plain = g<string>(topic, 'cardStyle') === 'plain';
   const editable = useEditable();
   if (!cards.length) return <p style={{ fontSize: fs.md }}><Dim>Add image cards in Slide Settings</Dim></p>;
 
-  const cols = Math.min(cards.length, 4); // max 4 cards (ITEM_LIMITS) → always one row
+  const cols = cards.length; // max 3 cards (ITEM_LIMITS) → always one row
   // Taller pictures when there is only one row of cards
   // Picture height adapts to the text: the longer the longest card text, the shorter the pictures, so cards fit the slide
   const longest = Math.max(0, ...cards.map(c => (c.heading?.length ?? 0) / 0.6 + (c.description?.length ?? 0)));
-  const imageHeight = cards.length > 3 ? (longest <= 90 ? 'clamp(80px,15cqw,200px)' : 'clamp(56px,10cqw,130px)')
-    : longest <= 90 ? 'clamp(100px,20cqw,270px)'
+  const imageHeight = longest <= 90 ? 'clamp(100px,20cqw,270px)'
     : longest <= 140 ? 'clamp(80px,15cqw,200px)'
     : 'clamp(60px,10.5cqw,140px)';
   return (
