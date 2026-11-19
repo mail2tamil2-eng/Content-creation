@@ -1333,10 +1333,10 @@ export function SlideSettingsPanel({
 
         {/* 13.3 Slide Audio — text slides only */}
         {showNarration && (
-          // No collapsible header: the narration switch is available in one click
-          <div data-group="Slide Audio" style={{ borderBottom: `1px solid ${BORDER}`, padding: '12px 16px 14px' }}>
+          // Same collapsible section as the others; open by default so the switch is still one click
+          <FieldGroup title="Audio">
             <AudioNarration t={topic} u={onUpdate} />
-          </div>
+          </FieldGroup>
         )}
 
         {/* Playback for this slide (defaults come from Global Settings) */}
